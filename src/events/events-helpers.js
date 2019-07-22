@@ -13,8 +13,7 @@ const makeEventsRelative = (events, relativeEvent) => events.map((event) => ({
 
 const findEventByName = (events, name) => events.find((event) => event.name === name);
 
-const filterEventsByName = (names) =>
-  (events) => events.filter(({ name }) => names.includes(name));
+const filterEventsByName = (events, names) => events.filter(({ name }) => names.includes(name));
 
 module.exports = {
   getEventsTimestamps,
