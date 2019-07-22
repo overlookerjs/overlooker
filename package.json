@@ -1,5 +1,5 @@
 {
-  "name": "little-profiler",
+  "name": "tiny-profiler",
   "version": "1.0.0",
   "description": "sample profile app",
   "main": "index.js",
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pyatyispyatil/little-profiler.git"
+    "url": "git+https://github.com/pyatyispyatil/tiny-profiler.git"
   },
   "author": "Nikolay Ryabov",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/pyatyispyatil/little-profiler/issues"
+    "url": "https://github.com/pyatyispyatil/tiny-profiler/issues"
   },
-  "homepage": "https://github.com/pyatyispyatil/little-profiler#readme",
+  "homepage": "https://github.com/pyatyispyatil/tiny-profiler#readme",
   "dependencies": {
-    "puppeteer": "^1.12.1"
+    "puppeteer": "^1.18.0"
   }
 }

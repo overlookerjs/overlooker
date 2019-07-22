@@ -22,10 +22,34 @@ const getScriptsEvaluating = (events) => events.filter(({name}) => name === 'Eva
 
 const scriptEvaluating = getScriptsEvaluating(traceEvents);
 const scriptEvaluatingTotalDuration = scriptEvaluating.reduce((acc, {dur}) => acc + dur, 0) / 1000;
-const scriptEvfaluatingTopScripts = getScriptsEvaluating(traceEvents)
+const scriptEvaluatingTopScripts = getScriptsEvaluating(traceEvents)
   .map(({dur, args: {data: {url}}}) => ({dur, url}))
   .filter(({url}) => url)
   .sort(({dur: fdur}, {dur: sdur}) => sdur - fdur);
 
 
+const getFunctionsCalls = (events) => {
+  const functions = events
+    .filter(({name}) => name === 'FunctionCall');
 
+  const begins = functions.filter(({ph}) => ph === 'B');
+  const endings = functions.filter(({ph}) => ph === 'E');
+
+  const pairs = begins
+    .map((begin) => [begin, endings.find(({tid}) => tid === begin.tid)])
+    .filter(([, end]) => end);
+
+  const clearCalls = pairs
+    .map(([begin, end]) => {
+      const duration = end.ts - begin.ts;
+      const {functionName, url} = begin.args.data;
+
+      return {
+        functionName,
+        duration,
+        url,
+        start: begin.ts,
+        end: end.ts
+      }
+    });
+};
