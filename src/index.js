@@ -9,7 +9,16 @@ const start = async () => {
       main: 'https://www.avito.ru'
     },
     threads: 1,
-    platform: 'desktop'
+    platform: 'desktop',
+    throttling: {
+      cpu: 1,
+      network: 'WiFi'
+    },
+    // requests: {
+    //   ignore: (url) => false,
+    //   merge: (url) => false,
+    //   internalTest: (url) => false
+    // }
   });
 
   debugger;

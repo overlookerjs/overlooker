@@ -285,15 +285,17 @@ const memoize = (fn) => {
   }
 };
 
-const checkRule = (rule, value) => {
+const makeRule = (rule) => {
   if (rule instanceof Function) {
-    return rule(value);
+    return rule;
   } else if (rule instanceof RegExp) {
-    return rule.test(value);
-  } else if (typeof rule === 'string' && typeof value === 'string') {
-    return value.includes(rule)
+    return (value) => rule.test(value);
+  } else if (typeof rule === 'string') {
+    const regexp = new RegExp(rule);
+
+    return (value) => regexp.test(value);
   } else {
-    return true;
+    return undefined;
   }
 };
 
@@ -324,5 +326,5 @@ module.exports = {
   retry,
   isRelativeUrl,
   memoize,
-  checkRule
+  makeRule
 };

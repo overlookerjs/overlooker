@@ -2,43 +2,38 @@ const { objDevide, objSumm } = require('../utils.js');
 
 const clearUrl = (url) => url && url.replace(/\?.*?$/, '');
 
-const getNetworkSummary = (network, inception = {}, merge, ignore) => {
+const getNetworkSummary = (network, inception = {}, merge) => {
   return network
     .reduce((networkSummary, {
       url,
-      internal,
       timings,
       size,
-      type,
-      transfer
+      transfer,
+      ...rest
     }) => {
       const similarMergedUrl = url && merge ? merge(url) : false;
-      const isIgnored = url && ignore ? ignore(url) : false;
       const clearedUrl = similarMergedUrl || clearUrl(url);
 
-      if (type !== 'Document' && !isIgnored) {
-        if (networkSummary[clearedUrl]) {
-          const similarSummary = networkSummary[clearedUrl];
+      if (networkSummary[clearedUrl]) {
+        const similarSummary = networkSummary[clearedUrl];
 
-          networkSummary[clearedUrl] = {
-            size: size + similarSummary.size,
-            transfer: transfer + similarSummary.transfer,
-            timings: similarSummary.timings ? objSumm(similarSummary.timings, timings) : timings,
-            count: similarSummary.count + 1,
-            type,
-            internal
-          };
-        } else {
-          networkSummary[clearedUrl] = {
-            url,
-            internal,
-            timings,
-            size,
-            type,
-            transfer,
-            count: 1
-          };
-        }
+        networkSummary[clearedUrl] = {
+          size: size + similarSummary.size,
+          transfer: transfer + similarSummary.transfer,
+          timings: similarSummary.timings ? objSumm(similarSummary.timings, timings) : timings,
+          count: similarSummary.count + 1,
+          url,
+          ...rest
+        };
+      } else {
+        networkSummary[clearedUrl] = {
+          url,
+          timings,
+          size,
+          transfer,
+          count: 1,
+          ...rest
+        };
       }
 
       return networkSummary;

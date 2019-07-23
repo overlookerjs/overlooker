@@ -52,7 +52,7 @@ const prepareSeparatedNetwork = (separatedNetwork, internalTest) => separatedNet
     })
   );
 
-const getNetworkStats = (events, internalTest) => prepareSeparatedNetwork(
+const parseNetwork = (events, internalTest) => prepareSeparatedNetwork(
   separateNetworkEvents(
     filterNetworkEvents(events)
   ),
@@ -109,6 +109,6 @@ const getResourcesStats = (rawNetwork) => {
 };
 
 module.exports = {
-  getNetworkStats,
+  parseNetwork,
   getResourcesStats
 };

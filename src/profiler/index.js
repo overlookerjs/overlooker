@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 const { aggregateProfiles } = require('../aggregation');
-const { parallelizeObject, checkRule, makeInternalTest, isRelativeUrl, getHost } = require('./../utils.js');
+const { parallelizeObject, makeInternalTest, isRelativeUrl, getHost, objMap, makeRule } = require('./../utils.js');
 const { getAllStats } = require('../events');
 const networkPresets = require('./network-presets.js');
 const devices = require('puppeteer/DeviceDescriptors');
@@ -41,13 +41,13 @@ const setupPageConfig = async (page, client, config) => {
     }
   }
 
-  if (config.ignoredRequests) {
+  if (config.requests && config.requests.ignore) {
     await page.setRequestInterception(true);
 
     page.on('request', (interceptedRequest) => {
       const url = interceptedRequest.url();
 
-      if (ignoredRequests.some((rule) => checkRule(rule, url))) {
+      if (config.requests.ignore(url)) {
         interceptedRequest.abort();
         return;
       }
@@ -129,8 +129,38 @@ const fetchPages = async ({
   return await parallelizeObject(functions, browsersThreads, 5000);
 };
 
+const prepareConfig = ({
+                         requests,
+                         count,
+                         threads,
+                         platform,
+                         ...rest
+                       }) => ({
+  requests: objMap(requests, makeRule),
+  count: count || 5,
+  threads: threads || 1,
+  platform: platform || 'desktop',
+  ...rest
+});
+
+/**
+ * @param {Object} config.pages
+ * @param {Object} [config]
+ * @param {Object} [config.throttling]
+ * @param {number} [config.throttling.cpu]
+ * @param {string} [config.throttling.network]
+ * @param {number} [config.count]
+ * @param {number} [config.threads]
+ * @param {string} [config.platform]
+ * @param {string} [config.browserArgs]
+ * @param {Object} [config.requests]
+ * @param {string|RegExp|Function} [config.requests.ignore]
+ * @param {string|RegExp|Function} [config.requests.merge]
+ * @param {string|RegExp|Function} [config.requests.internalTest]
+ * */
+
 const profile = async (config) => {
-  const { pages, threads } = config;
+  const { pages, threads } = prepareConfig(config);
 
   const pagesEntries = Object.entries(pages);
 
@@ -195,13 +225,16 @@ const profile = async (config) => {
 
   return Object.entries(res)
     .reduce((acc, [pageName, pageData]) => {
-      const isInternal = makeInternalTest(pages[pageName]);
+      const isInternal = config.requests && config.request.internalTest ? (
+        makeInternalTest(pages[pageName])
+      ) : (
+        config.request.internalTest
+      );
 
       acc[pageName] = aggregateProfiles(
         pageData.map((tracing) => getAllStats(tracing, isInternal)),
         buildData,
-        config.merge,
-        config.ignore
+        config.requests ? config.requests.merge : null
       );
 
       return acc;
