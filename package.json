@@ -1,19 +1,19 @@
 {
-  "name": "tiny-profiler",
-  "version": "1.0.0",
+  "name": "overlooker",
+  "version": "0.1.0",
   "description": "sample profile app",
   "main": "src/index.js",
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pyatyispyatil/tiny-profiler.git"
+    "url": "git+https://github.com/pyatyispyatil/overlooker.git"
   },
   "author": "Nikolay Ryabov",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/pyatyispyatil/tiny-profiler/issues"
+    "url": "https://github.com/pyatyispyatil/overlooker/issues"
   },
-  "homepage": "https://github.com/pyatyispyatil/tiny-profiler#readme",
+  "homepage": "https://github.com/pyatyispyatil/overlooker#readme",
   "dependencies": {
     "mime-types": "^2.1.24",
     "puppeteer": "^1.18.0"
