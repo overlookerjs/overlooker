@@ -297,6 +297,8 @@ const checkRule = (rule, value) => {
   }
 };
 
+const isRelativeUrl = (url) => !/^https?:\/\//.test(url);
+
 module.exports = {
   objMap,
   objReduce,
@@ -320,6 +322,7 @@ module.exports = {
   parallelizeArray,
   parallelizeObject,
   retry,
+  isRelativeUrl,
   memoize,
   checkRule
 };

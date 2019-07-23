@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 const { aggregateProfiles } = require('../aggregation/aggregation-profiles.js');
-const { parallelizeObject, checkRule, makeInternalTest } = require('./../utils.js');
+const { parallelizeObject, checkRule, makeInternalTest, isRelativeUrl, getHost } = require('./../utils.js');
 const { getAllStats } = require('./../events/events-parser.js');
 const networkPresets = require('./network-presets.js');
 const devices = require('puppeteer/DeviceDescriptors');
@@ -173,11 +173,36 @@ const profile = async (config) => {
     await Promise.all(browsers.map(({ close }) => close()));
   }
 
+  console.log('request build data');
+
+  let buildData;
+
+  if (config.buildDataUrl) {
+    try {
+      const { data } = await (
+        isRelativeUrl(config.buildDataUrl) ? (
+          fetch(config.buildDataUrl)
+        ) : (
+          fetch(getHost(Object.values(pages)[0]) + config.buildDataUrl)
+        )
+      );
+
+      buildData = data;
+    } catch (e) {
+      console.log('cannot receive build data', e);
+    }
+  }
+
   return Object.entries(res)
     .reduce((acc, [pageName, pageData]) => {
       const isInternal = makeInternalTest(pages[pageName]);
 
-      acc[pageName] = aggregateProfiles(pageData.map((tracing) => getAllStats(tracing, isInternal)));
+      acc[pageName] = aggregateProfiles(
+        pageData.map((tracing) => getAllStats(tracing, isInternal)),
+        buildData,
+        config.merge,
+        config.ignore
+      );
 
       return acc;
     }, {});

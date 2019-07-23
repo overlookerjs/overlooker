@@ -1,5 +1,6 @@
 const { getEvaluatingSummary, normalizeEvaluatingSummary } = require('./aggregation-evaluating.js');
-const { getNetworkSummary, normalizeNetworkSummary, expandNetwork } = require('./aggregation-network.js');
+const { getNetworkSummary, normalizeNetworkSummary } = require('./aggregation-network.js');
+const { expandNetwork } = require('./../chunks-meta');
 const { objConcat, objMap } = require('../utils.js');
 const { objAggregation } = require('./aggregation-utils.js');
 
