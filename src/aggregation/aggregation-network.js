@@ -1,6 +1,4 @@
-const { makeEvaluatingMap } = require('../events/events-evaluating.js');
-const { objDevide, objSumm, objConcat, objMap, memoize } = require('../utils.js');
-const { objAggregation } = require('./aggregation-utils.js');
+const { objDevide, objSumm, memoize } = require('../utils.js');
 
 const clearUrl = (url) => url && url.replace(/\?.*?$/, '');
 
@@ -131,8 +129,8 @@ const expandRequest = (request, build) => {
 };
 
 const expandNetwork = (network, build) => {
-  return network
-    .map((request) => expandRequest(request, build));
+  return build ? network
+    .map((request) => expandRequest(request, build)) : network;
 };
 
 const makeMap = memoize((build, inputKey, itemKey) => {
@@ -145,60 +143,8 @@ const makeMap = memoize((build, inputKey, itemKey) => {
   }, {});
 });
 
-const normalizeEvaluatingSummary = (evaluatings = []) => {
-  const clearEvaluating = evaluatings
-    .filter(Boolean);
-
-  return clearEvaluating && clearEvaluating.length ? (
-    Array(clearEvaluating[0].length)
-      .fill(null)
-      .map((i, index) => clearEvaluating.map((evaluating) => evaluating[index]))
-      .map((mergedEvaluating) => ({
-        url: mergedEvaluating[0].url,
-        duration: mergedEvaluating
-          .reduce((acc, { duration = 0 } = {}) => acc + duration, 0) / mergedEvaluating.length,
-        timings: objDevide(
-          mergedEvaluating
-            .filter(Boolean)
-            .map(({ timings }) => timings)
-            .reduce(objSumm),
-          mergedEvaluating.length
-        )
-      }))
-  ) : (
-    []
-  );
-};
-
-const getEvaluatingSummary = (evaluating, summaryEvaluating) => Object.entries(evaluating)
-  .reduce((acc, [key, value]) => {
-    if (!acc[key]) {
-      acc[key] = [value];
-    } else {
-      acc[key].push(value);
-    }
-
-    return acc;
-  }, summaryEvaluating);
-
-const getAggregatedStats = (profiles, merge, ignore) => {
-  const {stats, network, evaluating} = profiles.reduce((summary, profile) => ({
-    stats: objMap(profile.stats, (innerObj, key) => objConcat(innerObj, summary.stats[key])),
-    network: getNetworkSummary(profile.network, summary.network, merge, ignore),
-    evaluating: getEvaluatingSummary(profile.evaluating, summary.evaluating)
-  }), {
-    stats: {},
-    network: {},
-    evaluating: {}
-  });
-
-  return {
-    stats: objMap(stats, (innerObj) => objAggregation(innerObj)),
-    network: normalizeNetworkSummary(network),
-    evaluating: normalizeEvaluatingSummary(evaluating)
-  };
-};
-
 module.exports = {
-  getAggregatedStats
+  getNetworkSummary,
+  normalizeNetworkSummary,
+  expandNetwork
 };

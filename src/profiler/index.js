@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const { aggregateProfiles } = require('../aggregation/aggregation-profiles.js');
 const { parallelizeObject } = require('./../utils.js');
 
 const getContext = async (additionArgs = []) => {
@@ -54,6 +55,8 @@ const fetchPages = async ({
                             browsersThreads,
                             config
                           }) => {
+  const { count } = config;
+
   const functions = pagesEntries.reduce((acc, [pageName, host]) => ({
     ...acc,
     [pageName]: Array(count).fill(async (stop, browser) => {
@@ -86,7 +89,7 @@ const fetchPages = async ({
   return await parallelizeObject(functions, browsersThreads, 5000);
 };
 
-const runner = async (config) => {
+const profile = async (config) => {
   const { pages, count, threads, platform = 'desktop' } = config;
 
   const pagesEntries = Object.entries(pages);
@@ -111,11 +114,11 @@ const runner = async (config) => {
     console.log('error while opening browsers');
     console.log(e.stack);
 
-    return null;
+    return {};
   }
 
   try {
-    const res = await fetchPages({
+    res = await fetchPages({
       profiler: profileUrl,
       config,
       pagesEntries,
@@ -123,8 +126,6 @@ const runner = async (config) => {
     });
 
     console.log(`fetching done!`, {}, 1);
-
-    return res;
   } catch (e) {
     console.log(`cannot fetch pages!`);
     console.log(e.stack);
@@ -134,9 +135,14 @@ const runner = async (config) => {
     await Promise.all(browsers.map(({ close }) => close()));
   }
 
-  return res;
+  return Object.entries(res)
+    .reduce((acc, [pageName, pageData]) => {
+      acc[pageName] = aggregateProfiles(pageData);
+
+      return acc;
+    }, {});
 };
 
 module.exports = {
-  runner
+  profile
 };
