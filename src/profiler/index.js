@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
-const { aggregateProfiles } = require('../aggregation/aggregation-profiles.js');
+const { aggregateProfiles } = require('../aggregation');
 const { parallelizeObject, checkRule, makeInternalTest, isRelativeUrl, getHost } = require('./../utils.js');
-const { getAllStats } = require('./../events/events-parser.js');
+const { getAllStats } = require('../events');
 const networkPresets = require('./network-presets.js');
 const devices = require('puppeteer/DeviceDescriptors');
 

@@ -15,6 +15,7 @@
   },
   "homepage": "https://github.com/pyatyispyatil/tiny-profiler#readme",
   "dependencies": {
+    "mime-types": "^2.1.24",
     "puppeteer": "^1.18.0"
   }
 }

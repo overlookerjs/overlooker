@@ -1,5 +1,5 @@
 const { profile } = require('./profiler');
-const compare = () => {};
+const { compare } = require('./comparing');
 
 
 const start = async () => {

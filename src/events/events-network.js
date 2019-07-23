@@ -1,4 +1,10 @@
+const mime = require('mime-types');
+const { getExtension } = require('./../utils.js');
 const { findEventByName, filterEventsByName } = require('./events-helpers.js');
+
+const imagesTypes = ['jpg', 'jpeg', 'png', 'svg', 'ico', 'gif', 'webp'];
+const fontsTypes = ['woff', 'woff2', 'ttf', 'eot'];
+const assetsTypes = ['js', 'css'];
 
 const filterNetworkEvents = (events) => filterEventsByName(events, [
   'ResourceSendRequest',
@@ -40,6 +46,7 @@ const prepareSeparatedNetwork = (separatedNetwork, internalTest) => separatedNet
         finish: finish.ts,
         total: finish.ts - request.ts
       },
+      extension: mime.extension(response.args.data.mimeType) || getExtension(request.args.data.url),
       size: finish.args.data.decodedBodyLength,
       transfer: finish.args.data.encodedDataLength,
     })
@@ -52,9 +59,6 @@ const getNetworkStats = (events, internalTest) => prepareSeparatedNetwork(
   internalTest
 );
 
-const imagesTypes = ['jpg', 'png', 'svg', 'ico', 'gif'];
-const fontsTypes = ['woff', 'woff2', 'ttf', 'eot'];
-
 const filterNetwork = (network, extensions) => network
   .filter(({ extension }) => extensions.includes(extension));
 
@@ -62,7 +66,7 @@ const summarizeSizes = (network) => network.reduce((acc, { size }) => acc + size
 const summarizeTransfer = (network) => network.reduce((acc, { transfer }) => acc + transfer, 0);
 
 const getResourcesStats = (rawNetwork) => {
-  const assetsNetwork = filterNetwork(rawNetwork, ['js', 'css']);
+  const assetsNetwork = filterNetwork(rawNetwork, assetsTypes);
 
   const internalAssetsNetwork = assetsNetwork.filter(({ internal }) => internal);
   const externalAssetsNetwork = assetsNetwork.filter(({ internal }) => !internal);
