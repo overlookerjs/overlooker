@@ -3,8 +3,11 @@ const { filterEventsByName } = require('./events-helpers.js');
 const getScriptsEvaluating = (events) => filterEventsByName(events, 'EvaluateScript')
   .map((event) => ({
     duration: event.dur,
-    startTime: event.ts,
-    url: event.args.data && event.args.data.url
+    url: event.args.data && event.args.data.url,
+    timings: {
+      start: event.ts,
+      end: event.ts + event.dur
+    }
   }));
 
 const getFunctionsCalls = (events) => {

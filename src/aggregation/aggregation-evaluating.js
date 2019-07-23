@@ -1,29 +1,31 @@
-const { objDevide, objSumm } = require('../utils.js');
+const { objDevide, objSumm, objMap } = require('../utils.js');
 
-const normalizeEvaluatingSummary = (evaluatings = []) => {
-  const clearEvaluating = evaluatings
-    .filter(Boolean);
+const normalizeEvaluatingSummary = (evaluatings = {}) => (
+  objMap(evaluatings, (evaluating) => {
+    const clearEvaluating = evaluating
+      .filter(Boolean);
 
-  return clearEvaluating && clearEvaluating.length ? (
-    Array(clearEvaluating[0].length)
-      .fill(null)
-      .map((i, index) => clearEvaluating.map((evaluating) => evaluating[index]))
-      .map((mergedEvaluating) => ({
-        url: mergedEvaluating[0].url,
-        duration: mergedEvaluating
-          .reduce((acc, { duration = 0 } = {}) => acc + duration, 0) / mergedEvaluating.length,
-        timings: objDevide(
-          mergedEvaluating
-            .filter(Boolean)
-            .map(({ timings }) => timings)
-            .reduce(objSumm),
-          mergedEvaluating.length
-        )
-      }))
-  ) : (
-    []
-  );
-};
+    return clearEvaluating && clearEvaluating.length ? (
+      Array(clearEvaluating[0].length)
+        .fill(null)
+        .map((i, index) => clearEvaluating.map((evaluating) => evaluating[index]))
+        .map((mergedEvaluating) => ({
+          url: mergedEvaluating[0].url,
+          duration: mergedEvaluating
+            .reduce((acc, { duration = 0 } = {}) => acc + duration, 0) / mergedEvaluating.length,
+          timings: objDevide(
+            mergedEvaluating
+              .filter(Boolean)
+              .map(({ timings }) => timings)
+              .reduce(objSumm),
+            mergedEvaluating.length
+          )
+        }))
+    ) : (
+      []
+    );
+  })
+);
 
 const getEvaluatingSummary = (evaluating, summaryEvaluating) => Object.entries(evaluating)
   .reduce((acc, [key, value]) => {

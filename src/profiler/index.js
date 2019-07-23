@@ -1,6 +1,11 @@
 const puppeteer = require('puppeteer');
 const { aggregateProfiles } = require('../aggregation/aggregation-profiles.js');
-const { parallelizeObject } = require('./../utils.js');
+const { parallelizeObject, checkRule, makeInternalTest } = require('./../utils.js');
+const { getAllStats } = require('./../events/events-parser.js');
+const networkPresets = require('./network-presets.js');
+const devices = require('puppeteer/DeviceDescriptors');
+
+const pixel2 = devices['Pixel 2'];
 
 const getContext = async (additionArgs = []) => {
   const browser = await puppeteer.launch({
@@ -19,7 +24,42 @@ const getContext = async (additionArgs = []) => {
   };
 };
 
-const profileUrl = async (context, { url }) => {
+const setupPageConfig = async (page, client, config) => {
+  if (config.platform && config.platform === 'mobile') {
+    await page.emulate(pixel2);
+  } else {
+    await page.setViewport({ width: 1366, height: 768 });
+  }
+
+  if (config.throttling) {
+    if (config.throttling.network) {
+      await client.send('Network.emulateNetworkConditions', networkPresets[config.network]);
+    }
+
+    if (config.throttling.cpu) {
+      await client.send('Emulation.setCPUThrottlingRate', { rate: config.cpu });
+    }
+  }
+
+  if (config.ignoredRequests) {
+    await page.setRequestInterception(true);
+
+    page.on('request', (interceptedRequest) => {
+      const url = interceptedRequest.url();
+
+      if (ignoredRequests.some((rule) => checkRule(rule, url))) {
+        interceptedRequest.abort();
+        return;
+      }
+
+      interceptedRequest.continue();
+    });
+  }
+};
+
+const profileUrl = async (context, config) => {
+  const { url } = config;
+
   const page = await context.newPage();
 
   const client = await page.target().createCDPSession();
@@ -27,19 +67,19 @@ const profileUrl = async (context, { url }) => {
   await client.send('Network.clearBrowserCache');
   await client.send('Network.clearBrowserCookies');
   await client.send('Performance.enable');
-  await client.send('Profiler.enable');
 
-  await page.setViewport({ width: 1280, height: 720 });
+  await setupPageConfig(page, client, config);
+
   await page.tracing.start({});
 
   try {
     await page.goto(url, { timeout: 60000, waitUntil: ["load"] });
 
-    const traceData = JSON.parse((await page.tracing.stop()).toString());
+    const { traceEvents } = JSON.parse((await page.tracing.stop()).toString());
 
     await page.close();
 
-    return traceData;
+    return traceEvents;
   } catch (e) {
     console.error(`Cannot get page ${url}:`, e);
   }
@@ -60,12 +100,12 @@ const fetchPages = async ({
   const functions = pagesEntries.reduce((acc, [pageName, host]) => ({
     ...acc,
     [pageName]: Array(count).fill(async (stop, browser) => {
-      console.log(`start fetching: ${host}`, { [host]: 0 });
+      console.log(`start fetching: ${host}`);
 
       try {
         const pageStartTime = Date.now();
 
-        const stats = await profiler(
+        const tracing = await profiler(
           browser.context,
           {
             url: host,
@@ -76,7 +116,7 @@ const fetchPages = async ({
 
         console.log(`fetch page ${host} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
 
-        return stats;
+        return tracing;
       } catch (error) {
         console.log(`fetch failed: ${error}`);
         console.log(`try to retry: ${host}`);
@@ -90,7 +130,7 @@ const fetchPages = async ({
 };
 
 const profile = async (config) => {
-  const { pages, count, threads, platform = 'desktop' } = config;
+  const { pages, threads } = config;
 
   const pagesEntries = Object.entries(pages);
 
@@ -111,8 +151,7 @@ const profile = async (config) => {
 
     console.log('browsers are open');
   } catch (e) {
-    console.log('error while opening browsers');
-    console.log(e.stack);
+    console.log('error while opening browsers', e.stack);
 
     return {};
   }
@@ -125,10 +164,9 @@ const profile = async (config) => {
       browsersThreads,
     });
 
-    console.log(`fetching done!`, {}, 1);
+    console.log(`fetching done!`);
   } catch (e) {
-    console.log(`cannot fetch pages!`);
-    console.log(e.stack);
+    console.log(`cannot fetch pages!`, e.stack);
   }
 
   if (browsers) {
@@ -137,7 +175,9 @@ const profile = async (config) => {
 
   return Object.entries(res)
     .reduce((acc, [pageName, pageData]) => {
-      acc[pageName] = aggregateProfiles(pageData);
+      const isInternal = makeInternalTest(pages[pageName]);
+
+      acc[pageName] = aggregateProfiles(pageData.map((tracing) => getAllStats(tracing, isInternal)));
 
       return acc;
     }, {});

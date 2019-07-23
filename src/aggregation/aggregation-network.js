@@ -12,8 +12,8 @@ const getNetworkSummary = (network, inception = {}, merge, ignore) => {
       type,
       transfer
     }) => {
-      const similarMergedUrl = url && merge(url);
-      const isIgnored = url && ignore(url);
+      const similarMergedUrl = url && merge ? merge(url) : false;
+      const isIgnored = url && ignore ? ignore(url) : false;
       const clearedUrl = similarMergedUrl || clearUrl(url);
 
       if (type !== 'Document' && !isIgnored) {

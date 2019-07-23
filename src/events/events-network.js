@@ -5,14 +5,23 @@ const filterNetworkEvents = (events) => filterEventsByName(events, [
   'ResourceReceivedData',
   'ResourceReceiveResponse',
   'ResourceFinish'
-]);
+])
+  .reduce((acc, item) => {
+    if (!acc[item.args.data.requestId]) {
+      acc[item.args.data.requestId] = [];
+    }
+
+    acc[item.args.data.requestId].push(item);
+
+    return acc
+  }, {});
 
 const separateNetworkEvents = (networkEvents) => Object.values(networkEvents)
   .map((items) => ({
     request: findEventByName(items, 'ResourceSendRequest'),
     response: findEventByName(items, 'ResourceReceiveResponse'),
     data: filterEventsByName(items, 'ResourceReceivedData'),
-    finish: findEventByName(items, 'ResourceReceiveResponse')
+    finish: findEventByName(items, 'ResourceFinish')
   }))
   .filter(({ finish, request }) => finish && request);
 
