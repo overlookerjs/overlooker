@@ -144,8 +144,8 @@ const prepareConfig = ({
 });
 
 /**
+ * @param {Object} config
  * @param {Object} config.pages
- * @param {Object} [config]
  * @param {Object} [config.throttling]
  * @param {number} [config.throttling.cpu]
  * @param {string} [config.throttling.network]
@@ -154,9 +154,9 @@ const prepareConfig = ({
  * @param {string} [config.platform]
  * @param {string} [config.browserArgs]
  * @param {Object} [config.requests]
- * @param {string|RegExp|Function} [config.requests.ignore]
- * @param {string|RegExp|Function} [config.requests.merge]
- * @param {string|RegExp|Function} [config.requests.internalTest]
+ * @param {string|RegExp|Function|Array} [config.requests.ignore]
+ * @param {string|RegExp|Function|Array} [config.requests.merge]
+ * @param {string|RegExp|Function|Array} [config.requests.internalTest]
  * */
 
 const profile = async (config) => {

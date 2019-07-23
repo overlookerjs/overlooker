@@ -290,6 +290,10 @@ const makeRule = (rule) => {
     return rule;
   } else if (rule instanceof RegExp) {
     return (value) => rule.test(value);
+  } else if (rule instanceof Array) {
+    const rules = rule.map(makeRule);
+
+    return (value) => rules.some((rule) => rule(value));
   } else if (typeof rule === 'string') {
     const regexp = new RegExp(rule);
 
