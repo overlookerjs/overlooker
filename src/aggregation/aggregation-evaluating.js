@@ -27,18 +27,6 @@ const normalizeEvaluatingSummary = (evaluatings = {}) => (
   })
 );
 
-const getEvaluatingSummary = (evaluating, summaryEvaluating) => Object.entries(evaluating)
-  .reduce((acc, [key, value]) => {
-    if (!acc[key]) {
-      acc[key] = [value];
-    } else {
-      acc[key].push(value);
-    }
-
-    return acc;
-  }, summaryEvaluating);
-
 module.exports = {
-  normalizeEvaluatingSummary,
-  getEvaluatingSummary
+  normalizeEvaluatingSummary
 };

@@ -7,12 +7,13 @@ const getAllStats = (events, internalTest) => {
   const fetchStart = getFetchStart(events);
   const relativeEvents = makeEventsRelative(events, fetchStart);
 
-  const timings = getMainEventsTimestamps(relativeEvents);
-  const network = parseNetwork(relativeEvents, internalTest);
-  const resources = getResourcesStats(network);
   const rawEvaluating = getScriptsEvaluating(relativeEvents);
-  const evaluatingMap = makeScriptsEvaluatingMap(rawEvaluating);
   const evaluating = getScriptsEvaluatingStats(rawEvaluating, internalTest);
+  const evaluatingMap = makeScriptsEvaluatingMap(rawEvaluating);
+
+  const network = parseNetwork(relativeEvents, evaluatingMap, internalTest);
+  const resources = getResourcesStats(network);
+  const timings = getMainEventsTimestamps(relativeEvents);
 
   return {
     stats: {

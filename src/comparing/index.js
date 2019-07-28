@@ -1,15 +1,13 @@
-const { objSub, objPercent, objMap } = require('../utils.js');
 const { compareNetworks } = require('./compare-network.js');
-const { compareEvaluating } = require('./compare-evaluating.js');
+const { compareStats, compareStatsPercent } = require('./compare-stats.js');
 
 const compare = (first, second) => ({
   absolute: {
-    stats: objMap(second.stats, (innerObj, key) => objSub(innerObj, first.stats[key])),
-    network: compareNetworks(first.network, second.network),
-    evaluating: compareEvaluating(first.evaluating, second.evaluating)
+    stats: compareStats(first.stats, second.stats),
+    network: compareNetworks(first.network, second.network)
   },
   percent: {
-    stats: objMap(second.stats, (innerObj, key) => objPercent(innerObj, first.stats[key]))
+    stats: compareStatsPercent(first.stats, second.stats)
   }
 });
 

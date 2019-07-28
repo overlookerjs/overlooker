@@ -108,7 +108,14 @@ const getRequestsDiff = (first, second) => ({
   ...{
     size: second.size - first.size,
     transfer: second.transfer - first.transfer,
-    timings: objMap(first.timings, (value, key) => second.timings[key] - value)
+    timings: objMap(first.timings, (value, key) => second.timings[key] - value),
+    evaluating: second.evaluating.map((secondEval, index) => ({
+      url: secondEval.url,
+      duration: secondEval.duration - (first.evaluating[index] ? first.evaluating[index].duration : 0),
+      timings: objMap(secondEval, (value, key) => first.evaluating[index] ? (
+        value - first.evaluating[index].timings[key]
+      ) : value)
+    }))
   }
 });
 
