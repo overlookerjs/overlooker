@@ -15,7 +15,6 @@ const objAggregation = (obj) => objMap(obj, (array) => {
     .sort((a, b) => a - b);
 
   return {
-    raw: array,
     q1: percentile(sortedArray, 0.25),
     q3: percentile(sortedArray, 0.75),
     percentile98: percentile(sortedArray, 0.98),

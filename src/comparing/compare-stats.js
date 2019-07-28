@@ -5,13 +5,11 @@ const getComparator = (comparator) => (firstStats, secondStats) => (
     secondStats,
     (innerSection, sectionKey) => objMap(
       innerSection,
-      (aggregation, aggregationKey) => aggregationKey !== 'raw' ? (
+      (aggregation, aggregationKey) => (
         comparator(
           aggregation,
           firstStats[sectionKey][aggregationKey]
         )
-      ) : (
-        undefined
       )
     )
   )

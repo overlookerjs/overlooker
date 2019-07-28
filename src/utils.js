@@ -38,7 +38,7 @@ const objDivide = (obj = {}, divider) => objMap(obj, (value) => value / divider)
 const objSub = (obj1 = {}, obj2 = {}) => objMap(obj1, (value, key) => (value || 0) - (obj2[key] || 0));
 
 const objPercent = (obj1 = {}, obj2 = {}) => objMap(obj1,
-  (value, key) => value && obj2[key] ? (((value) / (obj2[key])) * 100 - 100).toFixed(2) : 0
+  (value, key) => (value && obj2[key] ? ((value / obj2[key]) * 100 - 100).toFixed(2) : 0) + '%'
 );
 
 const objFilter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) => {
