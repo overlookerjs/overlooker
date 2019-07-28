@@ -4,7 +4,7 @@ const { objConcat, objMap } = require('../utils.js');
 const { objAggregation } = require('./aggregation-utils.js');
 
 const aggregateProfiles = (profiles, buildData, mergeRequests) => {
-  const { stats, network, evaluating } = profiles.reduce((summary, profile) => ({
+  const { stats, network } = profiles.reduce((summary, profile) => ({
     stats: objMap(profile.stats, (innerObj, key) => objConcat(innerObj, summary.stats[key])),
     network: getNetworkSummary(profile.network, summary.network, mergeRequests)
   }), {
