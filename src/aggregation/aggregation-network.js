@@ -1,4 +1,4 @@
-const { objDevide, objSumm } = require('../utils.js');
+const { objDivide, objSumm } = require('../utils.js');
 const { normalizeEvaluatingSummary } = require('./aggregation-evaluating');
 
 const clearUrl = (url) => url && url.replace(/\?.*?$/, '');
@@ -56,7 +56,7 @@ const normalizeNetworkSummary = (summaryNetwork) => Object.entries(summaryNetwor
   }]) => ({
     size: size / count,
     transfer: transfer / count,
-    timings: objDevide(timings, count),
+    timings: objDivide(timings, count),
     evaluating: normalizeEvaluatingSummary(evaluating),
     type,
     url,

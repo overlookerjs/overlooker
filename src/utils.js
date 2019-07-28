@@ -33,7 +33,7 @@ const objMediane = (obj) => objMap(obj, (value) => {
   return mediane.reduce((summ, val) => (summ + val), 0) / (mediane.length || 1);
 });
 
-const objDevide = (obj = {}, divider) => objMap(obj, (value) => value / divider);
+const objDivide = (obj = {}, divider) => objMap(obj, (value) => value / divider);
 
 const objSub = (obj1 = {}, obj2 = {}) => objMap(obj1, (value, key) => (value || 0) - (obj2[key] || 0));
 
@@ -308,7 +308,7 @@ const isRelativeUrl = (url) => !/^https?:\/\//.test(url);
 module.exports = {
   objMap,
   objReduce,
-  objDevide,
+  objDivide,
   objSumm,
   objConcat,
   objSub,

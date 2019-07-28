@@ -1,4 +1,4 @@
-const { objDevide, objSumm, objMap } = require('../utils.js');
+const { objDivide, objSumm, objMap } = require('../utils.js');
 
 const normalizeEvaluatingSummary = (evaluatings = {}) => (
   objMap(evaluatings, (evaluating) => {
@@ -13,7 +13,7 @@ const normalizeEvaluatingSummary = (evaluatings = {}) => (
           url: mergedEvaluating[0].url,
           duration: mergedEvaluating
             .reduce((acc, { duration = 0 } = {}) => acc + duration, 0) / mergedEvaluating.length,
-          timings: objDevide(
+          timings: objDivide(
             mergedEvaluating
               .filter(Boolean)
               .map(({ timings }) => timings)
