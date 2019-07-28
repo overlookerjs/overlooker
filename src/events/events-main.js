@@ -1,9 +1,14 @@
-const { getEventsTimestamps } = require('./events-helpers.js');
+const {findEventByName} = require('./events-helpers.js');
+const { getEventsTimestamps, filterByFrame } = require('./events-helpers.js');
 
-const getFetchStart = (events) => events
-  .find(({ name }) => name === 'fetchStart');
+const getMainFetchStart = (events) => {
+  const mainNavigationStart = findEventByName(events, 'navigationStart');
 
-const getMainEventsTimestamps = (events) => getEventsTimestamps(events, [
+  return events
+    .find(({ name, args }) => name === 'fetchStart' && args && args.frame === mainNavigationStart.args.frame)
+};
+
+const getMainEventsTimestamps = (events, frame) => getEventsTimestamps(filterByFrame(events, frame), [
   'firstMeaningfulPaint',
   'firstMeaningfulPaintCandidate',
   'firstPaint',
@@ -12,13 +17,15 @@ const getMainEventsTimestamps = (events) => getEventsTimestamps(events, [
   'firstContentfulPaint',
   'domContentLoadedEventStart',
   'domContentLoadedEventEnd',
-  'onLoadEventStart',
-  'onLoadEventEnd'
+  'loadEventStart',
+  'loadEventEnd',
+  'domInteractive',
+  'domComplete'
 ]);
 
 
 module.exports = {
-  getFetchStart,
+  getMainFetchStart,
   getMainEventsTimestamps
 };
 

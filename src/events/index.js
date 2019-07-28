@@ -1,10 +1,11 @@
 const { makeEventsRelative } = require('./events-helpers.js');
-const { getFetchStart, getMainEventsTimestamps } = require('./events-main.js');
+const { getMainFetchStart, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats } = require('./events-network.js');
 const { getScriptsEvaluating, getScriptsEvaluatingStats, makeScriptsEvaluatingMap } = require('./events-evaluating.js');
 
 const getAllStats = (events, internalTest) => {
-  const fetchStart = getFetchStart(events);
+  const fetchStart = getMainFetchStart(events);
+  const mainFrame = fetchStart.args.frame;
   const relativeEvents = makeEventsRelative(events, fetchStart);
 
   const rawEvaluating = getScriptsEvaluating(relativeEvents);
@@ -13,7 +14,7 @@ const getAllStats = (events, internalTest) => {
 
   const network = parseNetwork(relativeEvents, evaluatingMap, internalTest);
   const resources = getResourcesStats(network);
-  const timings = getMainEventsTimestamps(relativeEvents);
+  const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
 
   return {
     stats: {

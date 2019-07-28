@@ -1,6 +1,10 @@
 const puppeteer = require('puppeteer');
 const networkPresets = require('./network-presets.js');
 const devices = require('puppeteer/DeviceDescriptors');
+const fs = require('fs');
+const path = require('path');
+
+const IS_DEBUG = process.argv.some((arg) => arg === '--debug');
 
 const pixel2 = devices['Pixel 2'];
 
@@ -30,11 +34,11 @@ const setupPageConfig = async (page, client, config) => {
 
   if (config.throttling) {
     if (config.throttling.network) {
-      await client.send('Network.emulateNetworkConditions', networkPresets[config.network]);
+      await client.send('Network.emulateNetworkConditions', networkPresets[config.throttling.network]);
     }
 
     if (config.throttling.cpu) {
-      await client.send('Emulation.setCPUThrottlingRate', { rate: config.cpu });
+      await client.send('Emulation.setCPUThrottlingRate', { rate: config.throttling.cpu });
     }
   }
 
@@ -67,16 +71,28 @@ const profileUrl = async (context, config) => {
 
   await setupPageConfig(page, client, config);
 
-  await page.tracing.start({});
+  await page.tracing.start({
+    categories: [
+      '-*',
+      'blink.user_timing',
+      'blink.user_timing,rail',
+      'devtools.timeline',
+      'loading,rail,devtools.timeline'
+    ]
+  });
 
   try {
     await page.goto(url, { timeout: 60000, waitUntil: ["load"] });
 
-    const { traceEvents } = JSON.parse((await page.tracing.stop()).toString());
+    const tracing = JSON.parse((await page.tracing.stop()).toString());
+
+    if (IS_DEBUG) {
+      fs.writeFileSync(path.resolve(__dirname, './tracing.json'), JSON.stringify(tracing));
+    }
 
     await page.close();
 
-    return traceEvents;
+    return tracing.traceEvents;
   } catch (e) {
     console.error(`Cannot get page ${url}:`, e);
   }

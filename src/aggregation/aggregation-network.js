@@ -24,7 +24,7 @@ const getNetworkSummary = (network, inception = {}, merge) => {
           transfer: transfer + similarSummary.transfer,
           timings: similarSummary.timings ? objSumm(similarSummary.timings, timings) : timings,
           count: similarSummary.count + 1,
-          evaluating: similarSummary.push(evaluating),
+          evaluating: similarSummary.evaluating.concat([evaluating]),
           url,
           ...rest
         };
@@ -52,7 +52,8 @@ const normalizeNetworkSummary = (summaryNetwork) => Object.entries(summaryNetwor
     type,
     transfer,
     evaluating,
-    count
+    count,
+    ...rest
   }]) => ({
     size: size / count,
     transfer: transfer / count,
@@ -61,7 +62,8 @@ const normalizeNetworkSummary = (summaryNetwork) => Object.entries(summaryNetwor
     type,
     url,
     count,
-    internal
+    internal,
+    ...rest
   }))
   .sort(({ size: fSize }, { size: sSize }) => sSize - fSize);
 

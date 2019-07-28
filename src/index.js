@@ -3,7 +3,7 @@ const { compare } = require('./comparing');
 
 
 const start = async () => {
-  const data = await profile({
+  const defaultConfig = {
     count: 1,
     pages: {
       main: 'https://www.avito.ru'
@@ -19,7 +19,12 @@ const start = async () => {
     //   merge: (url) => false,
     //   internalTest: (url) => false
     // }
-  });
+  };
+
+  const data1 = await profile(defaultConfig);
+  const data2 = await profile(defaultConfig);
+
+  const compared = compare(data2, data1);
 
   debugger;
 };

@@ -5,9 +5,9 @@ const { aggregateProfiles } = require('../aggregation');
 const prepareResult = (result, config, buildData, pages) => Object.entries(result)
   .reduce((acc, [pageName, pageData]) => {
     const isInternal = config.requests && config.request.internalTest ? (
-      makeInternalTest(pages[pageName])
+      config.requests.internalTest
     ) : (
-      config.request.internalTest
+      makeInternalTest(pages[pageName])
     );
 
     acc[pageName] = aggregateProfiles(
