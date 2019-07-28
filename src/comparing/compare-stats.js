@@ -1,12 +1,21 @@
 const { objPercent, objSub, objMap } = require('../utils.js');
 
-const compareStats = (firstStats, secondStats) => (
-  objMap(secondStats, (innerObj, key) => objSub(innerObj, firstStats[key]))
+const getComparator = (comparator) => (firstStats, secondStats) => (
+  objMap(
+    secondStats,
+    (innerSection, sectionKey) => objMap(
+      innerSection,
+      (aggregation, aggregationKey) => comparator(
+        aggregation,
+        firstStats[sectionKey][aggregationKey]
+      )
+    )
+  )
 );
 
-const compareStatsPercent = (firstStats, secondStats) => (
-  objMap(secondStats, (innerObj, key) => objPercent(innerObj, firstStats[key]))
-);
+const compareStats = getComparator(objSub);
+
+const compareStatsPercent = getComparator(objPercent);
 
 module.exports = {
   compareStats,
