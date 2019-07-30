@@ -1,4 +1,4 @@
-const { objDivide, objSumm, objMap } = require('../utils.js');
+const { objDivide, objSumm } = require('../objects-utils.js');
 
 const normalizeEvaluatingSummary = (evaluating = []) => {
   const clearEvaluating = evaluating.filter(Boolean);

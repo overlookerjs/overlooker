@@ -1,4 +1,4 @@
-const { objDivide, objSumm } = require('../utils.js');
+const { objDivide, objSumm } = require('../objects-utils.js');
 const { normalizeEvaluatingSummary } = require('./aggregation-evaluating');
 
 const clearUrl = (url) => url && url.replace(/\?.*?$/, '');

@@ -1,53 +1,3 @@
-const objMap = (obj = {}, reducer) => Object.entries(obj)
-  .reduce((acc, [key, value]) => {
-    acc[key] = reducer(value, key);
-
-    return acc;
-  }, {});
-
-const objReduce = (obj = {}, reducer, inception = {}) => Object.entries(obj)
-  .reduce((acc, [key, value]) => {
-    const [newValue, newKey = key] = reducer(value, key);
-
-    acc[newKey] = newValue;
-
-    return acc;
-  }, inception);
-
-const objSumm = (obj1 = {}, obj2 = {}) => objMap(obj1, (value, key) => (value || 0) + (obj2[key] || 0));
-
-const objConcat = (obj1 = {}, obj2 = {}) => objMap(
-  obj1,
-  (value, key) => value != null && obj2[key] != null ? [].concat(value, obj2[key]) : [value != null ? value : obj2[key]]
-);
-
-const objMediane = (obj) => objMap(obj, (value) => {
-  const sortedValue = value.slice().sort((a, b) => a - b);
-  const isCeil = sortedValue.length % 2 === 0;
-  const tenPercent = Math.floor(sortedValue.length / 10);
-  const center = Math.ceil((sortedValue.length - 1) / 2);
-  const leftEdge = center - tenPercent;
-  const rightEdge = center + tenPercent + (isCeil ? 0 : 1);
-  const mediane = leftEdge === rightEdge ? sortedValue.slice(leftEdge - 1, rightEdge + 1) : sortedValue.slice(leftEdge, rightEdge);
-
-  return mediane.reduce((summ, val) => (summ + val), 0) / (mediane.length || 1);
-});
-
-const objDivide = (obj = {}, divider) => objMap(obj, (value) => value / divider);
-
-const objSub = (obj1 = {}, obj2 = {}) => objMap(obj1, (value, key) => (value || 0) - (obj2[key] || 0));
-
-const objPercent = (obj1 = {}, obj2 = {}) => objMap(obj1,
-  (value, key) => (value && obj2[key] ? ((value / obj2[key]) * 100 - 100).toFixed(2) : 0) + '%'
-);
-
-const objFilter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) => {
-  if (filter(key, value)) {
-    acc[key] = value;
-  }
-
-  return acc;
-}, {});
 
 const escape = (number) => number > 9 ? number : `0${number}`;
 
@@ -105,23 +55,6 @@ const getExtension = (url) => {
   return match && match[1]
 };
 
-const debounce = (fn, time = 1000, { start, end }) => {
-  let timeout = null;
-
-  return (...args) => {
-    if (timeout) {
-      clearTimeout(timeout);
-    } else {
-      start();
-    }
-
-    timeout = setTimeout(() => {
-      fn(...args);
-      end();
-    }, time);
-  }
-};
-
 const getType = (file) => {
   const match = file.match(/\.([^?/]*?)(\?|$)/);
 
@@ -141,94 +74,20 @@ const compareFileNames = (firstFile, secondFile) => {
   }
 };
 
-const parallelizeArray = (functionsArray, threads, restartTime = 0) => {
-  const functionsArrayCopy = [...functionsArray];
-  const completed = [];
+const debounce = (fn, time = 1000, { start, end }) => {
+  let timeout = null;
 
-  let completedCount = 0;
-  let index = 0;
-  let isStopped = false;
-
-  const stop = () => isStopped = true;
-
-  const execute = async (asyncFn, insertIndex, threadIndex) => {
-    let complete = false;
-
-    while (!complete && !isStopped) {
-      try {
-        completed[insertIndex] = await (
-          Array.isArray(threads) ? (
-            threads[threadIndex]((...args) => asyncFn(stop, ...args))
-          ) : (
-            asyncFn(stop)
-          )
-        );
-        completedCount++;
-        complete = true;
-      } catch (e) {
-        await new Promise((res) => setTimeout(res, restartTime));
-      }
-    }
-  };
-
-  const run = async (resolve, threadIndex) => {
-    while (functionsArrayCopy.length && !isStopped) {
-      const asyncFn = functionsArrayCopy.shift();
-      const functionIndex = index++;
-
-      await execute(asyncFn, functionIndex, threadIndex);
-
-      if (completedCount === functionsArray.length) {
-        resolve(completed);
-      }
+  return (...args) => {
+    if (timeout) {
+      clearTimeout(timeout);
+    } else {
+      start();
     }
 
-    if (isStopped) {
-      resolve(completed);
-    }
-  };
-
-  const promise = new Promise((resolve) => Array(Array.isArray(threads) ? threads.length : threads)
-    .fill(null)
-    .forEach((c, i) => run(resolve, i))
-  );
-
-  return {
-    stop,
-    then: (cb) => promise.then(cb)
-  }
-};
-
-const parallelizeObject = (functionsObject, threads, restartTime) => {
-  const keysOrder = Object.keys(functionsObject);
-  const objectPlaceholder = keysOrder.reduce((acc, key) => ({ ...acc, [key]: [] }), {});
-
-  const flattedObject = Object.entries(functionsObject)
-    .reduce((acc, [key, array]) => acc.concat(array.map((fn, index) => ({ fn, key, index }))), [])
-    .sort((a, b) => a.index - b.index || keysOrder.indexOf(a.key) - keysOrder.indexOf(b.key));
-
-  const map = flattedObject.reduce((acc, { key, index }, globalIndex) => ({
-    ...acc,
-    [globalIndex]: {
-      key,
-      index
-    }
-  }), {});
-  const functions = flattedObject.map(({ fn }) => fn);
-
-  const { stop, then } = parallelizeArray(functions, threads, restartTime);
-
-  return {
-    stop,
-    then: (cb) => then((completed) => completed
-      .reduce((acc, result, globalIndex) => {
-        const { key, index } = map[globalIndex];
-
-        acc[key][index] = result;
-
-        return acc;
-      }, objectPlaceholder))
-      .then(cb)
+    timeout = setTimeout(() => {
+      fn(...args);
+      end();
+    }, time);
   }
 };
 
@@ -306,15 +165,6 @@ const makeRule = (rule) => {
 const isRelativeUrl = (url) => !/^https?:\/\//.test(url);
 
 module.exports = {
-  objMap,
-  objReduce,
-  objDivide,
-  objSumm,
-  objConcat,
-  objSub,
-  objPercent,
-  objMediane,
-  objFilter,
   escape,
   toTime,
   getDomain,
@@ -325,8 +175,6 @@ module.exports = {
   getType,
   compareFileNames,
   makeInternalTest,
-  parallelizeArray,
-  parallelizeObject,
   retry,
   isRelativeUrl,
   memoize,

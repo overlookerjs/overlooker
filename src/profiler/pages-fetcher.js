@@ -1,4 +1,4 @@
-const { parallelizeObject } = require('./../utils.js');
+const { parallelizeObject } = require('./threads.js');
 
 const fetchPages = async ({
                             profiler,

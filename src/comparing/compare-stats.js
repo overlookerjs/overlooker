@@ -1,4 +1,4 @@
-const { objPercent, objSub, objMap } = require('../utils.js');
+const { objPercent, objSub, objMap } = require('./../objects-utils.js');
 
 const getComparator = (comparator) => (firstStats, secondStats) => (
   objMap(

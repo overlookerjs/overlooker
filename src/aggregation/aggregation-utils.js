@@ -1,4 +1,4 @@
-const { objMap } = require('./../utils.js');
+const { objMap } = require('./../objects-utils.js');
 
 const percentile = (arr, percentile) => (
   arr[Math.floor(arr.length * percentile)]

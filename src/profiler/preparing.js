@@ -1,4 +1,5 @@
-const { makeInternalTest, objMap, makeRule } = require('./../utils.js');
+const { makeInternalTest, makeRule } = require('./../utils.js');
+const { objMap } = require('./../objects-utils.js');
 const { getAllStats } = require('../events');
 const { aggregateProfiles } = require('../aggregation');
 
