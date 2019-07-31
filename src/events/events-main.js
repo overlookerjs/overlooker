@@ -1,4 +1,4 @@
-const {findEventByName} = require('./events-helpers.js');
+const { findEventByName } = require('./events-helpers.js');
 const { getEventsTimestamps, filterByFrame } = require('./events-helpers.js');
 
 const getMainFetchStart = (events) => {
