@@ -67,7 +67,6 @@ const profileUrl = async (context, config) => {
 
   await client.send('Network.clearBrowserCache');
   await client.send('Network.clearBrowserCookies');
-  await client.send('Performance.enable');
 
   await setupPageConfig(page, client, config);
 
