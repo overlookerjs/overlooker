@@ -58,6 +58,53 @@ const setupPageConfig = async (page, client, config) => {
   }
 };
 
+const writeTracing = async (page) => {
+  await page.tracing.start({
+    categories: [
+      '-*',
+      'blink.user_timing',
+      'blink.user_timing,rail',
+      'devtools.timeline',
+      'loading,rail,devtools.timeline',
+      'disabled-by-default-devtools.screenshot'
+    ]
+  });
+
+  return async () => {
+    const tracing = JSON.parse((await page.tracing.stop()).toString());
+
+    if (IS_DEBUG) {
+      fs.writeFileSync(path.resolve(__dirname, './tracing.json'), JSON.stringify(tracing));
+    }
+
+    return tracing.traceEvents;
+  }
+};
+
+const profileActions = async (page, config) => {
+  const res = {};
+
+  if (config.actions && Object.keys(config.actions)) {
+    const actionsEntries = Object.entries(config.actions);
+
+    for (const [name, action] of actionsEntries) {
+      console.log(`action "${name}" started`);
+
+      const getTracing = await writeTracing(page);
+
+      await page.evaluate(() => window.performance.mark(`action_start`));
+      await action(page);
+      await page.evaluate(() => window.performance.mark(`action_end`));
+
+      res[name] = await getTracing();
+
+      console.log(`action "${name}" completed`);
+    }
+  }
+
+  return res;
+};
+
 const profileUrl = async (context, config) => {
   const { url } = config;
 
@@ -70,28 +117,21 @@ const profileUrl = async (context, config) => {
 
   await setupPageConfig(page, client, config);
 
-  await page.tracing.start({
-    categories: [
-      '-*',
-      'blink.user_timing',
-      'blink.user_timing,rail',
-      'devtools.timeline',
-      'loading,rail,devtools.timeline'
-    ]
-  });
+  const getTracing = await writeTracing(page);
 
   try {
     await page.goto(url, { timeout: 60000, waitUntil: ["load"] });
 
-    const tracing = JSON.parse((await page.tracing.stop()).toString());
+    const main = await getTracing();
 
-    if (IS_DEBUG) {
-      fs.writeFileSync(path.resolve(__dirname, './tracing.json'), JSON.stringify(tracing));
-    }
+    const actions = await profileActions(page, config);
 
     await page.close();
 
-    return tracing.traceEvents;
+    return {
+      main,
+      actions
+    };
   } catch (e) {
     console.error(`Cannot get page ${url}:`, e);
   }

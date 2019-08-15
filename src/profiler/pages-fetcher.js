@@ -16,10 +16,11 @@ const fetchPages = async ({
       try {
         const pageStartTime = Date.now();
 
-        const tracing = await profiler(
+        const data = await profiler(
           browser.context,
           {
             url: host,
+            actions: config.actions && config.actions[pageName] ? config.actions[pageName] : null,
             ...config
           });
 
@@ -27,7 +28,7 @@ const fetchPages = async ({
 
         console.log(`fetch page ${host} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
 
-        return tracing;
+        return data;
       } catch (error) {
         console.log(`fetch failed: ${error}`);
         console.log(`try to retry: ${host}`);

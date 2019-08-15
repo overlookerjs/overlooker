@@ -1,12 +1,18 @@
 const { makeEventsRelative } = require('./events-helpers.js');
-const { getMainFetchStart, getMainEventsTimestamps } = require('./events-main.js');
+const { getResponseEndEvent, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats } = require('./events-network.js');
-const { getScriptsEvaluating, getScriptsEvaluatingStats, makeScriptsEvaluatingMap } = require('./events-evaluating.js');
+const { getSpeedIndex } = require('./events-user-centric.js');
+const { getActionsStats } = require('./events-actions.js');
+const {
+  getScriptsEvaluating,
+  getScriptsEvaluatingStats,
+  makeScriptsEvaluatingMap
+} = require('./events-evaluating.js');
 
-const getAllStats = (events, internalTest) => {
-  const fetchStart = getMainFetchStart(events);
-  const mainFrame = fetchStart.args.frame;
-  const relativeEvents = makeEventsRelative(events, fetchStart);
+const getAllStats = async ({ main, actions }, internalTest) => {
+  const responseEnd = getResponseEndEvent(main);
+  const mainFrame = responseEnd.args.frame;
+  const relativeEvents = makeEventsRelative(main, responseEnd);
 
   const rawEvaluating = getScriptsEvaluating(relativeEvents);
   const evaluating = getScriptsEvaluatingStats(rawEvaluating, internalTest);
@@ -16,14 +22,21 @@ const getAllStats = (events, internalTest) => {
   const resources = getResourcesStats(network);
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
 
+  const userCentric = {
+    speedIndex: await getSpeedIndex(main)
+  };
+
+  const actionsStats = getActionsStats(actions, internalTest);
+
   return {
     stats: {
       resources,
       timings,
-      evaluating
+      evaluating,
+      userCentric
     },
-    evaluating: evaluatingMap,
-    network
+    network,
+    actions: actionsStats
   }
 };
 

@@ -14,6 +14,9 @@ const { prepareResult } = require('./preparing.js');
  * @param {number} [config.threads]
  * @param {string} [config.platform]
  * @param {string} [config.browserArgs]
+ * @param {Object} [config.actions]
+ * @param {Object} [config.actions.pageName]
+ * @param {Function[]} [config.actions.pageName.actionName]
  * @param {Object} [config.requests]
  * @param {string|RegExp|Function|Array} [config.requests.ignore]
  * @param {string|RegExp|Function|Array} [config.requests.merge]
@@ -67,7 +70,8 @@ const profile = async (config) => {
   console.log('request build data');
 
   const buildData = await fetchBuildData(config.buildDataUrl, Object.values(pages)[0]);
-  return prepareResult(result, config, buildData, pages);
+
+  return await prepareResult(result, config, buildData, pages);
 };
 
 module.exports = {

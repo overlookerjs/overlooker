@@ -4,7 +4,10 @@ const { findEventByName, filterEventsByName } = require('./events-helpers.js');
 
 const imagesTypes = ['jpg', 'jpeg', 'png', 'svg', 'ico', 'gif', 'webp'];
 const fontsTypes = ['woff', 'woff2', 'ttf', 'eot'];
-const assetsTypes = ['js', 'css'];
+const jsTypes = ['js'];
+const cssTypes = ['css'];
+const htmlTypes = ['html'];
+const totalTypes = [];
 
 const filterNetworkEvents = (events) => filterEventsByName(events, [
   'ResourceSendRequest',
@@ -73,46 +76,46 @@ const filterNetwork = (network, extensions) => network
 const summarizeSizes = (network) => network.reduce((acc, { size }) => acc + size, 0);
 const summarizeTransfer = (network) => network.reduce((acc, { transfer }) => acc + transfer, 0);
 
-const getResourcesStats = (rawNetwork) => {
-  const assetsNetwork = filterNetwork(rawNetwork, assetsTypes);
+const splitNetworkByTypes = (network, types) => Object.entries(types).reduce((acc, [key, filter]) => {
+  const filteredNetwork = filter ? filterNetwork(network, filter) : network;
 
-  const internalAssetsNetwork = assetsNetwork.filter(({ internal }) => internal);
-  const externalAssetsNetwork = assetsNetwork.filter(({ internal }) => !internal);
+  acc[key] = {
+    size: summarizeSizes(filteredNetwork),
+    transfer: summarizeTransfer(filteredNetwork)
+  };
 
-  const imagesNetwork = filterNetwork(rawNetwork, imagesTypes);
-  const fontsNetwork = filterNetwork(rawNetwork, fontsTypes);
+  return acc;
+}, {});
 
-  const assetsSize = summarizeSizes(assetsNetwork);
-  const encodedAssetsSize = summarizeTransfer(assetsNetwork);
+const splitNetworkToResourcesTypes = (network) => {
+  const stats = splitNetworkByTypes(network, {
+    images: imagesTypes,
+    fonts: fontsTypes,
+    js: jsTypes,
+    css: cssTypes,
+    html: htmlTypes,
+    total: totalTypes
+  });
 
-  const internalAssetsSize = summarizeSizes(internalAssetsNetwork);
-  const internalEncodedAssetsSize = summarizeTransfer(internalAssetsNetwork);
+  stats.other = stats.total - (
+    stats.images +
+    stats.fonts +
+    stats.js +
+    stats.css +
+    stats.html
+  );
 
-  const externalAssetsSize = summarizeSizes(externalAssetsNetwork);
-  const externalEncodedAssetsSize = summarizeTransfer(externalAssetsNetwork);
+  return stats;
+};
 
-  const imagesSize = summarizeSizes(imagesNetwork);
-  const encodedImagesSize = summarizeTransfer(imagesNetwork);
-
-  const fontsSize = summarizeSizes(fontsNetwork);
-  const encodedFontsSize = summarizeTransfer(fontsNetwork);
-
-  const totalSize = summarizeSizes(rawNetwork);
-  const encodedTotalSize = summarizeTransfer(rawNetwork);
+const getResourcesStats = (network) => {
+  const internalNetwork = network.filter(({ internal }) => internal);
+  const externalNetwork = network.filter(({ internal }) => !internal);
 
   return {
-    totalSize,
-    encodedTotalSize,
-    imagesSize,
-    encodedImagesSize,
-    fontsSize,
-    encodedFontsSize,
-    assetsSize,
-    encodedAssetsSize,
-    internalAssetsSize,
-    internalEncodedAssetsSize,
-    externalAssetsSize,
-    externalEncodedAssetsSize
+    internal: splitNetworkToResourcesTypes(internalNetwork),
+    external: splitNetworkToResourcesTypes(externalNetwork),
+    total: splitNetworkToResourcesTypes(network)
   };
 };
 
