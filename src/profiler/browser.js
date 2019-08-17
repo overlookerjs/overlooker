@@ -8,10 +8,25 @@ const IS_DEBUG = process.argv.some((arg) => arg === '--debug');
 
 const pixel2 = devices['Pixel 2'];
 
-const getContext = async (additionArgs = []) => {
+const viewports = {
+  mobile: pixel2.viewport,
+  desktop: {
+    width: 1366,
+    height: 768
+  }
+};
+
+const getContext = async (config) => {
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox'].concat(additionArgs),
-    ignoreHTTPSErrors: true
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--ignore-certificate-errors',
+      '--ignore-urlfetcher-cert-requests'
+    ]
+      .concat(config.browserArgs),
+    ignoreHTTPSErrors: true,
+    defaultViewport: viewports[config.platform]
   });
 
   const context = await browser.createIncognitoBrowserContext();
@@ -25,8 +40,8 @@ const getContext = async (additionArgs = []) => {
   };
 };
 
-const setupPageConfig = async (page, client, config) => {
-  if (config.platform && config.platform === 'mobile') {
+const setupPageConfig = async (context, page, client, config) => {
+  if (config.platform === 'mobile') {
     await page.emulate(pixel2);
   } else {
     await page.setViewport({ width: 1366, height: 768 });
@@ -42,7 +57,7 @@ const setupPageConfig = async (page, client, config) => {
     }
   }
 
-  if (config.requests && config.requests.ignore) {
+  if (config.requests.ignore) {
     await page.setRequestInterception(true);
 
     page.on('request', (interceptedRequest) => {
@@ -115,7 +130,7 @@ const profileUrl = async (context, config) => {
   await client.send('Network.clearBrowserCache');
   await client.send('Network.clearBrowserCookies');
 
-  await setupPageConfig(page, client, config);
+  await setupPageConfig(context, page, client, config);
 
   const getTracing = await writeTracing(page);
 

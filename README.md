@@ -29,7 +29,11 @@ start();
 ```js
 /**
  * @param {Object} config
- * @param {Object} config.pages
+ * @param {Object[]} config.pages
+ * @param {string} config.pages.$.name
+ * @param {string} config.pages.$.url
+ * @param {Object} [config.pages.$.actions]
+ * @param {Function[]} [config.pages.$.actions.actionName]
  * @param {Object} [config.throttling]
  * @param {number} [config.throttling.cpu]
  * @param {string} [config.throttling.network]
@@ -37,9 +41,6 @@ start();
  * @param {number} [config.threads]
  * @param {string} [config.platform]
  * @param {string} [config.browserArgs]
- * @param {Object} [config.actions]
- * @param {Object} [config.actions.pageName]
- * @param {Function[]} [config.actions.pageName.actionName]
  * @param {Object} [config.requests]
  * @param {string|RegExp|Function|Array} [config.requests.ignore]
  * @param {string|RegExp|Function|Array} [config.requests.merge]

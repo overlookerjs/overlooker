@@ -6,7 +6,11 @@ const { prepareResult } = require('./preparing.js');
 
 /**
  * @param {Object} config
- * @param {Object} config.pages
+ * @param {Object[]} config.pages
+ * @param {string} config.pages.$.name
+ * @param {string} config.pages.$.url
+ * @param {Object} [config.pages.$.actions]
+ * @param {Function[]} [config.pages.$.actions.actionName]
  * @param {Object} [config.throttling]
  * @param {number} [config.throttling.cpu]
  * @param {string} [config.throttling.network]
@@ -14,9 +18,6 @@ const { prepareResult } = require('./preparing.js');
  * @param {number} [config.threads]
  * @param {string} [config.platform]
  * @param {string} [config.browserArgs]
- * @param {Object} [config.actions]
- * @param {Object} [config.actions.pageName]
- * @param {Function[]} [config.actions.pageName.actionName]
  * @param {Object} [config.requests]
  * @param {string|RegExp|Function|Array} [config.requests.ignore]
  * @param {string|RegExp|Function|Array} [config.requests.merge]
@@ -24,11 +25,10 @@ const { prepareResult } = require('./preparing.js');
  * */
 
 const profile = async (config) => {
-  const { pages, threads } = prepareConfig(config);
+  const preparedConfig = prepareConfig(config);
+  const { pages, threads } = preparedConfig;
 
-  const pagesEntries = Object.entries(pages);
-
-  if (!pagesEntries.length) {
+  if (!pages.length) {
     console.log('Nothing to profile');
     return;
   }
@@ -40,7 +40,7 @@ const profile = async (config) => {
   try {
     console.log(`opening browsers`);
 
-    browsers = await Promise.all(Array(threads).fill(null).map(() => getContext(config.browserArgs)));
+    browsers = await Promise.all(Array(threads).fill(null).map(() => getContext(preparedConfig)));
     browsersThreads = browsers.map((browser) => (fn) => fn(browser));
 
     console.log('browsers are open');
@@ -53,8 +53,7 @@ const profile = async (config) => {
   try {
     result = await fetchPages({
       profiler: profileUrl,
-      config,
-      pagesEntries,
+      config: preparedConfig,
       browsersThreads,
     });
 
@@ -69,9 +68,9 @@ const profile = async (config) => {
 
   console.log('request build data');
 
-  const buildData = await fetchBuildData(config.buildDataUrl, Object.values(pages)[0]);
+  const buildData = await fetchBuildData(config.buildDataUrl, pages[0].url);
 
-  return await prepareResult(result, config, buildData, pages);
+  return await prepareResult(result, config, buildData);
 };
 
 module.exports = {

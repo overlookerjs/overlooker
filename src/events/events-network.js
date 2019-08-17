@@ -32,7 +32,7 @@ const separateNetworkEvents = (networkEvents) => Object.values(networkEvents)
     data: filterEventsByName(items, 'ResourceReceivedData'),
     finish: findEventByName(items, 'ResourceFinish')
   }))
-  .filter(({ finish, request }) => finish && request);
+  .filter(({ finish, request, response }) => finish && request && response);
 
 const prepareSeparatedNetwork = (separatedNetwork, evaluatingMap, internalTest) => separatedNetwork
   .map(({

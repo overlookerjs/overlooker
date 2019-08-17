@@ -31,10 +31,8 @@ const extractModules = (modulesMap, filesMap, dependencies) => {
     }))
 };
 
-const makeChunkMetaBuilder = (request, modulesMap, filesMap) => (chunk, bundleInput) => ({
+const makeChunkMetaBuilder = (request, modulesMap, filesMap) => (chunk) => ({
   ...chunk,
-  bundle: bundleInput.bundlesBlocks.find(({ asset }) => chunk.name === asset),
-  asset: bundleInput.assetsBlocks.find(({ hash }) => chunk.name === hash),
   modules: extractModules(modulesMap, filesMap, chunk.modules)
 });
 
@@ -51,10 +49,7 @@ const expandRequest = (request, build) => {
     if (chunk) {
       return {
         ...hydratedRequest,
-        meta: makeChunkMeta(
-          chunk,
-          build.input
-        )
+        meta: makeChunkMeta(chunk)
       }
     } else {
       return hydratedRequest;
