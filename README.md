@@ -14,8 +14,8 @@ const start = async () => {
         url: 'https://example.com',
         actions: {
           'test-action': async (page) => {
-            page.click('.button');
-            page.waitForSelector('.new-content');
+            await page.click('.button');
+            await page.waitForSelector('.new-content');
           }
         }
       }]
@@ -26,8 +26,8 @@ const start = async () => {
         url: 'https://example.com/test',
         actions: {
           'test-action': async (page) => {
-            page.click('.button');
-            page.waitForSelector('.new-content');
+            await page.click('.button');
+            await page.waitForSelector('.new-content');
           }
         }
       }]
