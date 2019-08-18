@@ -57,9 +57,13 @@ start();
  * @param {number} [config.threads] - the number of browser instances for profiling (higher - measurement will be faster, but less accurate)
  * @param {string} [config.platform] - platform for profile (desktop|mobile)
  * @param {string} [config.browserArgs] - browser arguments
+ * @param {string} [config.buildDataUrl] - build data for chunks meta info
  * @param {Object} [config.requests] - object for manipulate network requests
- * @param {string|RegExp|Function|Array} [config.requests.ignore] - for ignore something
+ * @param {string|RegExp|Function|Array} [config.requests.ignore] - for ignore requests
  * @param {string|RegExp|Function|Array} [config.requests.merge] - for merge requests while aggregation
  * @param {string|RegExp|Function|Array} [config.requests.internalTest] - to mark every request as internal/external
  * */
 ```
+
+### Tool for getting build data
+[Bundle Internals Plugin](https://github.com/smelukov/bundle-internals)
