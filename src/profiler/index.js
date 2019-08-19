@@ -9,8 +9,9 @@ const { prepareResult } = require('./preparing.js');
  * @param {Object[]} config.pages - an array of page objects for the profile
  * @param {string} config.pages.$.name - page name
  * @param {string} config.pages.$.url - page url
- * @param {Object} [config.pages.$.actions] - array of actions that are executed after the onLoad event
- * @param {Function} [config.pages.$.actions.actionName] - the function receives an instance of the page in arguments and should return a promise
+ * @param {Object[]} [config.pages.$.actions] - array of actions that are executed after the onLoad event
+ * @param {Function} [config.pages.$.actions.$.action] - the function receives an instance of the page in arguments and should return a promise
+ * @param {string} [config.pages.$.actions.$.name] - action name
  * @param {Object} [config.throttling] - throttling object
  * @param {number} [config.throttling.cpu] - cpu throttling (higher - worst)
  * @param {string} [config.throttling.network] - network throttling (GPRS|Regular2G|Good2G|Regular3G|Good3G|Regular4G|DSL|WiFi)

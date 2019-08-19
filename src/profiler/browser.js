@@ -99,10 +99,10 @@ const writeTracing = async (page) => {
 const profileActions = async (page, config) => {
   const res = {};
 
-  if (config.actions && Object.keys(config.actions)) {
-    const actionsEntries = Object.entries(config.actions);
+  if (config.actions && config.actions.length) {
+    const actionsEntries = config.actions;
 
-    for (const [name, action] of actionsEntries) {
+    for (const { name, action } of actionsEntries) {
       console.log(`action "${name}" started`);
 
       const getTracing = await writeTracing(page);
