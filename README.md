@@ -36,6 +36,10 @@ const start = async () => {
   });
 
   const compared = compare(data2, data1);
+  
+  const checked = check(compared, {
+    'percent.stats.timings.firstPaint.median': 0.005
+  });
 };
 
 start();
