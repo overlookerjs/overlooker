@@ -13,6 +13,7 @@
   "bugs": {
     "url": "https://github.com/pyatyispyatil/overlooker/issues"
   },
+  "types": "src/types.d.ts",
   "homepage": "https://github.com/pyatyispyatil/overlooker#readme",
   "dependencies": {
     "axios": "^0.19.0",

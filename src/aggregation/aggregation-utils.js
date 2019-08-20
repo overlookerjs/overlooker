@@ -28,6 +28,14 @@ const objAggregation = (obj) => objMap(obj, (array) => {
   }
 });
 
+const objDeepAggregation = (obj) => objMap(obj, (innerObj) =>
+  Object.values(innerObj).every((value) => Array.isArray(value)) ? (
+    objAggregation(innerObj)
+  ) : (
+    objDeepAggregation(innerObj)
+  ));
+
 module.exports = {
-  objAggregation
+  objAggregation,
+  objDeepAggregation
 };

@@ -1,19 +1,6 @@
-const { objPercent, objSub, objMap } = require('./../objects-utils.js');
+const { objPercent, objSub, objMap, objDeepCompare } = require('./../objects-utils.js');
 
-const getComparator = (comparator) => (firstStats, secondStats) => (
-  objMap(
-    secondStats,
-    (innerSection, sectionKey) => objMap(
-      innerSection,
-      (aggregation, aggregationKey) => (
-        comparator(
-          aggregation,
-          firstStats[sectionKey][aggregationKey]
-        )
-      )
-    )
-  )
-);
+const getComparator = (comparator) => (firstStats, secondStats) => objDeepCompare(comparator, firstStats, secondStats);
 
 const compareStats = getComparator(objSub);
 

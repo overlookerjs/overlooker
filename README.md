@@ -67,5 +67,7 @@ start();
  * */
 ```
 
+### [Types](https://github.com/pyatyispyatil/overlooker/blob/master/src/index.d.ts)
+
 ### Tool for getting build data
 [Bundle Internals Plugin](https://github.com/smelukov/bundle-internals)

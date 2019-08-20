@@ -37,6 +37,22 @@ const objFilter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]
   return acc;
 }, {});
 
+const objDeepConcat = (obj1, obj2 = {}) => objMap(
+  obj1,
+  (innerObj, key) => Object.values(innerObj).every((value) => value instanceof Object) ? (
+    objDeepConcat(innerObj, obj2[key])
+  ) : (
+    objConcat(innerObj, obj2[key])
+  ));
+
+const objDeepCompare = (comparator, obj1, obj2 = {}) => objMap(
+  obj1,
+  (innerObj, key) => Object.values(innerObj).every((value) => value instanceof Object) ? (
+    objDeepCompare(comparator, innerObj, obj2[key])
+  ) : (
+    comparator(innerObj, obj2[key])
+  ));
+
 module.exports = {
   objMap,
   objReduce,
@@ -45,5 +61,7 @@ module.exports = {
   objConcat,
   objSub,
   objPercent,
-  objFilter
+  objFilter,
+  objDeepConcat,
+  objDeepCompare
 };

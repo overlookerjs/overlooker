@@ -1,24 +1,21 @@
 const { getNetworkSummary, normalizeNetworkSummary } = require('./aggregation-network.js');
 const { expandNetwork } = require('./../chunks-meta');
-const { objConcat, objMap } = require('./../objects-utils.js');
-const { objAggregation } = require('./aggregation-utils.js');
+const { objConcat, objMap, objDeepConcat } = require('./../objects-utils.js');
+const { objDeepAggregation } = require('./aggregation-utils.js');
 
-const getActionsSummary = (actions, summary, mergeRequests) => (
+const getActionsSummary = (actions, summaryActions, mergeRequests) => (
   objMap(actions, (action, name) => ({
-    stats: objMap(action.stats, (innerObj, key) => objConcat(
-      innerObj,
-      summary.actions[name] ? summary.actions[name].stats[key] : {}
-    )),
+    stats: objDeepConcat(action.stats, summaryActions.stats),
     network: getNetworkSummary(
       action.network,
-      summary.actions[name] ? summary.actions[name].network : {},
+      summaryActions[name] ? summaryActions[name].network : {},
       mergeRequests
     )
   }))
 );
 
 const normalizeActionsSummary = (actions, buildData) => objMap(actions, (action) => ({
-  stats: objMap(action.stats, (innerObj) => objAggregation(innerObj)),
+  stats: objDeepAggregation(action.stats),
   network: expandNetwork(normalizeNetworkSummary(action.network), buildData),
 }));
 

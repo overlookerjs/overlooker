@@ -71,7 +71,7 @@ const parseNetwork = (events, evaluatingMap, internalTest) => prepareSeparatedNe
 );
 
 const filterNetwork = (network, extensions) => network
-  .filter(({ extension }) => extensions.includes(extension));
+  .filter(({ extension }) => !extensions.length || extensions.includes(extension));
 
 const summarizeSizes = (network) => network.reduce((acc, { size }) => acc + size, 0);
 const summarizeTransfer = (network) => network.reduce((acc, { transfer }) => acc + transfer, 0);
@@ -96,14 +96,6 @@ const splitNetworkToResourcesTypes = (network) => {
     html: htmlTypes,
     total: totalTypes
   });
-
-  stats.other = stats.total - (
-    stats.images +
-    stats.fonts +
-    stats.js +
-    stats.css +
-    stats.html
-  );
 
   return stats;
 };

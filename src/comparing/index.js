@@ -10,15 +10,15 @@ const compare = (first, second) => Object.entries(first)
       absolute: {
         stats: compareStats(firstValue.stats, second[pageName].stats),
         network: compareNetworks(firstValue.network, second[pageName].network),
-        actions: objMap(firstValue.actions, (action, actionName) => second[pageName][actionName] ? ({
-          stats: compareStats(action.stats, second[pageName][actionName].stats),
-          network: compareNetworks(action.network, second[pageName][actionName].network)
+        actions: objMap(firstValue.actions, (action, actionName) => second[pageName].actions[actionName] ? ({
+          stats: compareStats(action.stats, second[pageName].actions[actionName].stats),
+          network: compareNetworks(action.network, second[pageName].actions[actionName].network)
         }) : null)
       },
       percent: {
         stats: compareStatsPercent(firstValue.stats, second[pageName].stats),
-        actions: objMap(firstValue.actions, (action, actionName) => second[pageName][actionName] ? ({
-          stats: compareStatsPercent(action.stats, second[pageName][actionName].stats)
+        actions: objMap(firstValue.actions, (action, actionName) => second[pageName].actions[actionName] ? ({
+          stats: compareStatsPercent(action.stats, second[pageName].actions[actionName].stats)
         }) : null)
       }
     }

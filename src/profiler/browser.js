@@ -100,9 +100,7 @@ const profileActions = async (page, config) => {
   const res = {};
 
   if (config.actions && config.actions.length) {
-    const actionsEntries = config.actions;
-
-    for (const { name, action } of actionsEntries) {
+    for (const { name, action } of config.actions) {
       console.log(`action "${name}" started`);
 
       const getTracing = await writeTracing(page);
