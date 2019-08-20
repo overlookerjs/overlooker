@@ -1,11 +1,11 @@
-const check = (comparing, conditions) => {
-  const conditionsEntries = Object.entries(conditions)
+const check = (comparing, thresholds) => {
+  const thresholdsEntries = Object.entries(thresholds)
     .map(([path, threshold]) => [path.split('.'), threshold]);
 
   const results = Object.entries(comparing)
     .map(([page, data]) => [
       page,
-      conditionsEntries
+      thresholdsEntries
         .map(([path, threshold]) => {
           let value = data;
 

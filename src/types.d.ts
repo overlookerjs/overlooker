@@ -234,7 +234,7 @@ declare module "overlooker" {
     }>,
     throttling?: {
       cpu: number,
-      network: 'GPRS'|'Regular2G'|'Good2G'|'Regular3G'|'Good3G'|'Regular4G'|'DSL'|'WiFi'
+      network: 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi'
     },
     count?: number,
     threads?: number,
@@ -249,6 +249,8 @@ declare module "overlooker" {
   };
 
   export function profile(config: ProfileConfig): Promise<ProfileData>;
+
   export function compare(firstData: ProfileData, secondData: ProfileData): ComparedData;
-  export function check(compared: ComparedData): CheckedData;
+
+  export function check(compared: ComparedData, thresholds: { [path: string]: number }): CheckedData;
 }

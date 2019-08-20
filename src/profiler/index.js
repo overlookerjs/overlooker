@@ -25,7 +25,6 @@ const { prepareResult } = require('./preparing.js');
  * @param {string|RegExp|Function|Array} [config.requests.merge] - for merge requests while aggregation
  * @param {string|RegExp|Function|Array} [config.requests.internalTest] - mark each request as internal / external
  * */
-
 const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
   const { pages, threads } = preparedConfig;
@@ -70,9 +69,9 @@ const profile = async (config) => {
 
   console.log('request build data');
 
-  const buildData = await fetchBuildData(config.buildDataUrl, pages[0].url);
+  const buildData = await fetchBuildData(preparedConfig.buildDataUrl, pages[0].url);
 
-  return await prepareResult(result, config, buildData);
+  return await prepareResult(result, preparedConfig, buildData);
 };
 
 module.exports = {
