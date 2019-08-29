@@ -3,12 +3,14 @@ const { getContext, profileUrl } = require('./browser.js');
 const { fetchPages } = require('./pages-fetcher.js');
 const { fetchBuildData } = require('./build-data.js');
 const { prepareResult } = require('./preparing.js');
+const cache = require('./cache.js');
 
 /**
  * @param {Object} config
  * @param {Object[]} config.pages - an array of page objects for the profile
  * @param {string} config.pages.$.name - page name
  * @param {string} config.pages.$.url - page url
+ * @param {string} config.pages.$.heroElement - page hero element selector for checking paint time
  * @param {Object[]} [config.pages.$.actions] - array of actions that are executed after the onLoad event
  * @param {Function} [config.pages.$.actions.$.action] - the function receives an instance of the page in arguments and should return a promise
  * @param {string} [config.pages.$.actions.$.name] - action name
@@ -19,7 +21,15 @@ const { prepareResult } = require('./preparing.js');
  * @param {number} [config.threads] - the number of browser instances for profiling (higher - measurement will be faster, but less accurate)
  * @param {string} [config.platform] - platform for profile (desktop|mobile)
  * @param {string} [config.browserArgs] - browser arguments
+ * @param {string} [config.firstEvent] - an name of event from which to count time (default: responseEnd)
+ * @param {object} [config.proxy] - proxy configuration
+ * @param {string} [config.proxy.address] - address and port of the proxy (localhost:3128)
+ * @param {Function} [config.proxy.restart] - function for restarting external proxy service
  * @param {string} [config.buildDataUrl] - build data for chunks meta info
+ * @param {Object[]} [config.cookies] - cookies objects
+ * @param {string} [config.cookies.$.name] - cookie name
+ * @param {string} [config.cookies.$.value] - cookie value
+ * @param {string} [config.cookies.$.domain] - cookie domain
  * @param {Object} [config.requests] - object for manipulate network requests
  * @param {string|RegExp|Function|Array} [config.requests.ignore] - for ignore requests
  * @param {string|RegExp|Function|Array} [config.requests.merge] - for merge requests while aggregation
@@ -49,6 +59,38 @@ const profile = async (config) => {
     console.log('error while opening browsers', e.stack);
 
     return {};
+  }
+
+  if (preparedConfig.proxy) {
+    const warmingConfig = {
+      ...preparedConfig,
+      count: 1,
+      throttling: null
+    };
+
+    cache.clear();
+
+    try {
+      console.log('restart proxy');
+      await preparedConfig.proxy.restart();
+      console.log('proxy restarted');
+    } catch (e) {
+      console.log(`cannot restart proxy: ${e.stack}`);
+    }
+
+    try {
+      console.log('start cache warming');
+
+      await fetchPages({
+        profiler: profileUrl,
+        config: warmingConfig,
+        browsersThreads,
+      });
+
+      console.log(`warming done!`);
+    } catch (e) {
+      console.log(`cannot warm pages!`, e.stack);
+    }
   }
 
   try {

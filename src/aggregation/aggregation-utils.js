@@ -24,7 +24,8 @@ const objAggregation = (obj) => objMap(obj, (array) => {
     median: percentile(sortedArray, 0.5),
     count: array.length,
     standardDeviation: standardDeviation(array, mean),
-    mean
+    mean,
+    raw: array
   }
 });
 

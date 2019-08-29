@@ -7,7 +7,7 @@ const fetchPages = async ({
                           }) => {
   const { count } = config;
 
-  const functions = config.pages.reduce((acc, { url, name, actions }) => ({
+  const functions = config.pages.reduce((acc, { url, name, actions, heroElement }) => ({
     ...acc,
     [name]: Array(count).fill(async (stop, browser) => {
       console.log(`start fetching: ${url}`);
@@ -20,6 +20,7 @@ const fetchPages = async ({
           {
             ...config,
             url,
+            heroElement,
             actions
           });
 

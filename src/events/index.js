@@ -1,7 +1,7 @@
 const { makeEventsRelative } = require('./events-helpers.js');
-const { getResponseEndEvent, getMainEventsTimestamps } = require('./events-main.js');
+const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats } = require('./events-network.js');
-const { getSpeedIndex } = require('./events-user-centric.js');
+const { getSpeedIndex, getHeroElementPaints } = require('./events-user-centric.js');
 const { getActionsStats } = require('./events-actions.js');
 const {
   getScriptsEvaluating,
@@ -9,10 +9,10 @@ const {
   makeScriptsEvaluatingMap
 } = require('./events-evaluating.js');
 
-const getAllStats = async ({ main, actions }, internalTest) => {
-  const responseEnd = getResponseEndEvent(main);
-  const mainFrame = responseEnd.args.frame;
-  const relativeEvents = makeEventsRelative(main, responseEnd);
+const getAllStats = async ({ main, actions, heroElementPaints }, internalTest, firstEventName) => {
+  const firstEvent = getEventInMainFrame(main, firstEventName);
+  const mainFrame = firstEvent.args.frame;
+  const relativeEvents = makeEventsRelative(main, firstEvent);
 
   const rawEvaluating = getScriptsEvaluating(relativeEvents);
   const evaluating = getScriptsEvaluatingStats(rawEvaluating, internalTest);
@@ -23,7 +23,8 @@ const getAllStats = async ({ main, actions }, internalTest) => {
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
 
   const userCentric = {
-    speedIndex: await getSpeedIndex(main)
+    speedIndex: await getSpeedIndex(main),
+    ...getHeroElementPaints(makeEventsRelative(heroElementPaints, firstEvent))
   };
 
   const actionsStats = getActionsStats(actions, internalTest);

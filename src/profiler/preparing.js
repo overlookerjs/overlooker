@@ -15,7 +15,7 @@ const prepareResult = async (result, config, buildData) => {
 
         return [
           pageName,
-          await Promise.all(pageData.map((data) => getAllStats(data, isInternal)))
+          await Promise.all(pageData.map((data) => getAllStats(data, isInternal, config.firstEvent)))
         ];
       })
   );
@@ -40,10 +40,11 @@ const prepareConfig = ({
                          ...rest
                        }) => ({
   requests: objMap(requests, makeRule),
-  count: count || 5,
-  threads: threads || 1,
-  platform: platform || 'desktop',
-  browserArgs: browserArgs || [],
+  count: 5,
+  threads: 1,
+  platform: 'desktop',
+  browserArgs: [],
+  firstEvent: 'responseEnd',
   ...rest
 });
 

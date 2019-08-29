@@ -3,7 +3,7 @@ declare module "overlooker" {
     [pageName: string]: PageData
   };
 
-  export type AggregatedData = {
+  export type AggregatedValue = {
     q1: number,
     q3: number,
     percentile98: number,
@@ -38,8 +38,8 @@ declare module "overlooker" {
   };
 
   export type ActionsTimings = {
-    start: AggregatedData,
-    end: AggregatedData
+    start: AggregatedValue,
+    end: AggregatedValue
   };
 
   export type ProfileStats = {
@@ -50,9 +50,9 @@ declare module "overlooker" {
   };
 
   export type ProfileStatsEvaluating = {
-    externalScriptEvaluating: AggregatedData,
-    internalScriptEvaluating: AggregatedData,
-    totalScriptEvaluating: AggregatedData
+    externalScriptEvaluating: AggregatedValue,
+    internalScriptEvaluating: AggregatedValue,
+    totalScriptEvaluating: AggregatedValue
   };
 
   export type ProfileStatsResources = {
@@ -71,27 +71,29 @@ declare module "overlooker" {
   };
 
   export type ResourceSize = {
-    size: AggregatedData,
-    transfer: AggregatedData
+    size: AggregatedValue,
+    transfer: AggregatedValue
   };
 
   export type ProfileStatsTimings = {
-    firstMeaningfulPaint: AggregatedData,
-    firstMeaningfulPaintCandidate: AggregatedData,
-    firstPaint: AggregatedData,
-    firstTextPaint: AggregatedData,
-    firstImagePaint: AggregatedData,
-    firstContentfulPaint: AggregatedData,
-    domContentLoadedEventStart: AggregatedData,
-    domContentLoadedEventEnd: AggregatedData,
-    loadEventStart: AggregatedData,
-    loadEventEnd: AggregatedData,
-    domInteractive: AggregatedData,
-    domComplete: AggregatedData
+    firstMeaningfulPaint: AggregatedValue,
+    firstMeaningfulPaintCandidate: AggregatedValue,
+    firstPaint: AggregatedValue,
+    firstTextPaint: AggregatedValue,
+    firstImagePaint: AggregatedValue,
+    firstContentfulPaint: AggregatedValue,
+    domContentLoadedEventStart: AggregatedValue,
+    domContentLoadedEventEnd: AggregatedValue,
+    loadEventStart: AggregatedValue,
+    loadEventEnd: AggregatedValue,
+    domInteractive: AggregatedValue,
+    domComplete: AggregatedValue
   };
 
   export type ProfileStatsUserCentric = {
-    speedIndex: AggregatedData
+    speedIndex: AggregatedValue,
+    heroElementFirstPaint: AggregatedValue,
+    heroElementLastPaint: AggregatedValue
   };
 
   export type ProfileNetwork = Array<ProfileRequest>;
@@ -227,18 +229,29 @@ declare module "overlooker" {
     pages: Array<{
       name: string,
       url: string,
+      heroElement: string,
       actions: Array<{
         name: string,
-        action: (page: Object) => Promise<any>
+        action: (page: Object) => Promise<void>
       }>
     }>,
     throttling?: {
       cpu: number,
       network: 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi'
     },
+    cookies?: Array<{
+      name: string,
+      value: string,
+      domain: string
+    }>,
+    proxy?: {
+      address: string,
+      restart: () => Promise<void>
+    },
+    firstEvent?: string,
     count?: number,
     threads?: number,
-    platform: 'mobile' | 'desktop',
+    platform?: 'mobile' | 'desktop',
     browserArgs?: Array<string>,
     buildDataUrl?: string,
     requests?: {

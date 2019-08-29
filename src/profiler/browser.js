@@ -1,8 +1,10 @@
 const puppeteer = require('puppeteer');
 const networkPresets = require('./network-presets.js');
 const devices = require('puppeteer/DeviceDescriptors');
+const cache = require('./cache.js');
 const fs = require('fs');
 const path = require('path');
+const { getPaintEventsBySelector } = require('./hero-elements.js');
 
 const IS_DEBUG = process.argv.some((arg) => arg === '--debug');
 
@@ -24,7 +26,8 @@ const getContext = async (config) => {
       '--ignore-certificate-errors',
       '--ignore-urlfetcher-cert-requests'
     ]
-      .concat(config.browserArgs),
+      .concat(config.browserArgs)
+      .concat(config.proxy && config.proxy.address ? `--proxy-server=${config.proxy.address}` : []),
     ignoreHTTPSErrors: true,
     defaultViewport: viewports[config.platform]
   });
@@ -57,19 +60,70 @@ const setupPageConfig = async (context, page, client, config) => {
     }
   }
 
-  if (config.requests.ignore) {
+  if (config.cookies) {
+    await page.setCookie(config.cookies);
+  }
+
+  if (config.requests) {
     await page.setRequestInterception(true);
 
     page.on('request', (interceptedRequest) => {
       const url = interceptedRequest.url();
 
-      if (config.requests.ignore(url)) {
+      if (config.requests.ignore && config.requests.ignore(url)) {
         interceptedRequest.abort();
         return;
       }
 
+      if (config.proxy && interceptedRequest.method() === 'POST') {
+        const postData = interceptedRequest.postData();
+
+        const cachedObject = cache.get(url + postData);
+
+        if (cachedObject) {
+          setTimeout(() => {
+            interceptedRequest.respond(cachedObject);
+          }, 500);
+
+          return;
+        }
+      }
+
       interceptedRequest.continue();
     });
+
+    if (config.proxy) {
+      page.on('requestfinished', async (interceptedRequest) => {
+        if (interceptedRequest.method() === 'POST') {
+          const resourceUrl = interceptedRequest.url();
+          const postData = interceptedRequest.postData();
+          const key = resourceUrl + postData;
+
+          const cachedObject = cache.has(key);
+
+          if (!cachedObject) {
+            try {
+              const response = interceptedRequest.response();
+
+              const body = await response.text();
+              const headers = response.headers();
+              const status = response.status();
+
+              const data = {
+                body,
+                headers,
+                status,
+                contentType: headers['content-type']
+              };
+
+              cache.set(key, data);
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        }
+      });
+    }
   }
 };
 
@@ -119,7 +173,7 @@ const profileActions = async (page, config) => {
 };
 
 const profileUrl = async (context, config) => {
-  const { url } = config;
+  const { url, heroElement } = config;
 
   const page = await context.newPage();
 
@@ -137,13 +191,16 @@ const profileUrl = async (context, config) => {
 
     const main = await getTracing();
 
+    const heroElementPaints = await getPaintEventsBySelector(client, main, heroElement);
+
     const actions = await profileActions(page, config);
 
     await page.close();
 
     return {
       main,
-      actions
+      actions,
+      heroElementPaints
     };
   } catch (e) {
     console.error(`Cannot get page ${url}:`, e);
