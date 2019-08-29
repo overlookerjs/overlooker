@@ -11,6 +11,7 @@ const cache = require('./cache.js');
  * @param {string} config.pages.$.name - page name
  * @param {string} config.pages.$.url - page url
  * @param {string} config.pages.$.heroElement - page hero element selector for checking paint time
+ * @param {Object[]} [config.pages.$.cookies] - cookies objects for page
  * @param {Object[]} [config.pages.$.actions] - array of actions that are executed after the onLoad event
  * @param {Function} [config.pages.$.actions.$.action] - the function receives an instance of the page in arguments and should return a promise
  * @param {string} [config.pages.$.actions.$.name] - action name
@@ -22,11 +23,12 @@ const cache = require('./cache.js');
  * @param {string} [config.platform] - platform for profile (desktop|mobile)
  * @param {string} [config.browserArgs] - browser arguments
  * @param {string} [config.firstEvent] - an name of event from which to count time (default: responseEnd)
+ * @param {Function} [config.logger] - logger function
  * @param {object} [config.proxy] - proxy configuration
  * @param {string} [config.proxy.address] - address and port of the proxy (localhost:3128)
  * @param {Function} [config.proxy.restart] - function for restarting external proxy service
  * @param {string} [config.buildDataUrl] - build data for chunks meta info
- * @param {Object[]} [config.cookies] - cookies objects
+ * @param {Object[]} [config.cookies] - main cookies objects
  * @param {string} [config.cookies.$.name] - cookie name
  * @param {string} [config.cookies.$.value] - cookie value
  * @param {string} [config.cookies.$.domain] - cookie domain
@@ -37,10 +39,10 @@ const cache = require('./cache.js');
  * */
 const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
-  const { pages, threads } = preparedConfig;
+  const { pages, threads, logger } = preparedConfig;
 
   if (!pages.length) {
-    console.log('Nothing to profile');
+    await logger('Nothing to profile');
     return;
   }
 
@@ -49,14 +51,14 @@ const profile = async (config) => {
   let result;
 
   try {
-    console.log(`opening browsers`);
+    await logger(`opening browsers`);
 
     browsers = await Promise.all(Array(threads).fill(null).map(() => getContext(preparedConfig)));
     browsersThreads = browsers.map((browser) => (fn) => fn(browser));
 
-    console.log('browsers are open');
+    await logger('browsers are open');
   } catch (e) {
-    console.log('error while opening browsers', e.stack);
+    await logger('error while opening browsers', e.stack);
 
     return {};
   }
@@ -71,15 +73,15 @@ const profile = async (config) => {
     cache.clear();
 
     try {
-      console.log('restart proxy');
+      await logger('restart proxy');
       await preparedConfig.proxy.restart();
-      console.log('proxy restarted');
+      await logger('proxy restarted');
     } catch (e) {
-      console.log(`cannot restart proxy: ${e.stack}`);
+      await logger(`cannot restart proxy: ${e.stack}`);
     }
 
     try {
-      console.log('start cache warming');
+      await logger('start cache warming');
 
       await fetchPages({
         profiler: profileUrl,
@@ -87,9 +89,9 @@ const profile = async (config) => {
         browsersThreads,
       });
 
-      console.log(`warming done!`);
+      await logger(`warming done!`);
     } catch (e) {
-      console.log(`cannot warm pages!`, e.stack);
+      await logger(`cannot warm pages!`, e.stack);
     }
   }
 
@@ -100,18 +102,18 @@ const profile = async (config) => {
       browsersThreads,
     });
 
-    console.log(`fetching done!`);
+    await logger(`fetching done!`);
   } catch (e) {
-    console.log(`cannot fetch pages!`, e.stack);
+    await logger(`cannot fetch pages!`, e.stack);
   }
 
   if (browsers) {
     await Promise.all(browsers.map(({ close }) => close()));
   }
 
-  console.log('request build data');
+  await logger('request build data');
 
-  const buildData = await fetchBuildData(preparedConfig.buildDataUrl, pages[0].url);
+  const buildData = await fetchBuildData(preparedConfig);
 
   return await prepareResult(result, preparedConfig, buildData);
 };

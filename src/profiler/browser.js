@@ -118,7 +118,7 @@ const setupPageConfig = async (context, page, client, config) => {
 
               cache.set(key, data);
             } catch (e) {
-              console.log(e);
+              await config.logger(e);
             }
           }
         }
@@ -155,7 +155,7 @@ const profileActions = async (page, config) => {
 
   if (config.actions && config.actions.length) {
     for (const { name, action } of config.actions) {
-      console.log(`action "${name}" started`);
+      await config.logger(`action "${name}" started`);
 
       const getTracing = await writeTracing(page);
 
@@ -165,7 +165,7 @@ const profileActions = async (page, config) => {
 
       res[name] = await getTracing();
 
-      console.log(`action "${name}" completed`);
+      await config.logger(`action "${name}" completed`);
     }
   }
 
@@ -173,7 +173,7 @@ const profileActions = async (page, config) => {
 };
 
 const profileUrl = async (context, config) => {
-  const { url, heroElement } = config;
+  const { url, heroElement, logger } = config;
 
   const page = await context.newPage();
 
@@ -203,7 +203,7 @@ const profileUrl = async (context, config) => {
       heroElementPaints
     };
   } catch (e) {
-    console.error(`Cannot get page ${url}:`, e);
+    await logger(`Cannot get page ${url}:`, e);
   }
 
   await close();

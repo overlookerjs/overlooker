@@ -33,10 +33,6 @@ const prepareResult = async (result, config, buildData) => {
 
 const prepareConfig = ({
                          requests,
-                         count,
-                         threads,
-                         platform,
-                         browserArgs,
                          ...rest
                        }) => ({
   requests: objMap(requests, makeRule),
@@ -45,6 +41,7 @@ const prepareConfig = ({
   platform: 'desktop',
   browserArgs: [],
   firstEvent: 'responseEnd',
+  logger: async (...args) => console.log(...args),
   ...rest
 });
 

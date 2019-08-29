@@ -5,12 +5,12 @@ const fetchPages = async ({
                             browsersThreads,
                             config
                           }) => {
-  const { count } = config;
+  const { count, logger } = config;
 
-  const functions = config.pages.reduce((acc, { url, name, actions, heroElement }) => ({
+  const functions = config.pages.reduce((acc, { url, name, ...rest }) => ({
     ...acc,
     [name]: Array(count).fill(async (stop, browser) => {
-      console.log(`start fetching: ${url}`);
+      await logger(`start fetching: ${url}`);
 
       try {
         const pageStartTime = Date.now();
@@ -20,18 +20,17 @@ const fetchPages = async ({
           {
             ...config,
             url,
-            heroElement,
-            actions
+            ...rest
           });
 
         const pageEndTime = Date.now();
 
-        console.log(`fetch page ${url} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
+        await logger(`fetch page ${url} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
 
         return data;
       } catch (error) {
-        console.log(`fetch failed: ${error}`);
-        console.log(`try to retry: ${url}`);
+        await logger(`fetch failed: ${error}`);
+        await logger(`try to retry: ${url}`);
 
         throw error;
       }

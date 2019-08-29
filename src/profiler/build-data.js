@@ -8,12 +8,14 @@ const instance = axios.create({
   })
 });
 
-const fetchBuildData = async (buildDataUrl, host) => {
+const fetchBuildData = async (config) => {
+  const { buildDataUrl, pages: [{ url }], logger } = config;
+
   if (buildDataUrl) {
     try {
       const { data } = await (
         isRelativeUrl(buildDataUrl) ? (
-          instance.get(getHost(host) + buildDataUrl)
+          instance.get(getHost(url) + buildDataUrl)
         ) : (
           instance.get(buildDataUrl)
         )
@@ -21,7 +23,7 @@ const fetchBuildData = async (buildDataUrl, host) => {
 
       return data;
     } catch (e) {
-      console.log('cannot receive build data', e);
+      await logger('cannot receive build data', e);
 
       return null;
     }
