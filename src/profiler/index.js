@@ -27,7 +27,9 @@ const cache = require('./cache.js');
  * @param {object} [config.proxy] - proxy configuration
  * @param {string} [config.proxy.address] - address and port of the proxy (localhost:3128)
  * @param {Function} [config.proxy.restart] - function for restarting external proxy service
- * @param {string} [config.buildDataUrl] - build data for chunks meta info
+ * @param {Object} [config.buildData] - config for requesting build data for chunks meta info
+ * @param {string} [config.buildData.url] - url of build data
+ * @param {Function} [config.buildData.getter] - getter for requesting build data
  * @param {Object[]} [config.cookies] - main cookies objects
  * @param {string} [config.cookies.$.name] - cookie name
  * @param {string} [config.cookies.$.value] - cookie value

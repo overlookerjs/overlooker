@@ -52,6 +52,7 @@ start();
  * @param {string} config.pages.$.name - page name
  * @param {string} config.pages.$.url - page url
  * @param {string} config.pages.$.heroElement - page hero element selector for checking paint time
+ * @param {Object[]} [config.pages.$.cookies] - cookies objects for page
  * @param {Object[]} [config.pages.$.actions] - array of actions that are executed after the onLoad event
  * @param {Function} [config.pages.$.actions.$.action] - the function receives an instance of the page in arguments and should return a promise
  * @param {string} [config.pages.$.actions.$.name] - action name
@@ -63,11 +64,14 @@ start();
  * @param {string} [config.platform] - platform for profile (desktop|mobile)
  * @param {string} [config.browserArgs] - browser arguments
  * @param {string} [config.firstEvent] - an name of event from which to count time (default: responseEnd)
+ * @param {Function} [config.logger] - logger function
  * @param {object} [config.proxy] - proxy configuration
  * @param {string} [config.proxy.address] - address and port of the proxy (localhost:3128)
  * @param {Function} [config.proxy.restart] - function for restarting external proxy service
- * @param {string} [config.buildDataUrl] - build data for chunks meta info
- * @param {Object[]} [config.cookies] - cookies objects
+ * @param {Object} [config.buildData] - config for requesting build data for chunks meta info
+ * @param {string} [config.buildData.url] - url of build data
+ * @param {Function} [config.buildData.getter] - getter for requesting build data
+ * @param {Object[]} [config.cookies] - main cookies objects
  * @param {string} [config.cookies.$.name] - cookie name
  * @param {string} [config.cookies.$.value] - cookie value
  * @param {string} [config.cookies.$.domain] - cookie domain

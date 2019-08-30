@@ -9,9 +9,18 @@ const instance = axios.create({
 });
 
 const fetchBuildData = async (config) => {
-  const { buildDataUrl, pages: [{ url }], logger } = config;
+  const {
+    buildData: {
+      url: buildDataUrl,
+      getter
+    },
+    pages: [{ url }],
+    logger
+  } = config;
 
-  if (buildDataUrl) {
+  if (getter) {
+    return await getter(url);
+  } else if (buildDataUrl) {
     try {
       const { data } = await (
         isRelativeUrl(buildDataUrl) ? (

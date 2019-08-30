@@ -223,6 +223,8 @@ declare module "overlooker" {
     }
   }
 
+  export type BuildData = Object;
+
   export type Rule = string | RegExp | ((url: string) => boolean) | Array<string | RegExp | Function>;
 
   export type ProfileConfig = {
@@ -236,8 +238,8 @@ declare module "overlooker" {
       }>
     }>,
     throttling?: {
-      cpu: number,
-      network: 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi'
+      cpu?: number,
+      network?: 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi'
     },
     cookies?: Array<{
       name: string,
@@ -254,7 +256,10 @@ declare module "overlooker" {
     logger?: (...args: Array<string>) => Promise<any>,
     platform?: 'mobile' | 'desktop',
     browserArgs?: Array<string>,
-    buildDataUrl?: string,
+    buildData?: {
+      url?: string,
+      getter?: (url: string) => Promise<BuildData>
+    },
     requests?: {
       ignore?: Rule,
       merge?: Rule,

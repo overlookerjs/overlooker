@@ -41,6 +41,11 @@ const prepareConfig = ({
   platform: 'desktop',
   browserArgs: [],
   firstEvent: 'responseEnd',
+  buildData: {},
+  throttling: {
+    network: 'Good3G',
+    cpu: 2
+  },
   logger: async (...args) => console.log(...args),
   ...rest
 });
