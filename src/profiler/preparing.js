@@ -1,13 +1,13 @@
 const { makeInternalTest, makeRule } = require('./../utils.js');
 const { objMap } = require('./../objects-utils.js');
-const { getAllStats } = require('../events');
+const { getAllStats } = require('../stats');
 const { aggregateProfiles } = require('../aggregation');
 
 const prepareResult = async (result, config, buildData) => {
   const pagesStats = await Promise.all(
     Object.entries(result)
       .map(async ([pageName, pageData]) => {
-        const isInternal = config.requests && config.request.internalTest ? (
+        const isInternal = config.requests && config.requests.internalTest ? (
           config.requests.internalTest
         ) : (
           makeInternalTest(config.pages.find(({ name }) => pageName === name).url)

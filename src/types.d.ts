@@ -116,6 +116,14 @@ declare module "overlooker" {
         end: number
       }
     }>,
+    coverage?: {
+      total: number,
+      used: number,
+      ranges: Array<{
+        start: number,
+        end: number
+      }>
+    },
     meta?: RequestMeta,
     type: string,
     url: string,

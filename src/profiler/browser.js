@@ -5,6 +5,7 @@ const cache = require('./cache.js');
 const fs = require('fs');
 const path = require('path');
 const { getPaintEventsBySelector } = require('./hero-elements.js');
+const { writeCoverage } = require('./coverage.js');
 
 const IS_DEBUG = process.argv.some((arg) => arg === '--debug');
 
@@ -158,12 +159,16 @@ const profileActions = async (page, config) => {
       await config.logger(`action "${name}" started`);
 
       const getTracing = await writeTracing(page);
+      const getCoverage = await writeCoverage(page);
 
       await page.evaluate(() => window.performance.mark(`action_start`));
       await action(page);
       await page.evaluate(() => window.performance.mark(`action_end`));
 
-      res[name] = await getTracing();
+      res[name] = {
+        tracing: await getTracing(),
+        coverage: await getCoverage()
+      };
 
       await config.logger(`action "${name}" completed`);
     }
@@ -181,24 +186,29 @@ const profileUrl = async (context, config) => {
 
   await client.send('Network.clearBrowserCache');
   await client.send('Network.clearBrowserCookies');
+  await client.send('DOM.enable');
+  await client.send('CSS.enable');
 
   await setupPageConfig(context, page, client, config);
 
   const getTracing = await writeTracing(page);
+  const getCoverage = await writeCoverage(page);
 
   try {
     await page.goto(url, { timeout: 60000, waitUntil: ["load"] });
 
-    const main = await getTracing();
+    const tracing = await getTracing();
+    const coverage = await getCoverage();
 
-    const heroElementPaints = await getPaintEventsBySelector(client, main, heroElement);
+    const heroElementPaints = await getPaintEventsBySelector(client, tracing, heroElement);
 
     const actions = await profileActions(page, config);
 
     await page.close();
 
     return {
-      main,
+      tracing,
+      coverage,
       actions,
       heroElementPaints
     };

@@ -1,5 +1,6 @@
 const { objDivide, objSumm } = require('../objects-utils.js');
-const { normalizeEvaluatingSummary } = require('./aggregation-evaluating');
+const { normalizeEvaluatingSummary } = require('./aggregation-evaluating.js');
+const { normalizeCoverageSummary } = require('./aggregation-coverage.js');
 
 const clearUrl = (url) => url && url.replace(/\?.*?$/, '');
 
@@ -11,6 +12,7 @@ const getNetworkSummary = (network, inception = {}, merge) => {
       size,
       transfer,
       evaluating,
+      coverage,
       ...rest
     }) => {
       const similarMergedUrl = url && merge ? merge(url) : false;
@@ -25,6 +27,7 @@ const getNetworkSummary = (network, inception = {}, merge) => {
           timings: similarSummary.timings ? objSumm(similarSummary.timings, timings) : timings,
           count: similarSummary.count + 1,
           evaluating: similarSummary.evaluating.concat([evaluating]),
+          coverage: similarSummary.coverage.concat(coverage),
           url,
           ...rest
         };
@@ -36,6 +39,7 @@ const getNetworkSummary = (network, inception = {}, merge) => {
           transfer,
           count: 1,
           evaluating: [evaluating],
+          coverage: [coverage],
           ...rest
         };
       }
@@ -52,6 +56,7 @@ const normalizeNetworkSummary = (summaryNetwork) => Object.entries(summaryNetwor
     type,
     transfer,
     evaluating,
+    coverage,
     count,
     ...rest
   }]) => ({
@@ -59,6 +64,7 @@ const normalizeNetworkSummary = (summaryNetwork) => Object.entries(summaryNetwor
     transfer: transfer / count,
     timings: objDivide(timings, count),
     evaluating: normalizeEvaluatingSummary(evaluating),
+    coverage: normalizeCoverageSummary(coverage),
     type,
     url,
     count,

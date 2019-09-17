@@ -10,10 +10,10 @@ const getSpeedIndex = async (events) => {
   }
 };
 
-const getHeroElementPaints = (events) => ({
+const getHeroElementPaints = (events) => events.length ? {
   heroElementFirstPaint: events[0].ts,
   heroElementLastPaint: events[events.length - 1].ts,
-});
+} : {};
 
 module.exports = {
   getSpeedIndex,

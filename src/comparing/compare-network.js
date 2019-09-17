@@ -115,7 +115,14 @@ const getRequestsDiff = (first, second) => ({
       timings: objMap(secondEval, (value, key) => first.evaluating[index] ? (
         value - first.evaluating[index].timings[key]
       ) : value)
-    }))
+    })),
+    coverage: second.coverage && first.coverage ? {
+      total: second.coverage.total - first.coverage.total,
+      used: second.coverage.used - first.coverage.used,
+      ranges: second.coverage.ranges
+        .filter(({ start, end }) => !first.coverage.ranges
+          .some((range) => range.start === start && range.end === end))
+    } : null
   } : {})
 });
 

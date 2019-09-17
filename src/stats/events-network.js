@@ -34,7 +34,7 @@ const separateNetworkEvents = (networkEvents) => Object.values(networkEvents)
   }))
   .filter(({ finish, request, response }) => finish && request && response);
 
-const prepareSeparatedNetwork = (separatedNetwork, evaluatingMap, internalTest) => separatedNetwork
+const prepareSeparatedNetwork = (separatedNetwork, evaluatingMap, coverageMap, internalTest) => separatedNetwork
   .map(({
           request,
           request: { args: { data: { url } } },
@@ -44,6 +44,7 @@ const prepareSeparatedNetwork = (separatedNetwork, evaluatingMap, internalTest) 
         }) => ({
       url,
       evaluating: evaluatingMap[url],
+      coverage: coverageMap[url],
       internal: internalTest(url),
       type: response.args.data.mimeType,
       timings: {
@@ -62,11 +63,12 @@ const prepareSeparatedNetwork = (separatedNetwork, evaluatingMap, internalTest) 
     })
   );
 
-const parseNetwork = (events, evaluatingMap, internalTest) => prepareSeparatedNetwork(
+const parseNetwork = (events, evaluatingMap, coverageMap, internalTest) => prepareSeparatedNetwork(
   separateNetworkEvents(
     filterNetworkEvents(events)
   ),
   evaluatingMap,
+  coverageMap,
   internalTest
 );
 

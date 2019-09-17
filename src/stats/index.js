@@ -3,27 +3,30 @@ const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.
 const { parseNetwork, getResourcesStats } = require('./events-network.js');
 const { getSpeedIndex, getHeroElementPaints } = require('./events-user-centric.js');
 const { getActionsStats } = require('./events-actions.js');
+const { makeCoverageMap } = require('./events-coverage.js');
 const {
   getScriptsEvaluating,
   getScriptsEvaluatingStats,
   makeScriptsEvaluatingMap
 } = require('./events-evaluating.js');
 
-const getAllStats = async ({ main, actions, heroElementPaints }, internalTest, firstEventName) => {
-  const firstEvent = getEventInMainFrame(main, firstEventName);
+const getAllStats = async ({ tracing, coverage, actions, heroElementPaints }, internalTest, firstEventName) => {
+  const firstEvent = getEventInMainFrame(tracing, firstEventName);
   const mainFrame = firstEvent.args.frame;
-  const relativeEvents = makeEventsRelative(main, firstEvent);
+  const relativeEvents = makeEventsRelative(tracing, firstEvent);
 
   const rawEvaluating = getScriptsEvaluating(relativeEvents);
   const evaluating = getScriptsEvaluatingStats(rawEvaluating, internalTest);
   const evaluatingMap = makeScriptsEvaluatingMap(rawEvaluating);
 
-  const network = parseNetwork(relativeEvents, evaluatingMap, internalTest);
+  const coverageMap = makeCoverageMap(coverage);
+
+  const network = parseNetwork(relativeEvents, evaluatingMap, coverageMap, internalTest);
   const resources = getResourcesStats(network);
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
 
   const userCentric = {
-    speedIndex: await getSpeedIndex(main),
+    speedIndex: await getSpeedIndex(tracing),
     ...getHeroElementPaints(makeEventsRelative(heroElementPaints, firstEvent))
   };
 
@@ -37,6 +40,7 @@ const getAllStats = async ({ main, actions, heroElementPaints }, internalTest, f
       userCentric
     },
     network,
+    coverage,
     actions: actionsStats
   }
 };

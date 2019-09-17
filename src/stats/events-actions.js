@@ -21,9 +21,9 @@ const getActionsTimings = (events) => {
 
 const getActionsStats = (actions, internalTest) => (
   Object.entries(actions)
-    .map(([name, data]) => {
-      const actionStart = getActionStart(data);
-      const relativeEvents = makeEventsRelative(data, actionStart);
+    .map(([name, { tracing, coverage }]) => {
+      const actionStart = getActionStart(tracing);
+      const relativeEvents = makeEventsRelative(tracing, actionStart);
 
       const rawEvaluating = getScriptsEvaluating(relativeEvents);
       const evaluating = getScriptsEvaluatingStats(rawEvaluating, internalTest);
