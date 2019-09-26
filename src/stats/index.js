@@ -1,6 +1,6 @@
 const { makeEventsRelative } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
-const { parseNetwork, getResourcesStats } = require('./events-network.js');
+const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
 const { getSpeedIndex, getHeroElementPaints } = require('./events-user-centric.js');
 const { getActionsStats } = require('./events-actions.js');
 const { makeCoverageMap } = require('./events-coverage.js');
@@ -16,13 +16,15 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementPaints }, in
   const relativeEvents = makeEventsRelative(tracing, firstEvent);
 
   const rawEvaluating = getScriptsEvaluating(relativeEvents);
-  const evaluating = getScriptsEvaluatingStats(rawEvaluating, internalTest);
   const evaluatingMap = makeScriptsEvaluatingMap(rawEvaluating);
-
   const coverageMap = makeCoverageMap(coverage);
 
   const network = parseNetwork(relativeEvents, evaluatingMap, coverageMap, internalTest);
-  const resources = getResourcesStats(network);
+
+  const resourcesStats = getResourcesStats(network);
+  const evaluatingStats = getScriptsEvaluatingStats(rawEvaluating, internalTest);
+  const coverageStats = getCoverageStats(network);
+
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
 
   const userCentric = {
@@ -34,10 +36,11 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementPaints }, in
 
   return {
     stats: {
-      resources,
       timings,
-      evaluating,
-      userCentric
+      userCentric,
+      evaluating: evaluatingStats,
+      resources: resourcesStats,
+      coverage: coverageStats
     },
     network,
     coverage,

@@ -1,5 +1,6 @@
 const mime = require('mime-types');
 const { getExtension } = require('./../utils.js');
+const { objMap } = require('./../objects-utils.js');
 const { findEventByName, filterEventsByName } = require('./events-helpers.js');
 
 const imagesTypes = ['jpg', 'jpeg', 'png', 'svg', 'ico', 'gif', 'webp'];
@@ -77,43 +78,67 @@ const filterNetwork = (network, extensions) => network
 
 const summarizeSizes = (network) => network.reduce((acc, { size }) => acc + size, 0);
 const summarizeTransfer = (network) => network.reduce((acc, { transfer }) => acc + transfer, 0);
-
-const splitNetworkByTypes = (network, types) => Object.entries(types).reduce((acc, [key, filter]) => {
-  const filteredNetwork = filter ? filterNetwork(network, filter) : network;
-
-  acc[key] = {
-    size: summarizeSizes(filteredNetwork),
-    transfer: summarizeTransfer(filteredNetwork)
-  };
+const summarizeCoverage = (network) => network.reduce((acc, { coverage }) => {
+  if (coverage) {
+    acc.total += coverage.total;
+    acc.used += coverage.used;
+  }
 
   return acc;
-}, {});
+}, {
+  total: 0,
+  used: 0
+});
 
-const splitNetworkToResourcesTypes = (network) => {
-  const stats = splitNetworkByTypes(network, {
+const splitNetworkByTypes = (network, types) => objMap(
+  types,
+  (filter) => filter ? filterNetwork(network, filter) : network
+);
+
+const splitNetworkByLocation = (network) => ({
+  internal: network.filter(({ internal }) => internal),
+  external: network.filter(({ internal }) => !internal)
+});
+
+const castNetworkToResources = (network) => objMap(
+  splitNetworkByTypes(network, {
     images: imagesTypes,
     fonts: fontsTypes,
     js: jsTypes,
     css: cssTypes,
     html: htmlTypes,
     total: totalTypes
-  });
+  }),
+  (filteredNetwork) => ({
+    size: summarizeSizes(filteredNetwork),
+    transfer: summarizeTransfer(filteredNetwork)
+  })
+);
 
-  return stats;
-};
+const castNetworkToTotalCoverage = (network) => objMap(
+  splitNetworkByTypes(network, {
+    js: jsTypes,
+    css: cssTypes
+  }),
+  (filteredNetwork) => summarizeCoverage(filteredNetwork)
+);
 
-const getResourcesStats = (network) => {
-  const internalNetwork = network.filter(({ internal }) => internal);
-  const externalNetwork = network.filter(({ internal }) => !internal);
+const getNetworkStats = (statsGetter, network) => {
+  const { internal, external } = splitNetworkByLocation(network);
 
   return {
-    internal: splitNetworkToResourcesTypes(internalNetwork),
-    external: splitNetworkToResourcesTypes(externalNetwork),
-    total: splitNetworkToResourcesTypes(network)
+    internal: statsGetter(internal),
+    external: statsGetter(external),
+    total: statsGetter(network)
   };
 };
 
+const getResourcesStats = (network) => getNetworkStats(castNetworkToResources, network);
+
+const getCoverageStats = (network) => getNetworkStats(castNetworkToTotalCoverage, network);
+
 module.exports = {
   parseNetwork,
-  getResourcesStats
+  getResourcesStats,
+  getCoverageStats
 };

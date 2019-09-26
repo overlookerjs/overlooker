@@ -1,4 +1,4 @@
-const { parseNetwork, getResourcesStats } = require('./events-network.js');
+const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
 const { makeEventsRelative } = require('./events-helpers.js');
 const { findEventByName } = require('./events-helpers.js');
 const {
@@ -26,22 +26,26 @@ const getActionsStats = (actions, internalTest) => (
       const relativeEvents = makeEventsRelative(tracing, actionStart);
 
       const rawEvaluating = getScriptsEvaluating(relativeEvents);
-      const evaluating = getScriptsEvaluatingStats(rawEvaluating, internalTest);
       const evaluatingMap = makeScriptsEvaluatingMap(rawEvaluating);
-
       const network = parseNetwork(relativeEvents, evaluatingMap, internalTest);
-      const resources = getResourcesStats(network);
+
+      const evaluatingStats = getScriptsEvaluatingStats(rawEvaluating, internalTest);
+      const resourcesStats = getResourcesStats(network);
+      const coverageStats = getCoverageStats(network);
+
       const timings = getActionsTimings(relativeEvents);
 
       return [
         name, {
           stats: {
-            resources,
             timings,
-            evaluating
+            evaluating: evaluatingStats,
+            resources: resourcesStats,
+            coverage: coverageStats
           },
           evaluating: evaluatingMap,
-          network
+          network,
+          coverage
         }
       ]
     })
