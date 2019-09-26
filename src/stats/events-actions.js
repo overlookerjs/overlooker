@@ -43,7 +43,6 @@ const getActionsStats = (actions, internalTest) => (
             resources: resourcesStats,
             coverage: coverageStats
           },
-          evaluating: evaluatingMap,
           network,
           coverage
         }

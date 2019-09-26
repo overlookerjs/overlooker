@@ -1,3 +1,5 @@
+import {ProfileStatsResourcesSection} from "overlooker";
+
 declare module "overlooker" {
   export type ProfileData = {
     [pageName: string]: PageData
@@ -46,13 +48,30 @@ declare module "overlooker" {
     evaluating: ProfileStatsEvaluating,
     resources: ProfileStatsResources,
     timings: ProfileStatsTimings,
-    userCentric: ProfileStatsUserCentric
+    userCentric: ProfileStatsUserCentric,
+    coverage: ProfileStatsCoverage
   };
 
   export type ProfileStatsEvaluating = {
     externalScriptEvaluating: AggregatedValue,
     internalScriptEvaluating: AggregatedValue,
     totalScriptEvaluating: AggregatedValue
+  };
+
+  export type ProfileStatsCoverage = {
+    internal: ProfileStatsCoverageSection
+    external: ProfileStatsCoverageSection
+  };
+
+  export type ProfileStatsCoverageSection = {
+    js: {
+      used: number,
+      total: number
+    },
+    css: {
+      used: number,
+      total: number
+    }
   };
 
   export type ProfileStatsResources = {
