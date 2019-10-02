@@ -14,6 +14,12 @@ const objReduce = (obj = {}, reducer, inception = {}) => Object.entries(obj)
     return acc;
   }, inception);
 
+const objMake = (arr) => arr.reduce((acc, [key, value]) => {
+  acc[key] = value;
+
+  return acc;
+});
+
 const objSumm = (obj1 = {}, obj2 = {}) => objMap(obj1, (value, key) => (value || 0) + (obj2[key] || 0));
 
 const objConcat = (obj1 = {}, obj2 = {}) => objMap(
@@ -53,6 +59,14 @@ const objDeepCompare = (comparator, obj1, obj2 = {}) => objMap(
     comparator(innerObj, obj2[key])
   ));
 
+const asyncObjMap = async (obj, map) => {
+  const results = await Promise.all(
+    Object.entries(obj).map(async ([key, value]) => [key, await map(value, key)])
+  );
+
+  return objMake(results);
+};
+
 module.exports = {
   objMap,
   objReduce,
@@ -63,5 +77,7 @@ module.exports = {
   objPercent,
   objFilter,
   objDeepConcat,
-  objDeepCompare
+  objDeepCompare,
+  asyncObjMap,
+  objMake
 };

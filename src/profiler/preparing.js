@@ -1,35 +1,29 @@
 const { makeInternalTest, makeRule } = require('./../utils.js');
-const { objMap } = require('./../objects-utils.js');
+const { objMap, asyncObjMap } = require('./../objects-utils.js');
 const { getAllStats } = require('../stats');
 const { aggregateProfiles } = require('../aggregation');
 
-const prepareResult = async (result, config, buildData) => {
-  const pagesStats = await Promise.all(
-    Object.entries(result)
-      .map(async ([pageName, pageData]) => {
-        const isInternal = config.requests && config.requests.internalTest ? (
-          config.requests.internalTest
-        ) : (
-          makeInternalTest(config.pages.find(({ name }) => pageName === name).url)
-        );
+const prepareResult = async (result, config, buildData) => (
+  asyncObjMap(
+    result,
+    async (pageName, pageData) => {
+      const isInternal = config.requests && config.requests.internalTest ? (
+        config.requests.internalTest
+      ) : (
+        makeInternalTest(config.pages.find(({ name }) => pageName === name).url)
+      );
 
-        return [
-          pageName,
-          await Promise.all(pageData.map((data) => getAllStats(data, isInternal, config.firstEvent)))
-        ];
-      })
-  );
+      const stats = await Promise.all(
+        pageData.map((data) => getAllStats(data, isInternal, config.firstEvent))
+      );
 
-  return pagesStats.reduce((acc, [pageName, pageStatsArray]) => {
-    acc[pageName] = aggregateProfiles(
-      pageStatsArray,
-      buildData,
-      config.requests ? config.requests.merge : null
-    );
-
-    return acc;
-  }, {});
-};
+      return aggregateProfiles(
+        stats,
+        buildData,
+        config.requests ? config.requests.merge : null
+      )
+    })
+);
 
 const prepareConfig = ({
                          requests,

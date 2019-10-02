@@ -1,5 +1,3 @@
-import {ProfileStatsResourcesSection} from "overlooker";
-
 declare module "overlooker" {
   export type ProfileData = {
     [pageName: string]: PageData
