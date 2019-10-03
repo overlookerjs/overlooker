@@ -9,7 +9,7 @@ const getCustomMetrics = (events) => {
   const marks = objFill(
     events
       .filter((event) => markRegExp.test(event.name))
-      .map((event) => [markRegExp.match(event)[1].split('.'), event.ts])
+      .map((event) => [event.name.match(markRegExp)[1].split('.'), event.ts])
   );
   const durations = objFill(
     Object.entries(
@@ -18,7 +18,7 @@ const getCustomMetrics = (events) => {
           events
             .filter((event) => durationRegExp.test(event.name))
             .map((event) => {
-              const [, type, name, hash = rootSymbol] = durationRegExp.match(event);
+              const [, type, name, hash = rootSymbol] = event.name.match(durationRegExp);
 
               return [
                 [
