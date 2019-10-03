@@ -47,7 +47,8 @@ declare module "overlooker" {
     resources: ProfileStatsResources,
     timings: ProfileStatsTimings,
     userCentric: ProfileStatsUserCentric,
-    coverage: ProfileStatsCoverage
+    coverage: ProfileStatsCoverage,
+    custom: ProfileStatsCustom
   };
 
   export type ProfileStatsEvaluating = {
@@ -59,6 +60,19 @@ declare module "overlooker" {
   export type ProfileStatsCoverage = {
     internal: ProfileStatsCoverageSection
     external: ProfileStatsCoverageSection
+  };
+
+  export type ProfileStatsCustom = {
+    marks: {
+      [dottedName: string]: number
+    },
+    durations: {
+      [dottedName: string]: number,
+      [dottedNameWithHash: string]: {
+        total: number,
+        count: number
+      }
+    }
   };
 
   export type ProfileStatsCoverageSection = {

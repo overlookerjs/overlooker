@@ -67,6 +67,26 @@ const asyncObjMap = async (obj, map) => {
   return objMake(results);
 };
 
+const objFill = (array) => array
+  .reduce((acc, [path, value]) => (
+    objDeepSet(acc, [path, value])
+  ), {});
+
+const objDeepSet = (obj, path, value) => {
+  path
+    .reduce((acc, key, index) => {
+      if (index === path.length - 1) {
+        acc[key] = value;
+      } else {
+        return acc[key];
+      }
+
+      return acc;
+    }, obj);
+
+  return obj;
+};
+
 module.exports = {
   objMap,
   objReduce,
@@ -79,5 +99,7 @@ module.exports = {
   objDeepConcat,
   objDeepCompare,
   asyncObjMap,
-  objMake
+  objMake,
+  objFill,
+  objDeepSet
 };

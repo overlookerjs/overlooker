@@ -30,5 +30,4 @@ const writeCoverage = async (page) => {
 
 module.exports = {
   writeCoverage,
-
 };

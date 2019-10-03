@@ -3,6 +3,7 @@ const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
 const { getSpeedIndex, getHeroElementPaints } = require('./events-user-centric.js');
 const { getActionsStats } = require('./events-actions.js');
+const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
 const {
   getScriptsEvaluating,
@@ -26,6 +27,7 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementPaints }, in
   const coverageStats = getCoverageStats(network);
 
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
+  const custom = getCustomMetrics(relativeEvents);
 
   const userCentric = {
     speedIndex: await getSpeedIndex(tracing),
@@ -38,9 +40,10 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementPaints }, in
     stats: {
       timings,
       userCentric,
+      custom,
       evaluating: evaluatingStats,
       resources: resourcesStats,
-      coverage: coverageStats
+      coverage: coverageStats,
     },
     network,
     coverage,

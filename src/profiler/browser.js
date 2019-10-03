@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { getPaintEventsBySelector } = require('./hero-elements.js');
 const { writeCoverage } = require('./coverage.js');
+const { ACTION_START, ACTION_END } = require('./../constants.js');
 
 const IS_DEBUG = process.argv.some((arg) => arg === '--debug');
 
@@ -161,9 +162,9 @@ const profileActions = async (page, config) => {
       const getTracing = await writeTracing(page);
       const getCoverage = await writeCoverage(page);
 
-      await page.evaluate(() => window.performance.mark(`action_start`));
+      await page.evaluate((as) => window.performance.mark(as), ACTION_START);
       await action(page);
-      await page.evaluate(() => window.performance.mark(`action_end`));
+      await page.evaluate((ae) => window.performance.mark(ae), ACTION_END);
 
       res[name] = {
         tracing: await getTracing(),

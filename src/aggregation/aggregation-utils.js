@@ -8,7 +8,7 @@ const avg = (arr) => arr.reduce((acc, item) => acc + item) / arr.length;
 
 const standardDeviation = (array, mean) => Math.sqrt(array.reduce((acc, item) => acc + Math.pow(item - mean, 2), 0) / array.length);
 
-const objAggregation = (obj) => objMap(obj, (array) => {
+const aggregate = (array) => {
   const mean = avg(array);
   const sortedArray = array
     .slice()
@@ -27,7 +27,9 @@ const objAggregation = (obj) => objMap(obj, (array) => {
     mean,
     raw: array
   }
-});
+};
+
+const objAggregation = (obj) => objMap(obj, aggregate);
 
 const objDeepAggregation = (obj) => objMap(obj, (innerObj) =>
   Object.values(innerObj).every((value) => Array.isArray(value)) ? (
@@ -38,5 +40,6 @@ const objDeepAggregation = (obj) => objMap(obj, (innerObj) =>
 
 module.exports = {
   objAggregation,
-  objDeepAggregation
+  objDeepAggregation,
+  aggregate
 };
