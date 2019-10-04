@@ -45,7 +45,7 @@ const getContext = async (config) => {
   };
 };
 
-const setupPageConfig = async (context, page, client, config) => {
+const setupPageConfig = async (context, page, client, config, pageConfig) => {
   if (config.platform === 'mobile') {
     await page.emulate(pixel2);
   } else {
@@ -62,8 +62,11 @@ const setupPageConfig = async (context, page, client, config) => {
     }
   }
 
-  if (config.cookies) {
-    await page.setCookie(config.cookies);
+  if (config.cookies || pageConfig.cookies) {
+    await page.setCookie([]
+      .concat(config.cookies || [])
+      .concat(pageConfig.cookies || [])
+    );
   }
 
   if (config.requests) {
@@ -152,12 +155,13 @@ const writeTracing = async (page) => {
   }
 };
 
-const profileActions = async (page, config) => {
+const profileActions = async (page, config, pageConfig) => {
   const res = {};
+  const { logger } = config;
 
-  if (config.actions && config.actions.length) {
-    for (const { name, action } of config.actions) {
-      await config.logger(`action "${name}" started`);
+  if (pageConfig.actions && pageConfig.actions.length) {
+    for (const { name, action } of pageConfig.actions) {
+      await logger(`action "${name}" started`);
 
       const getTracing = await writeTracing(page);
       const getCoverage = await writeCoverage(page);
@@ -171,31 +175,31 @@ const profileActions = async (page, config) => {
         coverage: await getCoverage()
       };
 
-      await config.logger(`action "${name}" completed`);
+      await logger(`action "${name}" completed`);
     }
   }
 
   return res;
 };
 
-const profileUrl = async (context, config) => {
-  const { url, heroElement, logger } = config;
+const profileUrl = async (context, config, pageConfig) => {
+  const { url, heroElement } = pageConfig;
 
   const page = await context.newPage();
 
-  const client = await page.target().createCDPSession();
-
-  await client.send('Network.clearBrowserCache');
-  await client.send('Network.clearBrowserCookies');
-  await client.send('DOM.enable');
-  await client.send('CSS.enable');
-
-  await setupPageConfig(context, page, client, config);
-
-  const getTracing = await writeTracing(page);
-  const getCoverage = await writeCoverage(page);
-
   try {
+    const client = await page.target().createCDPSession();
+
+    await client.send('Network.clearBrowserCache');
+    await client.send('Network.clearBrowserCookies');
+    await client.send('DOM.enable');
+    await client.send('CSS.enable');
+
+    await setupPageConfig(context, page, client, config, pageConfig);
+
+    const getTracing = await writeTracing(page);
+    const getCoverage = await writeCoverage(page);
+
     await page.goto(url, { timeout: 60000, waitUntil: ["load"] });
 
     const tracing = await getTracing();
@@ -203,7 +207,7 @@ const profileUrl = async (context, config) => {
 
     const heroElementPaints = await getPaintEventsBySelector(client, tracing, heroElement);
 
-    const actions = await profileActions(page, config);
+    const actions = await profileActions(page, config, pageConfig);
 
     await page.close();
 
@@ -213,13 +217,11 @@ const profileUrl = async (context, config) => {
       actions,
       heroElementPaints
     };
-  } catch (e) {
-    await logger(`Cannot get page ${url}:`, e);
+  } catch (error) {
+    await page.close();
+
+    throw error;
   }
-
-  await close();
-
-  return null;
 };
 
 module.exports = {

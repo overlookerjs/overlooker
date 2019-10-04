@@ -67,11 +67,10 @@ declare module "overlooker" {
       [dottedName: string]: number
     },
     durations: {
-      [dottedName: string]: number,
-      [dottedNameWithHash: string]: {
+      [dottedName: string]: number | {
         total: number,
         count: number
-      }
+      },
     }
   };
 
@@ -266,12 +265,19 @@ declare module "overlooker" {
 
   export type Rule = string | RegExp | ((url: string) => boolean) | Array<string | RegExp | Function>;
 
+  export type Cookies = Array<{
+    name: string,
+    value: string,
+    domain: string
+  }>;
+
   export type ProfileConfig = {
     pages: Array<{
       name: string,
       url: string,
-      heroElement: string,
-      actions: Array<{
+      heroElement?: string,
+      cookies?: Cookies,
+      actions?: Array<{
         name: string,
         action: (page: Object) => Promise<void>
       }>
@@ -280,11 +286,7 @@ declare module "overlooker" {
       cpu?: number,
       network?: 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi'
     },
-    cookies?: Array<{
-      name: string,
-      value: string,
-      domain: string
-    }>,
+    cookies?: Cookies,
     proxy?: {
       address: string,
       restart: () => Promise<void>

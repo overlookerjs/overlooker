@@ -49,6 +49,8 @@ const getCustomMetrics = (events) => {
               } else {
                 acc[name] = end - start;
               }
+
+              return acc;
             }, acc)
         ), {})
     )

@@ -7,30 +7,28 @@ const fetchPages = async ({
                           }) => {
   const { count, logger } = config;
 
-  const functions = config.pages.reduce((acc, { url, name, ...rest }) => ({
+  const functions = config.pages.reduce((acc, page) => ({
     ...acc,
-    [name]: Array(count).fill(async (stop, browser) => {
-      await logger(`start fetching: ${url}`);
+    [page.name]: Array(count).fill(async (stop, browser) => {
+      await logger(`start fetching: ${page.url}`);
 
       try {
         const pageStartTime = Date.now();
 
         const data = await profiler(
           browser.context,
-          {
-            ...config,
-            url,
-            ...rest
-          });
+          config,
+          page
+        );
 
         const pageEndTime = Date.now();
 
-        await logger(`fetch page ${url} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
+        await logger(`fetch page ${page.url} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
 
         return data;
       } catch (error) {
         await logger(`fetch failed: ${error}`);
-        await logger(`try to retry: ${url}`);
+        await logger(`try to retry: ${page.url}`);
 
         throw error;
       }
