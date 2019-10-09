@@ -24,6 +24,23 @@
     "speedline": "^1.4.2"
   },
   "devDependencies": {
-    "jest": "^24.9.0"
+    "@babel/cli": "^7.6.3",
+    "@babel/core": "^7.6.3",
+    "@babel/polyfill": "^7.6.0",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-react": "^7.6.3",
+    "babel-loader": "^8.0.6",
+    "bundle-internals": "^1.1.1",
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^3.2.0",
+    "file-loader": "^4.2.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "image-webpack-loader": "^6.0.0",
+    "jest": "^24.9.0",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
+    "style-loader": "^1.0.0",
+    "webpack": "^4.41.0"
   }
 }

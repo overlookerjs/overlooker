@@ -198,12 +198,13 @@ const profileUrl = async (context, config, pageConfig) => {
     await setupPageConfig(context, page, client, config, pageConfig);
 
     const getTracing = await writeTracing(page);
-    const getCoverage = await writeCoverage(page);
+    //const getCoverage = await writeCoverage(page);
 
     await page.goto(url, { timeout: 60000, waitUntil: ["load"] });
 
     const tracing = await getTracing();
-    const coverage = await getCoverage();
+    //const coverage = await getCoverage();
+    const coverage = [];
 
     const heroElementPaints = await getPaintEventsBySelector(client, tracing, heroElement);
 

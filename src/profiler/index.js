@@ -6,15 +6,30 @@ const { prepareResult } = require('./preparing.js');
 const cache = require('./cache.js');
 
 /**
+ * @typedef {Object} Cookie
+ * @property {string} name
+ * @property {string} domain
+ * @property {string} value
+ */
+
+/**
+ * @typedef {Object} Action
+ * @property {Function} action - the function receives an instance of the page in arguments and should return a promise
+ * @property {string} name - action name
+ */
+
+/**
+ * @typedef {Object} Page
+ * @property {string} name - page name
+ * @property {string} url - page url
+ * @property {string} [heroElement] - page hero element selector for checking paint time
+ * @property {Cookie[]} [cookies] - cookies objects for page
+ * @property {Action[]} [actions] - actions objects for page
+ */
+
+/**
  * @param {Object} config
- * @param {Object[]} config.pages - an array of page objects for the profile
- * @param {string} config.pages.$.name - page name
- * @param {string} config.pages.$.url - page url
- * @param {string} config.pages.$.heroElement - page hero element selector for checking paint time
- * @param {Object[]} [config.pages.$.cookies] - cookies objects for page
- * @param {Object[]} [config.pages.$.actions] - array of actions that are executed after the onLoad event
- * @param {Function} [config.pages.$.actions.$.action] - the function receives an instance of the page in arguments and should return a promise
- * @param {string} [config.pages.$.actions.$.name] - action name
+ * @param {Page[]} config.pages - an array of page objects for the profile
  * @param {Object} [config.throttling] - throttling object
  * @param {number} [config.throttling.cpu] - cpu throttling (higher - worst)
  * @param {string} [config.throttling.network] - network throttling (GPRS|Regular2G|Good2G|Regular3G|Good3G|Regular4G|DSL|WiFi)
