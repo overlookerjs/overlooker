@@ -1,5 +1,7 @@
 # overlooker
 
+[![Build Status](https://travis-ci.org/pyatyispyatil/overlooker.svg?branch=master)](https://travis-ci.org/pyatyispyatil/overlooker)
+
 ### Install
 ```
 npm i overlooker
