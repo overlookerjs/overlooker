@@ -33,4 +33,6 @@ describe('main tests', () => {
   test('check', async () => {
     checked = check(compared, {});
   });
+
+  afterAll(() => server.close());
 });
