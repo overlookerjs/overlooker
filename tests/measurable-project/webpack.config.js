@@ -50,8 +50,8 @@ module.exports = {
       filename: 'index.html',
       template: path.resolve(root, 'index.html')
     }),
-    // new BundleInternalsPlugin({
-    //   saveTo: __dirname + '/debug.json'
-    // })
+    new BundleInternalsPlugin({
+      saveTo: path.resolve(root, 'static/build.json')
+    })
   ]
 };

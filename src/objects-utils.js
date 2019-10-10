@@ -18,7 +18,7 @@ const objMake = (arr) => arr.reduce((acc, [key, value]) => {
   acc[key] = value;
 
   return acc;
-});
+}, {});
 
 const objSumm = (obj1 = {}, obj2 = {}) => objMap(obj1, (value, key) => (value || 0) + (obj2[key] || 0));
 

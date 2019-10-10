@@ -3,9 +3,7 @@ const port = 3000;
 const fs = require('fs');
 const path = require('path');
 
-const html = fs.readFileSync(path.resolve(__dirname, './static/index.html'));
-
-const requestHandler = (req, res) => {
+const requestHandler = (html) => (req, res) => {
   if (req.url === '/') {
     res.end(html);
   } else {
@@ -17,7 +15,9 @@ const requestHandler = (req, res) => {
 };
 
 module.exports = () => {
-  const server = http.createServer(requestHandler);
+  const html = fs.readFileSync(path.resolve(__dirname, './static/index.html'));
+
+  const server = http.createServer(requestHandler(html));
 
   return server.listen(port);
 };

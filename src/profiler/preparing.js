@@ -6,7 +6,7 @@ const { aggregateProfiles } = require('../aggregation');
 const prepareResult = async (result, config, buildData) => (
   asyncObjMap(
     result,
-    async (pageName, pageData) => {
+    async (pageData, pageName) => {
       const isInternal = config.requests && config.requests.internalTest ? (
         config.requests.internalTest
       ) : (
