@@ -91,7 +91,7 @@ const objDeepMap = (obj, map) => objMap(obj, (innerObj) =>
   Object.values(innerObj).every((value) => Array.isArray(value)) ? (
     map(innerObj)
   ) : (
-    objDeepMap(innerObj)
+    objDeepMap(innerObj, map)
   ));
 
 module.exports = {
