@@ -4,7 +4,10 @@ const { objDeepConcat } = require('./../objects-utils.js');
 const { objDeepAggregation } = require('./aggregation-utils.js');
 const { getActionsSummary, normalizeActionsSummary } = require('./aggregation-actions.js');
 
-const aggregateProfiles = (profiles, buildData, mergeRequests) => {
+const aggregateProfiles = (profiles,
+                           buildData,
+                           mergeRequests,
+                           aggregation = objDeepAggregation) => {
   const { stats, network, actions } = profiles.reduce((summary, profile) => ({
     stats: objDeepConcat(profile.stats, summary.stats),
     network: getNetworkSummary(profile.network, summary.network, mergeRequests),
@@ -16,7 +19,7 @@ const aggregateProfiles = (profiles, buildData, mergeRequests) => {
   });
 
   return {
-    stats: objDeepAggregation(stats),
+    stats: aggregation(stats),
     network: expandNetwork(normalizeNetworkSummary(network), buildData),
     actions: normalizeActionsSummary(actions, buildData)
   };

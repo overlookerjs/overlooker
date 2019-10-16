@@ -1,9 +1,13 @@
 const { profile } = require('./profiler');
-const { compare } = require('./comparing');
-const { check } = require('./checker');
+const { compare, comparePages } = require('./comparing');
+const { check, checkPage } = require('./checker');
+const { merge } = require('./merge');
 
 module.exports = {
   profile,
   compare,
-  check
+  comparePages,
+  check,
+  checkPage,
+  merge
 };

@@ -1,12 +1,5 @@
-const { objMap } = require('./../objects-utils.js');
-
-const percentile = (arr, percentile) => (
-  arr[Math.floor(arr.length * percentile)]
-);
-
-const avg = (arr) => arr.reduce((acc, item) => acc + item) / arr.length;
-
-const standardDeviation = (array, mean) => Math.sqrt(array.reduce((acc, item) => acc + Math.pow(item - mean, 2), 0) / array.length);
+const { avg, median, percentile, standardDeviation } = require('./../math-utils');
+const { objMap, objDeepMap } = require('./../objects-utils.js');
 
 const aggregate = (array) => {
   const mean = avg(array);
@@ -21,7 +14,7 @@ const aggregate = (array) => {
     percentile02: percentile(sortedArray, 0.02),
     max: sortedArray[sortedArray.length - 1],
     min: sortedArray[0],
-    median: percentile(sortedArray, 0.5),
+    median: median(sortedArray),
     count: array.length,
     standardDeviation: standardDeviation(array, mean),
     mean,
@@ -31,12 +24,7 @@ const aggregate = (array) => {
 
 const objAggregation = (obj) => objMap(obj, aggregate);
 
-const objDeepAggregation = (obj) => objMap(obj, (innerObj) =>
-  Object.values(innerObj).every((value) => Array.isArray(value)) ? (
-    objAggregation(innerObj)
-  ) : (
-    objDeepAggregation(innerObj)
-  ));
+const objDeepAggregation = (obj) => objDeepMap(obj, objAggregation);
 
 module.exports = {
   objAggregation,

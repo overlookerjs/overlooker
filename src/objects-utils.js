@@ -87,6 +87,13 @@ const objDeepSet = (obj, path, value) => {
   return obj;
 };
 
+const objDeepMap = (obj, map) => objMap(obj, (innerObj) =>
+  Object.values(innerObj).every((value) => Array.isArray(value)) ? (
+    map(innerObj)
+  ) : (
+    objDeepMap(innerObj)
+  ));
+
 module.exports = {
   objMap,
   objReduce,
@@ -101,5 +108,6 @@ module.exports = {
   asyncObjMap,
   objMake,
   objFill,
-  objDeepSet
+  objDeepSet,
+  objDeepMap
 };
