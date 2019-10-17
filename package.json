@@ -4,7 +4,7 @@
   "description": "tool for profile front-end performance",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "test": "jest",
     "watch": "cd ./tests/measurable-project && webpack --watch",
     "server": "node ./tests/measurable-project/server/debug.js"
   },
@@ -34,7 +34,6 @@
     "babel-loader": "^8.0.6",
     "bundle-internals": "^1.1.1",
     "clean-webpack-plugin": "^3.0.0",
-    "coveralls": "^3.0.7",
     "css-loader": "^3.2.0",
     "file-loader": "^4.2.0",
     "html-loader": "^0.5.5",
