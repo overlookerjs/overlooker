@@ -7,7 +7,7 @@ const root = __dirname;
 
 module.exports = {
   mode: 'production',
-  entry: path.resolve(root, 'index.js'),
+  entry: path.resolve(root, 'client/index.js'),
   output: {
     path: path.resolve(root, 'static'),
     filename: '[name].[chunkhash:8].js'
@@ -39,7 +39,12 @@ module.exports = {
         test: /\.css$/,
         use: [
           'style-loader',
-          'css-loader'
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true
+            }
+          }
         ]
       }
     ]
@@ -48,7 +53,7 @@ module.exports = {
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({  // Also generate a test.html
       filename: 'index.html',
-      template: path.resolve(root, 'index.html')
+      template: path.resolve(root, 'client/index.html')
     }),
     new BundleInternalsPlugin({
       saveTo: path.resolve(root, 'static/build.json')

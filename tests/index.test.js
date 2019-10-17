@@ -1,5 +1,5 @@
 const compile = require('./measurable-project/compiler');
-const listen = require('./measurable-project/server');
+const listen = require('./measurable-project/server/index');
 const { check, checkPage, compare, comparePages, profile, merge } = require('./../src');
 
 const thresholds = {

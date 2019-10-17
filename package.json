@@ -4,7 +4,9 @@
   "description": "tool for profile front-end performance",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "watch": "cd ./tests/measurable-project && webpack --watch",
+    "server": "node ./tests/measurable-project/server/debug.js"
   },
   "repository": {
     "type": "git",
@@ -41,6 +43,7 @@
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "style-loader": "^1.0.0",
-    "webpack": "^4.41.0"
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9"
   }
 }
