@@ -3,9 +3,13 @@ import ReactDom from 'react-dom';
 import styles from './styles.css';
 
 class App extends Component {
-  state = {
-    opened: false
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      opened: false
+    };
+  }
 
   render() {
     return (
