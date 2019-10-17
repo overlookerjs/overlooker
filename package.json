@@ -12,6 +12,10 @@
     "type": "git",
     "url": "git+https://github.com/pyatyispyatil/overlooker.git"
   },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": ["text"]
+  },
   "author": "Nikolay Ryabov",
   "license": "ISC",
   "bugs": {
