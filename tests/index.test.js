@@ -12,7 +12,17 @@ describe('main tests', () => {
   const config = {
     pages: [{
       name: 'main',
-      url: 'http://localhost:3000'
+      url: 'http://localhost:3000',
+      actions: [{
+        name: 'test-action',
+        action: async (page) => {
+          await page.click('button');
+          await page.waitForSelector('#loaded-image');
+          await page.evaluate(() => {
+            return new Promise((resolve) => document.querySelector('#loaded-image').addEventListener('load', resolve));
+          });
+        }
+      }]
     }, {
       name: 'category',
       url: 'http://localhost:3000'
