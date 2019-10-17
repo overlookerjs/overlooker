@@ -63,7 +63,7 @@ describe('main tests', () => {
     });
 
     test('compare merged pages', async () => {
-      compared = comparePages(data1, data2);
+      compared = comparePages(firstMerge, secondMerge);
     });
 
     test('check merged pages', async () => {
