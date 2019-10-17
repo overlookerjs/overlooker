@@ -16,7 +16,9 @@ describe('main tests', () => {
     }, {
       name: 'category',
       url: 'http://localhost:3000'
-    }]
+    }],
+    count: 1,
+    logger: () => null
   };
 
   let server;
