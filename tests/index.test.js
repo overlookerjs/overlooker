@@ -28,7 +28,10 @@ describe('main tests', () => {
       url: 'http://localhost:3000'
     }],
     count: 1,
-    logger: () => null
+    logger: () => null,
+    buildData:{
+      url: '/build.json',
+    }
   };
 
   let server;
