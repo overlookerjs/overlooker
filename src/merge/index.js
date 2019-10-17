@@ -1,5 +1,5 @@
 const { aggregateProfiles } = require('./../aggregation');
-const { objDeepMap } = require('./../objects-utils');
+const { objDeepMap, objMap } = require('./../objects-utils');
 const { avg, median } = require('./../math-utils');
 
 const strategies = {
@@ -7,7 +7,7 @@ const strategies = {
   median
 };
 
-const getAggregateMerger = (mergeStrategy) => (stats) => objDeepMap(stats, (array) => mergeStrategy(array));
+const getAggregateMerger = (mergeStrategy) => (stats) => objDeepMap(stats, (obj) => objMap(obj, mergeStrategy));
 
 const merge = (data, pages, mergeStrategyName = 'avg') => (
   aggregateProfiles(
