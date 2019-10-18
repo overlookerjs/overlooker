@@ -167,8 +167,10 @@ const profileActions = async (page, config, pageConfig) => {
       const getTracing = await writeTracing(page);
       // const getCoverage = await writeCoverage(page);
 
+      /* istanbul ignore next */
       await page.evaluate((as) => window.performance.mark(as), ACTION_START);
       await action(page);
+      /* istanbul ignore next */
       await page.evaluate((ae) => window.performance.mark(ae), ACTION_END);
 
       res[name] = {

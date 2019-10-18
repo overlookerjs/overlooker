@@ -6,13 +6,14 @@ const thresholds = {
   'percent.stats.timings.firstPaint.median': 0.05
 };
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 describe('main tests', () => {
   const config = {
     pages: [{
       name: 'main',
       url: 'http://localhost:3000',
+      heroElement: '#hero-element',
       actions: [{
         name: 'test-action',
         action: async (page) => {

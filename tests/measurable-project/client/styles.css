@@ -6,3 +6,7 @@
 .button {
   padding: 4px;
 }
+
+.hero {
+  will-change: transform;
+}

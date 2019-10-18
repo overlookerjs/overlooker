@@ -20,6 +20,7 @@ class App extends Component {
         <button className={styles.button} onClick={() => setTimeout(() => this.setState({ opened: true }), 500)}>
           test button
         </button>
+        <div className={styles.hero} id='hero-element'>Hero content</div>
         {
           this.state.opened && <img id="loaded-image" src={require('./loaded-image.png')}/>
         }
