@@ -40,6 +40,7 @@ const prepareConfig = ({
     network: 'Good3G',
     cpu: 2
   },
+  debug: false,
   logger: async (...args) => console.log(...args),
   ...rest
 });

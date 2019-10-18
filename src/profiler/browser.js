@@ -5,7 +5,7 @@ const cache = require('./cache.js');
 const fs = require('fs');
 const path = require('path');
 const { getPaintEventsBySelector } = require('./hero-elements.js');
-const { writeCoverage } = require('./coverage.js');
+// const { writeCoverage } = require('./coverage.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
 
 const IS_DEBUG = process.argv.some((arg) => arg === '--debug');
@@ -32,7 +32,7 @@ const getContext = async (config) => {
       .concat(config.proxy && config.proxy.address ? `--proxy-server=${config.proxy.address}` : []),
     ignoreHTTPSErrors: true,
     defaultViewport: viewports[config.platform],
-    headless: typeof config.debug === 'boolean' ? config.debug : true
+    headless: !config.debug
   });
 
   const context = await browser.createIncognitoBrowserContext();
