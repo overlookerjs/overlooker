@@ -16,6 +16,7 @@ describe('main tests', () => {
       actions: [{
         name: 'test-action',
         action: async (page) => {
+          await page.waitForSelector('button');
           await page.click('button');
           await page.waitForSelector('#loaded-image');
           await page.evaluate(() => {

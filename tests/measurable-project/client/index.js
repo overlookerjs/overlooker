@@ -17,7 +17,8 @@ class App extends Component {
         <h2>
           Header
         </h2>
-        <button onClick={() => this.setState({ opened: true })}>
+        <button className={styles.button} onClick={() => setTimeout(() => this.setState({ opened: true }), 500)}>
+          test button
         </button>
         {
           this.state.opened && <img id="loaded-image" src={require('./loaded-image.png')}/>

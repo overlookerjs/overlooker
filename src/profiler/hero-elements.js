@@ -9,24 +9,28 @@ const findNodePaintEvents = (events, node) => (
 );
 
 const getPaintEventsBySelector = async (client, events, selector) => {
-  try {
-    const { root: { nodeId: rootNodeId } } = await client.send('DOM.getDocument');
+  if (selector) {
+    try {
+      const { root: { nodeId: rootNodeId } } = await client.send('DOM.getDocument');
 
-    const { nodeId } = await client.send('DOM.querySelector', {
-      nodeId: rootNodeId,
-      selector
-    });
+      const { nodeId } = await client.send('DOM.querySelector', {
+        nodeId: rootNodeId,
+        selector
+      });
 
-    if (typeof nodeId === 'number') {
-      const node = await client.send('DOM.describeNode', { nodeId }).then(({ node }) => node);
+      if (typeof nodeId === 'number') {
+        const node = await client.send('DOM.describeNode', { nodeId }).then(({ node }) => node);
 
-      return node ? findNodePaintEvents(events, node) : [];
-    } else {
+        return node ? findNodePaintEvents(events, node) : [];
+      } else {
+        return [];
+      }
+    } catch (err) {
       return [];
     }
-  } catch (err) {
-    return [];
   }
+
+  return [];
 };
 
 module.exports = { getPaintEventsBySelector };

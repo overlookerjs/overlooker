@@ -31,7 +31,8 @@ const getContext = async (config) => {
       .concat(config.browserArgs)
       .concat(config.proxy && config.proxy.address ? `--proxy-server=${config.proxy.address}` : []),
     ignoreHTTPSErrors: true,
-    defaultViewport: viewports[config.platform]
+    defaultViewport: viewports[config.platform],
+    headless: typeof config.debug === 'boolean' ? config.debug : true
   });
 
   const context = await browser.createIncognitoBrowserContext();
@@ -164,7 +165,7 @@ const profileActions = async (page, config, pageConfig) => {
       await logger(`action "${name}" started`);
 
       const getTracing = await writeTracing(page);
-      const getCoverage = await writeCoverage(page);
+      // const getCoverage = await writeCoverage(page);
 
       await page.evaluate((as) => window.performance.mark(as), ACTION_START);
       await action(page);
@@ -172,7 +173,7 @@ const profileActions = async (page, config, pageConfig) => {
 
       res[name] = {
         tracing: await getTracing(),
-        coverage: await getCoverage()
+        coverage: [] // await getCoverage()
       };
 
       await logger(`action "${name}" completed`);
