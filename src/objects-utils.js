@@ -1,6 +1,6 @@
-const map = (obj = {}, map) => Object.entries(obj)
+const map = (obj = {}, mapper) => Object.entries(obj)
   .reduce((acc, [key, value]) => {
-    acc[key] = map(value, key);
+    acc[key] = mapper(value, key);
 
     return acc;
   }, {});
@@ -87,11 +87,11 @@ const deepSet = (obj, path, value) => {
   return obj;
 };
 
-const deepMap = (obj, map) => map(obj, (innerObj) =>
+const deepMap = (obj, mapper) => map(obj, (innerObj) =>
   Object.values(innerObj).every((value) => Array.isArray(value)) ? (
-    map(innerObj)
+    mapper(innerObj)
   ) : (
-    deepMap(innerObj, map)
+    deepMap(innerObj, mapper)
   ));
 
 module.exports = {
