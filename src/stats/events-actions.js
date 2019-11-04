@@ -2,7 +2,7 @@ const { makeCoverageMap } = require("./events-coverage.js");
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
 const { makeEventsRelative, findEventByName } = require('./events-helpers.js');
 const { getCustomMetrics } = require('./events-custom.js');
-const { objMap } = require('./../objects-utils');
+const { map } = require('./../objects-utils');
 const {
   getScriptsEvaluating,
   makeScriptsEvaluatingMap,
@@ -22,7 +22,7 @@ const getActionsTimings = (events) => {
   };
 };
 
-const getActionsStats = (actions, internalTest) => objMap(
+const getActionsStats = (actions, internalTest) => map(
   actions,
   ({ tracing, coverage }) => {
     const actionStart = getActionStart(tracing);

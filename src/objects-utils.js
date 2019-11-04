@@ -1,11 +1,11 @@
-const objMap = (obj = {}, map) => Object.entries(obj)
+const map = (obj = {}, map) => Object.entries(obj)
   .reduce((acc, [key, value]) => {
     acc[key] = map(value, key);
 
     return acc;
   }, {});
 
-const objReduce = (obj = {}, reducer, inception = {}) => Object.entries(obj)
+const reduce = (obj = {}, reducer, inception = {}) => Object.entries(obj)
   .reduce((acc, [key, value]) => {
     const [newValue, newKey = key] = reducer(value, key);
 
@@ -14,28 +14,28 @@ const objReduce = (obj = {}, reducer, inception = {}) => Object.entries(obj)
     return acc;
   }, inception);
 
-const objMake = (arr) => arr.reduce((acc, [key, value]) => {
+const make = (arr) => arr.reduce((acc, [key, value]) => {
   acc[key] = value;
 
   return acc;
 }, {});
 
-const objSumm = (obj1 = {}, obj2 = {}) => objMap(obj1, (value, key) => (value || 0) + (obj2[key] || 0));
+const summ = (obj1 = {}, obj2 = {}) => map(obj1, (value, key) => (value || 0) + (obj2[key] || 0));
 
-const objConcat = (obj1 = {}, obj2 = {}) => objMap(
+const concat = (obj1 = {}, obj2 = {}) => map(
   obj1,
   (value, key) => value != null && obj2[key] != null ? [].concat(value, obj2[key]) : [value != null ? value : obj2[key]]
 );
 
-const objDivide = (obj = {}, divider) => objMap(obj, (value) => value / divider);
+const divide = (obj = {}, divider) => map(obj, (value) => value / divider);
 
-const objSub = (obj1 = {}, obj2 = {}) => objMap(obj1, (value, key) => (value || 0) - (obj2[key] || 0));
+const sub = (obj1 = {}, obj2 = {}) => map(obj1, (value, key) => (value || 0) - (obj2[key] || 0));
 
-const objPercent = (obj1 = {}, obj2 = {}) => objMap(obj1,
+const percent = (obj1 = {}, obj2 = {}) => map(obj1,
   (value, key) => (value && obj2[key] ? ((value / obj2[key]) - 1) : 0)
 );
 
-const objFilter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) => {
+const filter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) => {
   if (filter(value, key)) {
     acc[key] = value;
   }
@@ -43,36 +43,36 @@ const objFilter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]
   return acc;
 }, {});
 
-const objDeepConcat = (obj1, obj2 = {}) => objMap(
+const deepConcat = (obj1, obj2 = {}) => map(
   obj1,
   (innerObj, key) => Object.values(innerObj).every((value) => value instanceof Object) ? (
-    objDeepConcat(innerObj, obj2[key])
+    deepConcat(innerObj, obj2[key])
   ) : (
-    objConcat(innerObj, obj2[key])
+    concat(innerObj, obj2[key])
   ));
 
-const objDeepCompare = (comparator, obj1, obj2 = {}) => objMap(
+const deepCompare = (comparator, obj1, obj2 = {}) => map(
   obj1,
   (innerObj, key) => Object.values(innerObj).every((value) => value instanceof Object) ? (
-    objDeepCompare(comparator, innerObj, obj2[key])
+    deepCompare(comparator, innerObj, obj2[key])
   ) : (
     comparator(innerObj, obj2[key])
   ));
 
-const asyncObjMap = async (obj, map) => {
+const asyncMap = async (obj, map) => {
   const results = await Promise.all(
     Object.entries(obj).map(async ([key, value]) => [key, await map(value, key)])
   );
 
-  return objMake(results);
+  return make(results);
 };
 
-const objFill = (array) => array
+const fill = (array) => array
   .reduce((acc, [path, value]) => (
-    objDeepSet(acc, [path, value])
+    deepSet(acc, path, value)
   ), {});
 
-const objDeepSet = (obj, path, value) => {
+const deepSet = (obj, path, value) => {
   path
     .reduce((acc, key, index) => {
       if (index === path.length - 1) {
@@ -87,27 +87,27 @@ const objDeepSet = (obj, path, value) => {
   return obj;
 };
 
-const objDeepMap = (obj, map) => objMap(obj, (innerObj) =>
+const deepMap = (obj, map) => map(obj, (innerObj) =>
   Object.values(innerObj).every((value) => Array.isArray(value)) ? (
     map(innerObj)
   ) : (
-    objDeepMap(innerObj, map)
+    deepMap(innerObj, map)
   ));
 
 module.exports = {
-  objMap,
-  objReduce,
-  objDivide,
-  objSumm,
-  objConcat,
-  objSub,
-  objPercent,
-  objFilter,
-  objDeepConcat,
-  objDeepCompare,
-  asyncObjMap,
-  objMake,
-  objFill,
-  objDeepSet,
-  objDeepMap
+  map,
+  reduce,
+  divide,
+  summ,
+  concat,
+  sub,
+  percent,
+  filter,
+  deepConcat,
+  deepCompare,
+  asyncMap,
+  make,
+  fill,
+  deepSet,
+  deepMap
 };

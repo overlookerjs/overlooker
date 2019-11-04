@@ -1,4 +1,4 @@
-const { objMap } = require('../objects-utils.js');
+const { map } = require('../objects-utils.js');
 const { compareNetworks } = require('./compare-network.js');
 const { compareStats, compareStatsPercent } = require('./compare-stats.js');
 
@@ -12,14 +12,14 @@ const comparePages = (firstPage, secondPage) => ({
   absolute: {
     stats: compareStats(firstPage.stats, secondPage.stats),
     network: compareNetworks(firstPage.network, secondPage.network),
-    actions: objMap(firstPage.actions, (action, actionName) => secondPage.actions[actionName] ? ({
+    actions: map(firstPage.actions, (action, actionName) => secondPage.actions[actionName] ? ({
       stats: compareStats(action.stats, secondPage.actions[actionName].stats),
       network: compareNetworks(action.network, secondPage.actions[actionName].network)
     }) : null)
   },
   percent: {
     stats: compareStatsPercent(firstPage.stats, secondPage.stats),
-    actions: objMap(firstPage.actions, (action, actionName) => secondPage.actions[actionName] ? ({
+    actions: map(firstPage.actions, (action, actionName) => secondPage.actions[actionName] ? ({
       stats: compareStatsPercent(action.stats, secondPage.actions[actionName].stats)
     }) : null)
   }

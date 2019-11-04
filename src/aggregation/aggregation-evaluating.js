@@ -1,4 +1,4 @@
-const { objDivide, objSumm } = require('../objects-utils.js');
+const { divide, summ } = require('../objects-utils.js');
 
 const normalizeEvaluatingSummary = (evaluating = []) => {
   const clearEvaluating = evaluating.filter(Boolean);
@@ -11,11 +11,11 @@ const normalizeEvaluatingSummary = (evaluating = []) => {
         url: mergedEvaluating[0].url,
         duration: mergedEvaluating
           .reduce((acc, { duration = 0 } = {}) => acc + duration, 0) / mergedEvaluating.length,
-        timings: objDivide(
+        timings: divide(
           mergedEvaluating
             .filter(Boolean)
             .map(({ timings }) => timings)
-            .reduce(objSumm),
+            .reduce(summ),
           mergedEvaluating.length
         )
       }))

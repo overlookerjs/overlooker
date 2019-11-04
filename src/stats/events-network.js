@@ -1,6 +1,6 @@
 const mime = require('mime-types');
 const { getExtension } = require('./../utils.js');
-const { objMap } = require('./../objects-utils.js');
+const { map } = require('./../objects-utils.js');
 const { findEventByName, filterEventsByName } = require('./events-helpers.js');
 
 const imagesTypes = ['jpg', 'jpeg', 'png', 'svg', 'ico', 'gif', 'webp'];
@@ -90,7 +90,7 @@ const summarizeCoverage = (network) => network.reduce((acc, { coverage }) => {
   used: 0
 });
 
-const splitNetworkByTypes = (network, types) => objMap(
+const splitNetworkByTypes = (network, types) => map(
   types,
   (filter) => filter ? filterNetwork(network, filter) : network
 );
@@ -100,7 +100,7 @@ const splitNetworkByLocation = (network) => ({
   external: network.filter(({ internal }) => !internal)
 });
 
-const castNetworkToResources = (network) => objMap(
+const castNetworkToResources = (network) => map(
   splitNetworkByTypes(network, {
     images: imagesTypes,
     fonts: fontsTypes,
@@ -115,7 +115,7 @@ const castNetworkToResources = (network) => objMap(
   })
 );
 
-const castNetworkToTotalCoverage = (network) => objMap(
+const castNetworkToTotalCoverage = (network) => map(
   splitNetworkByTypes(network, {
     js: jsTypes,
     css: cssTypes

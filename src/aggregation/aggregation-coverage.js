@@ -1,4 +1,4 @@
-const { objSumm, objDivide } = require('./../objects-utils.js');
+const { summ, divide } = require('./../objects-utils.js');
 
 const normalizeCoverageSummary = (coverageSummary) => {
   const separated = coverageSummary
@@ -6,10 +6,10 @@ const normalizeCoverageSummary = (coverageSummary) => {
     .map(({ ranges, ...stats }) => ({ ranges, stats }));
 
   if (separated.length) {
-    const aggregatedStats = objDivide(
+    const aggregatedStats = divide(
       separated
         .map(({ stats }) => stats)
-        .reduce((acc, obj) => objSumm(acc, obj)),
+        .reduce((acc, obj) => summ(acc, obj)),
       separated.length
     );
 

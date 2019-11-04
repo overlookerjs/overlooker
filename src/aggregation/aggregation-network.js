@@ -1,4 +1,4 @@
-const { objDivide, objSumm } = require('../objects-utils.js');
+const { divide, summ } = require('../objects-utils.js');
 const { normalizeEvaluatingSummary } = require('./aggregation-evaluating.js');
 const { normalizeCoverageSummary } = require('./aggregation-coverage.js');
 
@@ -24,7 +24,7 @@ const getNetworkSummary = (network, inception = {}, merge) => {
         networkSummary[clearedUrl] = {
           size: size + similarSummary.size,
           transfer: transfer + similarSummary.transfer,
-          timings: similarSummary.timings ? objSumm(similarSummary.timings, timings) : timings,
+          timings: similarSummary.timings ? summ(similarSummary.timings, timings) : timings,
           count: similarSummary.count + 1,
           evaluating: similarSummary.evaluating.concat([evaluating]),
           coverage: similarSummary.coverage.concat(coverage),
@@ -62,7 +62,7 @@ const normalizeNetworkSummary = (summaryNetwork) => Object.entries(summaryNetwor
   }]) => ({
     size: size / count,
     transfer: transfer / count,
-    timings: objDivide(timings, count),
+    timings: divide(timings, count),
     evaluating: normalizeEvaluatingSummary(evaluating),
     coverage: normalizeCoverageSummary(coverage),
     type,

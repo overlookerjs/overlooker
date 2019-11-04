@@ -1,5 +1,5 @@
 const { avg, median, percentile, standardDeviation } = require('./../math-utils');
-const { objMap, objDeepMap } = require('./../objects-utils.js');
+const { map, deepMap } = require('./../objects-utils.js');
 
 const aggregate = (array) => {
   const mean = avg(array);
@@ -22,9 +22,9 @@ const aggregate = (array) => {
   }
 };
 
-const objAggregation = (obj) => objMap(obj, aggregate);
+const objAggregation = (obj) => map(obj, aggregate);
 
-const objDeepAggregation = (obj) => objDeepMap(obj, objAggregation);
+const objDeepAggregation = (obj) => deepMap(obj, objAggregation);
 
 module.exports = {
   objAggregation,

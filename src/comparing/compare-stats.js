@@ -1,10 +1,10 @@
-const { objPercent, objSub, objMap, objDeepCompare } = require('./../objects-utils.js');
+const { percent, sub, map, deepCompare } = require('./../objects-utils.js');
 
-const getComparator = (comparator) => (firstStats, secondStats) => objDeepCompare(comparator, firstStats, secondStats);
+const getComparator = (comparator) => (firstStats, secondStats) => deepCompare(comparator, firstStats, secondStats);
 
-const compareStats = getComparator(objSub);
+const compareStats = getComparator(sub);
 
-const compareStatsPercent = getComparator(objPercent);
+const compareStatsPercent = getComparator(percent);
 
 module.exports = {
   compareStats,

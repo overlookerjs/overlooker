@@ -1,10 +1,10 @@
 const { makeInternalTest, makeRule } = require('./../utils.js');
-const { objMap, asyncObjMap } = require('./../objects-utils.js');
+const { map, asyncMap } = require('./../objects-utils.js');
 const { getAllStats } = require('../stats');
 const { aggregateProfiles } = require('../aggregation');
 
 const prepareResult = async (result, config, buildData) => (
-  asyncObjMap(
+  asyncMap(
     result,
     async (pageData, pageName) => {
       const isInternal = config.requests && config.requests.internalTest ? (
@@ -29,7 +29,7 @@ const prepareConfig = ({
                          requests,
                          ...rest
                        }) => ({
-  requests: objMap(requests, makeRule),
+  requests: map(requests, makeRule),
   count: 5,
   threads: 1,
   platform: 'desktop',
