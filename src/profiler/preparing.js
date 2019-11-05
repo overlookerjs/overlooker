@@ -1,28 +1,16 @@
-const { makeInternalTest, makeRule } = require('./../utils.js');
-const { map, asyncMap } = require('./../objects-utils.js');
-const { getAllStats } = require('../stats');
+const { makeRule } = require('./../utils.js');
+const { map } = require('./../objects-utils.js');
 const { aggregateProfiles } = require('../aggregation');
 
 const prepareResult = async (result, config, buildData) => (
-  asyncMap(
+  map(
     result,
-    async (pageData, pageName) => {
-      const isInternal = config.requests && config.requests.internalTest ? (
-        config.requests.internalTest
-      ) : (
-        makeInternalTest(config.pages.find(({ name }) => pageName === name).url)
-      );
-
-      const stats = await Promise.all(
-        pageData.map((data) => getAllStats(data, isInternal, config.firstEvent))
-      );
-
-      return aggregateProfiles(
-        stats,
-        buildData,
-        config.requests ? config.requests.merge : null
-      )
-    })
+    (stats) => aggregateProfiles(
+      stats,
+      buildData,
+      config.requests ? config.requests.merge : null
+    )
+  )
 );
 
 const prepareConfig = ({

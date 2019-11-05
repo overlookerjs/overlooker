@@ -1,6 +1,6 @@
 const { fill } = require('./../objects-utils.js');
 
-const rootSymbol = Symbol('root');
+const defaultHash = 'nearest-marks';
 
 const markRegExp = /^overlooker\.metrics\.mark:(.*?)$/i;
 const durationRegExp = /^overlooker\.metrics\.duration\.(start|end):(.*?)(?:#(.*?))?$/i;
@@ -18,7 +18,7 @@ const getCustomMetrics = (events) => {
           events
             .filter((event) => durationRegExp.test(event.name))
             .map((event) => {
-              const [, type, name, hash = rootSymbol] = event.name.match(durationRegExp);
+              const [, type, name, hash = defaultHash] = event.name.match(durationRegExp);
 
               return [
                 [
@@ -34,7 +34,7 @@ const getCustomMetrics = (events) => {
         .reduce((acc, [hash, event]) => (
           Object.entries(event)
             .reduce((acc, [name, { start, end }]) => {
-              if (hash !== rootSymbol) {
+              if (hash !== defaultHash) {
                 if (acc[name]) {
                   acc[name] = {
                     total: acc[name].total + (end - start),

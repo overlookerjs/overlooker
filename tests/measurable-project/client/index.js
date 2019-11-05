@@ -11,13 +11,27 @@ class App extends Component {
     };
   }
 
+  componentDidMount() {
+    performance.mark('overlooker.metrics.mark:react.mounted');
+  }
+
+  handleClick() {
+    performance.mark('overlooker.metrics.duration.start:timeout');
+
+    setTimeout(() => {
+      this.setState({ opened: true });
+
+      performance.mark('overlooker.metrics.duration.end:timeout');
+    }, 500)
+  }
+
   render() {
     return (
       <div className={styles.root}>
         <h2>
           Header
         </h2>
-        <button className={styles.button} onClick={() => setTimeout(() => this.setState({ opened: true }), 500)}>
+        <button className={styles.button} onClick={() => this.handleClick()}>
           test button
         </button>
         <div className={styles.hero} id='hero-element'>Hero content</div>
@@ -29,7 +43,12 @@ class App extends Component {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () =>
-  ReactDom.render(<App/>, document.getElementById('app'))
+document.addEventListener('DOMContentLoaded', () => {
+    performance.mark('overlooker.metrics.duration.start:render');
+
+    ReactDom.render(<App/>, document.getElementById('app'));
+
+    performance.mark('overlooker.metrics.duration.end:render');
+  }
 );
 

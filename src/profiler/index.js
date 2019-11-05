@@ -3,6 +3,8 @@ const { getContext, profileUrl } = require('./browser.js');
 const { fetchPages } = require('./pages-fetcher.js');
 const { fetchBuildData } = require('./build-data.js');
 const { prepareResult } = require('./preparing.js');
+const { getAllStats } = require('../stats');
+const { makeInternalTest } = require('./../utils.js');
 const cache = require('./cache.js');
 
 /**
@@ -112,11 +114,25 @@ const profile = async (config) => {
     }
   }
 
+  await logger('request build data');
+  const buildData = await fetchBuildData(preparedConfig);
+
+  const requests = preparedConfig.requests;
+
   try {
     result = await fetchPages({
       profiler: profileUrl,
       config: preparedConfig,
       browsersThreads,
+      prepare: (pageName) => {
+        const isInternal = requests && requests.internalTest ? (
+          requests.internalTest
+        ) : (
+          makeInternalTest(preparedConfig.pages.find(({ name }) => pageName === name).url)
+        );
+
+        return (data) => getAllStats(data, isInternal, preparedConfig.firstEvent);
+      }
     });
 
     await logger(`fetching done!`);
@@ -127,10 +143,6 @@ const profile = async (config) => {
   if (browsers) {
     await Promise.all(browsers.map(({ close }) => close()));
   }
-
-  await logger('request build data');
-
-  const buildData = await fetchBuildData(preparedConfig);
 
   return await prepareResult(result, preparedConfig, buildData);
 };

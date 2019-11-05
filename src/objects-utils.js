@@ -77,11 +77,11 @@ const deepSet = (obj, path, value) => {
     .reduce((acc, key, index) => {
       if (index === path.length - 1) {
         acc[key] = value;
-      } else {
-        return acc[key];
+      } else if (!acc[key]) {
+        acc[key] = {};
       }
 
-      return acc;
+      return acc[key];
     }, obj);
 
   return obj;
