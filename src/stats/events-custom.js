@@ -2,7 +2,7 @@ const { fill } = require('./../objects-utils.js');
 
 const rootSymbol = Symbol('root');
 
-const markRegExp = /^overlooker\.metrics\.(mark):(.*?)$/i;
+const markRegExp = /^overlooker\.metrics\.mark:(.*?)$/i;
 const durationRegExp = /^overlooker\.metrics\.duration\.(start|end):(.*?)(?:#(.*?))?$/i;
 
 const getCustomMetrics = (events) => {

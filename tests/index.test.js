@@ -19,10 +19,14 @@ describe('main tests', () => {
         action: async (page) => {
           await page.waitForSelector('button');
           await page.click('button');
+          await page.evaluate(() => performance.mark('overlooker.metrics.mark:main-button.click'));
+
+          await page.evaluate(() => performance.mark('overlooker.metrics.duration.start:image-loading'));
           await page.waitForSelector('#loaded-image');
           await page.evaluate(() => {
             return new Promise((resolve) => document.querySelector('#loaded-image').addEventListener('load', resolve));
           });
+          await page.evaluate(() => performance.mark('overlooker.metrics.duration.end:image-loading'));
         }
       }]
     }, {
