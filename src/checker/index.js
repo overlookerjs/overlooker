@@ -1,9 +1,28 @@
+const { flat } = require('./../utils.js');
+
+const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
+
 const checkPageWithThresholds = (page, thresholdsEntries) => thresholdsEntries
   .map(([path, threshold]) => {
     let value = page;
 
-    for (const key of path) {
-      value = value[key];
+    for (let index = 0; index < path.length; index++) {
+      const key = path[index];
+      if (bunchRegExp.test(key)) {
+        const entries = key.match(bunchRegExp)[1].split(/[\n\s]*,[\n\s]*/);
+
+        return checkPageWithThresholds(
+          page,
+          entries.map((entry) => {
+            const replacedPath = path.slice();
+            replacedPath.splice(index, 1, entry);
+
+            return [replacedPath, threshold];
+          })
+        );
+      } else {
+        value = value[key];
+      }
     }
 
     return value > threshold ? {
@@ -22,7 +41,7 @@ const check = (comparing, thresholds) => {
   const results = Object.entries(comparing)
     .map(([page, data]) => [
       page,
-      checkPageWithThresholds(data, thresholdsEntries)
+      flat(checkPageWithThresholds(data, thresholdsEntries))
         .filter(Boolean)
     ])
     .filter(([, results]) => results.length)

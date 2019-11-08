@@ -3,7 +3,13 @@ const listen = require('./measurable-project/server/index');
 const { check, checkPage, compare, comparePages, profile, merge } = require('./../src');
 
 const thresholds = {
-  'percent.stats.timings.firstPaint.median': 0.05
+  'percent.stats.timings.firstPaint.median': 0.05,
+  [`percent.stats.timings.{
+    domContentLoadedEventStart, 
+    domContentLoadedEventEnd, 
+    loadEventStart, 
+    loadEventEnd
+  }.median`]: 0.05
 };
 
 jest.setTimeout(60000);
@@ -35,7 +41,7 @@ describe('main tests', () => {
     }],
     count: 1,
     logger: () => null,
-    buildData:{
+    buildData: {
       url: '/build.json',
     }
   };

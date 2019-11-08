@@ -1,4 +1,3 @@
-
 const escape = (number) => number > 9 ? number : `0${number}`;
 
 const toTime = (date) => {
@@ -13,17 +12,17 @@ const toDate = (date) => {
   if (date instanceof Date) {
     return `${
       date.getFullYear()
-      }.${
+    }.${
       escape(date.getMonth() + 1)
-      }.${
+    }.${
       escape(date.getDate())
-      } ${
+    } ${
       escape(date.getHours())
-      }:${
+    }:${
       escape(date.getMinutes())
-      }:${
+    }:${
       escape(date.getSeconds())
-      }`;
+    }`;
   } else if (typeof date === 'number') {
     return toDate(new Date(date));
   } else {
@@ -164,6 +163,10 @@ const makeRule = (rule) => {
 
 const isRelativeUrl = (url) => !/^https?:\/\//.test(url);
 
+const flat = (array) => Array.isArray(array) ? (
+  array.reduce((acc, item) => acc.concat(flat(item)), [])
+) : array;
+
 module.exports = {
   escape,
   toTime,
@@ -178,5 +181,6 @@ module.exports = {
   retry,
   isRelativeUrl,
   memoize,
-  makeRule
+  makeRule,
+  flat
 };

@@ -13,6 +13,7 @@
     "url": "git+https://github.com/pyatyispyatil/overlooker.git"
   },
   "jest": {
+    "testEnvironment": "node",
     "collectCoverage": true,
     "coverageReporters": [
       "text"
@@ -28,7 +29,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "mime-types": "^2.1.24",
-    "puppeteer": "^1.20.0",
+    "puppeteer": "^2.0.0",
     "speedline": "^1.4.2"
   },
   "devDependencies": {
