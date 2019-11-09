@@ -2,13 +2,9 @@ const puppeteer = require('puppeteer');
 const networkPresets = require('./network-presets.js');
 const devices = require('puppeteer/DeviceDescriptors');
 const cache = require('./cache.js');
-const fs = require('fs');
-const path = require('path');
 const { getPaintEventsBySelector } = require('./hero-elements.js');
-// const { writeCoverage } = require('./coverage.js');
+const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
-
-const IS_DEBUG = process.argv.some((arg) => arg === '--debug');
 
 const pixel2 = devices['Pixel 2'];
 
@@ -133,30 +129,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 };
 
-const writeTracing = async (page) => {
-  await page.tracing.start({
-    categories: [
-      '-*',
-      'blink.user_timing',
-      'blink.user_timing,rail',
-      'devtools.timeline',
-      'loading,rail,devtools.timeline',
-      'disabled-by-default-devtools.screenshot'
-    ]
-  });
-
-  return async () => {
-    const tracing = JSON.parse((await page.tracing.stop()).toString());
-
-    if (IS_DEBUG) {
-      fs.writeFileSync(path.resolve(__dirname, './tracing.json'), JSON.stringify(tracing));
-    }
-
-    return tracing.traceEvents;
-  }
-};
-
-const profileActions = async (page, config, pageConfig) => {
+const profileActions = async (page, config, pageConfig, client) => {
   const res = {};
   const { logger } = config;
 
@@ -164,8 +137,7 @@ const profileActions = async (page, config, pageConfig) => {
     for (const { name, action } of pageConfig.actions) {
       await logger(`action "${name}" started`);
 
-      const getTracing = await writeTracing(page);
-      // const getCoverage = await writeCoverage(page);
+      const getWatchingResult = await watch(page, client);
 
       /* istanbul ignore next */
       await page.evaluate((as) => window.performance.mark(as), ACTION_START);
@@ -173,10 +145,7 @@ const profileActions = async (page, config, pageConfig) => {
       /* istanbul ignore next */
       await page.evaluate((ae) => window.performance.mark(ae), ACTION_END);
 
-      res[name] = {
-        tracing: await getTracing(),
-        coverage: [] // await getCoverage()
-      };
+      res[name] = await getWatchingResult();
 
       await logger(`action "${name}" completed`);
     }
@@ -200,24 +169,20 @@ const profileUrl = async (context, config, pageConfig) => {
 
     await setupPageConfig(context, page, client, config, pageConfig);
 
-    const getTracing = await writeTracing(page);
-    //const getCoverage = await writeCoverage(page);
+    const getWatchingResult = await watch(page, client);
 
     await page.goto(url, { timeout: 60000, waitUntil: ["load"] });
 
-    const tracing = await getTracing();
-    //const coverage = await getCoverage();
-    const coverage = [];
+    const watchingResult = await getWatchingResult();
 
-    const heroElementPaints = await getPaintEventsBySelector(client, tracing, heroElement);
+    const heroElementPaints = await getPaintEventsBySelector(client, watchingResult.tracing, heroElement);
 
     const actions = await profileActions(page, config, pageConfig);
 
     await page.close();
 
     return {
-      tracing,
-      coverage,
+      ...watchingResult,
       actions,
       heroElementPaints
     };
