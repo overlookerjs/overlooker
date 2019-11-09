@@ -30,7 +30,11 @@ describe('main tests', () => {
           await page.evaluate(() => performance.mark('overlooker.metrics.duration.start:image-loading'));
           await page.waitForSelector('#loaded-image');
           await page.evaluate(() => {
-            return new Promise((resolve) => document.querySelector('#loaded-image').addEventListener('load', resolve));
+            const image = document.querySelector('#loaded-image');
+
+            if (!image.complete) {
+              return new Promise((resolve) => image.addEventListener('load', resolve));
+            }
           });
           await page.evaluate(() => performance.mark('overlooker.metrics.duration.end:image-loading'));
         }
@@ -40,6 +44,10 @@ describe('main tests', () => {
       url: 'http://localhost:3000'
     }],
     count: 1,
+    throttling: {
+      cpu: 1,
+      network: 'WiFi'
+    },
     logger: () => null,
     buildData: {
       url: '/build.json',
