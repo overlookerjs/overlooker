@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import ReactDom from 'react-dom';
 import styles from './styles.css';
 
@@ -15,14 +15,24 @@ class App extends Component {
     performance.mark('overlooker.metrics.mark:react.mounted');
   }
 
-  handleClick() {
-    performance.mark('overlooker.metrics.duration.start:timeout');
+  async handleClick() {
+    performance.mark('overlooker.metrics.duration.start:handle.click');
+
+    const { Input } = await import('./sub-module.js');
 
     setTimeout(() => {
-      this.setState({ opened: true });
+      this.setState({
+        content: (
+          <Fragment>
+            <Input/>
+            <Input/>
+            <img id="loaded-image" src={require('./loaded-image.png')}/>
+          </Fragment>
+        )
+      });
 
-      performance.mark('overlooker.metrics.duration.end:timeout');
-    }, 500)
+      performance.mark('overlooker.metrics.duration.end:handle.click');
+    }, 500);
   }
 
   render() {
@@ -36,7 +46,7 @@ class App extends Component {
         </button>
         <div className={styles.hero} id='hero-element'>Hero content</div>
         {
-          this.state.opened && <img id="loaded-image" src={require('./loaded-image.png')}/>
+          this.state.content
         }
       </div>
     );
