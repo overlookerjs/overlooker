@@ -7,7 +7,7 @@ const root = __dirname;
 
 module.exports = {
   mode: 'production',
-  entry: path.resolve(root, 'client/index.js'),
+  entry: ['@babel/polyfill', path.resolve(root, 'client/index.js')],
   output: {
     path: path.resolve(root, 'static'),
     filename: '[name].[chunkhash:8].js'
