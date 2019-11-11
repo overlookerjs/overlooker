@@ -31,7 +31,7 @@ const getActionsStats = (actions, internalTest) => map(
     const rawEvaluating = getScriptsEvaluating(relativeEvents);
     const evaluatingMap = makeScriptsEvaluatingMap(rawEvaluating);
     const coverageMap = makeCoverageMap(coverage);
-    const network = parseNetwork(relativeEvents, evaluatingMap, coverageMap, internalTest);
+    const network = parseNetwork(relativeEvents, evaluatingMap, coverageMap, internalTest); // ToDo: add coverage from page loading
 
     const evaluatingStats = getScriptsEvaluatingStats(rawEvaluating, internalTest);
     const resourcesStats = getResourcesStats(network);

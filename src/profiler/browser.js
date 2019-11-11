@@ -67,8 +67,6 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 
   if (config.requests) {
-    await page.setRequestInterception(true);
-
     page.on('request', (interceptedRequest) => {
       const url = interceptedRequest.url();
 
@@ -164,8 +162,6 @@ const profileUrl = async (context, config, pageConfig) => {
 
     await client.send('Network.clearBrowserCache');
     await client.send('Network.clearBrowserCookies');
-    await client.send('DOM.enable');
-    await client.send('CSS.enable');
 
     await setupPageConfig(context, page, client, config, pageConfig);
 

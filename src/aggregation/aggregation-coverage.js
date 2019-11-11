@@ -16,10 +16,7 @@ const normalizeCoverageSummary = (coverageSummary) => {
     const aggregatedRanges = separated
       .sort(({ stats: { used: fu } }, { stats: { used: su } }) => fu - su)[Math.floor(separated.length / 2)].ranges;
 
-    return {
-      ...aggregatedStats,
-      ranges: aggregatedRanges
-    };
+    return aggregatedStats;
   } else {
     return null;
   }

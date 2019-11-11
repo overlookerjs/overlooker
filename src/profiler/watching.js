@@ -57,11 +57,15 @@ const writeCoverage = async (page) => {
 };
 
 const watch = async (page) => {
+  await page.setRequestInterception(false);
+
   const getTracing = await writeTracing(page);
-  //const getCoverage = await writeCoverage(page);
+  const getCoverage = await writeCoverage(page);
+
+  await page.setRequestInterception(true);
 
   return async () => ({
-    coverage: [], // await getCoverage(),
+    coverage: await getCoverage(),
     tracing: await getTracing()
   });
 };
