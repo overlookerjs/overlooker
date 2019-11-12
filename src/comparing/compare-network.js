@@ -119,7 +119,7 @@ const getRequestsDiff = (first, second) => ({
     coverage: second.coverage && first.coverage ? {
       total: second.coverage.total - first.coverage.total,
       used: second.coverage.used - first.coverage.used,
-      ranges: second.coverage.ranges
+      ranges: first.coverage.ranges && second.coverage.ranges && second.coverage.ranges
         .filter(({ start, end }) => !first.coverage.ranges
           .some((range) => range.start === start && range.end === end))
     } : null
