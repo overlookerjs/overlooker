@@ -6,11 +6,11 @@ const mime = require('mime-types');
 
 const requestHandler = (req, res) => {
   if (req.url === '/') {
-    const html = fs.readFileSync(path.resolve(__dirname, './../static/index.html'));
+    const html = fs.readFileSync(path.resolve(__dirname, './../dist/index.html'));
 
     res.end(html);
   } else {
-    const filePath = path.resolve(__dirname, `./../static${req.url}`);
+    const filePath = path.resolve(__dirname, `./../dist${req.url}`);
     const file = fs.existsSync(filePath) ? fs.readFileSync(filePath) : '';
 
     res.setHeader('content-type', mime.lookup(filePath));

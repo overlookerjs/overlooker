@@ -1,0 +1,11 @@
+.root {
+  padding: 20px;
+}
+
+.button {
+  padding: 4px;
+}
+
+.hero {
+  will-change: transform;
+}

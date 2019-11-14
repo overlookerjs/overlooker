@@ -1,6 +1,6 @@
-const compile = require('./measurable-project/compiler');
 const listen = require('./measurable-project/server/index');
 const { check, checkPage, compare, comparePages, profile, merge } = require('./../src');
+const compile = require('../src/ui/builder');
 
 const thresholds = {
   'percent.stats.timings.firstPaint.median': 0.05,
@@ -59,7 +59,7 @@ describe('main tests', () => {
   let data2;
 
   test('compile measurable project', async () => {
-    await compile();
+    await compile('/measurable-project/client');
   });
 
   test('start server', async () => {
