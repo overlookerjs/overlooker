@@ -69,6 +69,8 @@ describe('main tests', () => {
   test('profile', async () => {
     data1 = await profile(config);
     data2 = await profile(config);
+
+    server.close()
   });
 
   describe('audits tests', () => {
@@ -103,6 +105,4 @@ describe('main tests', () => {
       checked = checkPage(compared, thresholds);
     });
   });
-
-  afterAll(() => server.close());
 });
