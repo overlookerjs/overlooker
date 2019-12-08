@@ -6,7 +6,7 @@ const compile = (root) => new Promise((resolve, reject) => {
 
   compiler.run((err, stats) => {
     if (err || stats.hasErrors()) {
-      console.log(stats.toString());
+      console.error(stats.toString());
       reject(err);
     } else {
       resolve();

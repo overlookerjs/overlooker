@@ -1,4 +1,5 @@
 /node_modules
 .idea
 .cache
-/tests/measurable-project/static
+/tests/measurable-project/dist
+/src/dist
