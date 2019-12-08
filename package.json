@@ -48,7 +48,6 @@
     "puppeteer": "^2.0.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
-    "react-to-html-webpack-plugin": "^2.2.0",
     "speedline": "^1.4.2",
     "style-loader": "^1.0.0",
     "webpack": "^4.41.0",

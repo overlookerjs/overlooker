@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import styles from './components/styles.css';
 
 export class App extends Component {
@@ -16,3 +16,8 @@ export class App extends Component {
     );
   }
 }
+
+React.render(
+  <App/>,
+  document.getElementById('root'),
+);
