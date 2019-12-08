@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "test": "jest",
-    "watch": "cd ./tests/measurable-project && webpack --watch",
+    "watch:measure": "cd ./tests/measurable-project && webpack --watch",
+    "watch:ui": "cd ./src/ui && webpack --config builder/webpack.config.js --watch",
+    "dev-server:ui": "cd ./src/ui && webpack-dev-server --config builder/webpack.config.js --watch",
     "server": "node ./tests/measurable-project/server/debug.js"
   },
   "repository": {
@@ -52,5 +54,8 @@
     "style-loader": "^1.0.0",
     "webpack": "^4.41.0",
     "webpack-cli": "^3.3.9"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "^3.9.0"
   }
 }

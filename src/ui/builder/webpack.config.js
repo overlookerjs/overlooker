@@ -11,6 +11,9 @@ module.exports = (root = '') => ({
     filename: '[name].[chunkhash:8].js'
   },
   devtool: 'source-map',
+  devServer: {
+    contentBase: path.join(process.cwd(), root, 'dist'),
+  },
   module: {
     rules: [
       {
