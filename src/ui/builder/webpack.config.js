@@ -3,16 +3,16 @@ const BundleInternalsPlugin = require('bundle-internals');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
-module.exports = (root = '') => ({
+module.exports = (root = '', dist = '../dist') => ({
   mode: 'production',
   entry: ['@babel/polyfill', path.join(process.cwd(), root, 'index.js')],
   output: {
-    path: path.join(process.cwd(), root, 'dist'),
+    path: path.join(process.cwd(), root, dist),
     filename: '[name].[chunkhash:8].js'
   },
   devtool: 'source-map',
   devServer: {
-    contentBase: path.join(process.cwd(), root, 'dist'),
+    contentBase: path.join(process.cwd(), root, dist),
   },
   module: {
     rules: [

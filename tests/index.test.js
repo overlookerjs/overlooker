@@ -59,7 +59,7 @@ describe('main tests', () => {
   let data2;
 
   test('compile measurable project', async () => {
-    await compile('/measurable-project/client');
+    await compile('./measurable-project/client');
   });
 
   test('start server', async () => {
