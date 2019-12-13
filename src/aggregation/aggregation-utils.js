@@ -1,23 +1,28 @@
-const { avg, median, percentile, standardDeviation } = require('./../math-utils');
+const jStat = require('jstat');
+const { mde } = require('./../math-utils');
 const { map, deepMap } = require('./../objects-utils.js');
 
 const aggregate = (array) => {
-  const mean = avg(array);
-  const sortedArray = array
-    .slice()
-    .sort((a, b) => a - b);
+  const mean = jStat.mean(array);
+  const standardDeviation = jStat.stdev(array);
+  const mde = mde(standardDeviation, array.length);
+  const median = jStat.median(array);
+  const [percentile02, q1, q3, percentile98] = jStat.quantiles(array, [0.02, 0.25, 0.75, 0.98]);
+  const min = jStat.min(array);
+  const max = jStat.max(array);
 
   return {
-    q1: percentile(sortedArray, 0.25),
-    q3: percentile(sortedArray, 0.75),
-    percentile98: percentile(sortedArray, 0.98),
-    percentile02: percentile(sortedArray, 0.02),
-    max: sortedArray[sortedArray.length - 1],
-    min: sortedArray[0],
-    median: median(sortedArray),
-    count: array.length,
-    standardDeviation: standardDeviation(array, mean),
+    max,
+    min,
+    q1,
+    q3,
+    percentile98,
+    percentile02,
+    median,
+    standardDeviation,
+    mde,
     mean,
+    count: array.length,
     raw: array
   }
 };
@@ -29,5 +34,6 @@ const objDeepAggregation = (obj) => deepMap(obj, objAggregation);
 module.exports = {
   objAggregation,
   objDeepAggregation,
-  aggregate
+  aggregate,
+  mde
 };

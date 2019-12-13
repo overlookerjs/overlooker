@@ -8,6 +8,7 @@ declare module "overlooker" {
     q3: number,
     percentile98: number,
     percentile02: number,
+    mde: number,
     max: number,
     min: number,
     median: number,
