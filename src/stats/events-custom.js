@@ -2,14 +2,14 @@ const { fill } = require('./../objects-utils.js');
 
 const defaultHash = 'nearest-marks';
 
-const markRegExp = /^overlooker\.metrics\.mark:(.*?)$/i;
+const timingRegExp = /^overlooker\.metrics\.timing:(.*?)$/i;
 const durationRegExp = /^overlooker\.metrics\.duration\.(start|end):(.*?)(?:#(.*?))?$/i;
 
 const getCustomMetrics = (events) => {
-  const marks = fill(
+  const timings = fill(
     events
-      .filter((event) => markRegExp.test(event.name))
-      .map((event) => [event.name.match(markRegExp)[1].split('.'), event.ts])
+      .filter((event) => timingRegExp.test(event.name))
+      .map((event) => [event.name.match(timingRegExp)[1].split('.'), event.ts])
   );
   const durations = fill(
     Object.entries(
@@ -58,7 +58,7 @@ const getCustomMetrics = (events) => {
   );
 
   return {
-    marks,
+    timings,
     durations
   }
 };

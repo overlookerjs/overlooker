@@ -12,7 +12,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    performance.mark('overlooker.metrics.mark:react.mounted');
+    performance.mark('overlooker.metrics.timing:react.mounted');
   }
 
   async handleClick() {

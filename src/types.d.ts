@@ -64,7 +64,7 @@ declare module "overlooker" {
   };
 
   export type ProfileStatsCustom = {
-    marks: {
+    timings: {
       [dottedName: string]: number
     },
     durations: {

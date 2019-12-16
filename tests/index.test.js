@@ -25,7 +25,7 @@ describe('main tests', () => {
         action: async (page) => {
           await page.waitForSelector('button');
           await page.click('button');
-          await page.evaluate(() => performance.mark('overlooker.metrics.mark:main-button.click'));
+          await page.evaluate(() => performance.mark('overlooker.metrics.timing:main-button.click'));
 
           await page.evaluate(() => performance.mark('overlooker.metrics.duration.start:image-loading'));
           await page.waitForSelector('#loaded-image');

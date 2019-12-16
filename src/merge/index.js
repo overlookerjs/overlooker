@@ -1,15 +1,15 @@
 const { aggregateProfiles } = require('./../aggregation');
 const { deepMap, map } = require('./../objects-utils');
-const { avg, median } = require('./../math-utils');
+const jStat = require('jstat');
 
 const strategies = {
-  avg,
-  median
+  mean: (a) => jStat.mean(a),
+  median: (a) => jStat.median(a)
 };
 
 const getAggregateMerger = (mergeStrategy) => (stats) => deepMap(stats, (obj) => map(obj, mergeStrategy));
 
-const merge = (data, pages, mergeStrategyName = 'avg') => (
+const merge = (data, pages, mergeStrategyName = 'mean') => (
   aggregateProfiles(
     Object.entries(data)
       .filter(([pageName]) => !pages || pages.includes(pageName))
