@@ -1,6 +1,7 @@
 const { makeRule } = require('./../utils.js');
 const { map } = require('./../objects-utils.js');
 const { aggregateProfiles } = require('../aggregation');
+const { getProgressLogger } = require('./progress.js');
 
 const prepareResult = async (result, config, buildData) => (
   map(
@@ -15,6 +16,7 @@ const prepareResult = async (result, config, buildData) => (
 
 const prepareConfig = ({
                          requests,
+                         progress,
                          ...rest
                        }) => ({
   requests: map(requests, makeRule),
@@ -30,6 +32,8 @@ const prepareConfig = ({
   },
   debug: false,
   logger: async (...args) => console.log(...args),
+  progress: getProgressLogger(progress),
+  gracefulShutdown: true,
   ...rest
 });
 

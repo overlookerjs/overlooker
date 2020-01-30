@@ -4,9 +4,10 @@ const fetchPages = async ({
                             profiler,
                             browsersThreads,
                             config,
+                            percentCost,
                             prepare = () => (data) => data
                           }) => {
-  const { count, logger } = config;
+  const { count, logger, progress } = config;
 
   const functions = config.pages.reduce((acc, page) => {
     const preparing = prepare(page.name);
@@ -28,6 +29,7 @@ const fetchPages = async ({
           const pageEndTime = Date.now();
 
           await logger(`fetch page ${page.url} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
+          await progress(percentCost);
 
           return preparing(data);
         } catch (error) {

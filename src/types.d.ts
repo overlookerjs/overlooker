@@ -295,7 +295,7 @@ declare module "overlooker" {
     firstEvent?: string,
     count?: number,
     threads?: number,
-    logger?: (...args: Array<string>) => Promise<any>,
+    logger?: (message: string, progress?: number) => Promise<any>,
     platform?: 'mobile' | 'desktop',
     browserArgs?: Array<string>,
     buildData?: {

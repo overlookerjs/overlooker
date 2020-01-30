@@ -1,10 +1,11 @@
 const puppeteer = require('puppeteer');
-const networkPresets = require('./network-presets.js');
+const networkPresets = require('../network-presets.js');
 const devices = require('puppeteer/DeviceDescriptors');
 const cache = require('./cache.js');
 const { getPaintEventsBySelector } = require('./hero-elements.js');
 const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
+const { make } = require('./../objects-utils.js');
 
 const pixel2 = devices['Pixel 2'];
 
@@ -28,7 +29,8 @@ const getContext = async (config) => {
       .concat(config.proxy && config.proxy.address ? `--proxy-server=${config.proxy.address}` : []),
     ignoreHTTPSErrors: true,
     defaultViewport: viewports[config.platform],
-    headless: !config.debug
+    headless: !config.debug,
+    handleSIGINT: config.gracefulShutdown
   });
 
   const context = await browser.createIncognitoBrowserContext();
@@ -130,6 +132,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
 const profileActions = async (page, config, pageConfig, client) => {
   const res = {};
   const { logger } = config;
+  const pages = make(config.pages.map(({ name, url }) => [name, url]));
 
   if (pageConfig.actions && pageConfig.actions.length) {
     for (const { name, action } of pageConfig.actions) {
@@ -139,7 +142,7 @@ const profileActions = async (page, config, pageConfig, client) => {
 
       /* istanbul ignore next */
       await page.evaluate((as) => window.performance.mark(as), ACTION_START);
-      await action(page);
+      await action(page, pages);
       /* istanbul ignore next */
       await page.evaluate((ae) => window.performance.mark(ae), ACTION_END);
 

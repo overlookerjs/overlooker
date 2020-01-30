@@ -58,7 +58,8 @@ const cache = require('./cache.js');
  * */
 const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
-  const { pages, threads, logger } = preparedConfig;
+  const { pages, threads, logger, progress, proxy, count } = preparedConfig;
+  const percentCost = 0.99 / (count * pages.length  + (proxy ? pages.length : 0));
 
   if (!pages.length) {
     await logger('Nothing to profile');
@@ -77,12 +78,12 @@ const profile = async (config) => {
 
     await logger('browsers are open');
   } catch (e) {
-    await logger('error while opening browsers', e.stack);
+    await logger(`error while opening browsers\${e.stack}`);
 
     return {};
   }
 
-  if (preparedConfig.proxy) {
+  if (proxy) {
     const warmingConfig = {
       ...preparedConfig,
       count: 1,
@@ -93,10 +94,10 @@ const profile = async (config) => {
 
     try {
       await logger('restart proxy');
-      await preparedConfig.proxy.restart();
+      await proxy.restart();
       await logger('proxy restarted');
     } catch (e) {
-      await logger(`cannot restart proxy: ${e.stack}`);
+      await logger(`cannot restart proxy\n${e.stack}`);
     }
 
     try {
@@ -105,12 +106,13 @@ const profile = async (config) => {
       await fetchPages({
         profiler: profileUrl,
         config: warmingConfig,
+        percentCost,
         browsersThreads,
       });
 
       await logger(`warming done!`);
     } catch (e) {
-      await logger(`cannot warm pages!`, e.stack);
+      await logger(`cannot warm pages!\n${e.stack}`);
     }
   }
 
@@ -124,6 +126,7 @@ const profile = async (config) => {
       profiler: profileUrl,
       config: preparedConfig,
       browsersThreads,
+      percentCost,
       prepare: (pageName) => {
         const isInternal = requests && requests.internalTest ? (
           requests.internalTest
@@ -137,7 +140,7 @@ const profile = async (config) => {
 
     await logger(`fetching done!`);
   } catch (e) {
-    await logger(`cannot fetch pages!`, e.stack);
+    await logger(`cannot fetch pages!\n${e.stack}`);
   }
 
   if (browsers) {
