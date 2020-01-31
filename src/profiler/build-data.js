@@ -29,10 +29,14 @@ const fetchBuildData = async (config) => {
     }
   };
 
-  if (getter) {
-    return await getter(url);
-  } else if (buildDataUrl) {
-    try {
+  try {
+    if (getter) {
+      const data = await getter(url);
+
+      progress(0.01);
+
+      return data;
+    } else if (buildDataUrl) {
       const { data } = await (
         isRelativeUrl(buildDataUrl) ? (
           instance.get(getHost(url) + buildDataUrl, axiosConfig)
@@ -42,11 +46,11 @@ const fetchBuildData = async (config) => {
       );
 
       return data;
-    } catch (e) {
-      await logger(`cannot receive build data ${e}`);
-
-      return null;
     }
+  } catch (e) {
+    await logger(`cannot receive build data\n${e.stack}`);
+
+    return null;
   }
 };
 

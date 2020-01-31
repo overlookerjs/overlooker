@@ -41,6 +41,8 @@ const cache = require('./cache.js');
  * @param {string} [config.browserArgs] - browser arguments
  * @param {string} [config.firstEvent] - an name of event from which to count time (default: responseEnd)
  * @param {Function} [config.logger] - logger function
+ * @param {Function} [config.progress] - progress function
+ * @param {Function} [config.checkStatus] - function for checking status (running|stop)
  * @param {object} [config.proxy] - proxy configuration
  * @param {string} [config.proxy.address] - address and port of the proxy (localhost:3128)
  * @param {Function} [config.proxy.restart] - function for restarting external proxy service
@@ -58,7 +60,7 @@ const cache = require('./cache.js');
  * */
 const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
-  const { pages, threads, logger, progress, proxy, count } = preparedConfig;
+  const { pages, threads, checkStatus, logger, proxy, count } = preparedConfig;
   const percentCost = 0.99 / (count * pages.length  + (proxy ? pages.length : 0));
 
   if (!pages.length) {
@@ -78,7 +80,7 @@ const profile = async (config) => {
 
     await logger('browsers are open');
   } catch (e) {
-    await logger(`error while opening browsers\${e.stack}`);
+    await logger(`error while opening browsers\n${e.stack}`);
 
     return {};
   }
@@ -107,6 +109,7 @@ const profile = async (config) => {
         profiler: profileUrl,
         config: warmingConfig,
         percentCost,
+        checkStatus,
         browsersThreads,
       });
 
@@ -127,6 +130,7 @@ const profile = async (config) => {
       config: preparedConfig,
       browsersThreads,
       percentCost,
+      checkStatus,
       prepare: (pageName) => {
         const isInternal = requests && requests.internalTest ? (
           requests.internalTest

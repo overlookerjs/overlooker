@@ -62,10 +62,13 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 
   if (config.cookies || pageConfig.cookies) {
-    await page.setCookie([]
+    const cookies = []
       .concat(config.cookies || [])
-      .concat(pageConfig.cookies || [])
-    );
+      .concat(pageConfig.cookies || []);
+
+    if (cookies && cookies.length) {
+      await page.setCookie(cookies);
+    }
   }
 
   if (config.requests) {
@@ -120,7 +123,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
 
               cache.set(key, data);
             } catch (e) {
-              await config.logger(e);
+              await config.logger(e.stack);
             }
           }
         }

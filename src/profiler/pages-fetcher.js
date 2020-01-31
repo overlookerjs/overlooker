@@ -1,13 +1,15 @@
 const { parallelizeObject } = require('./threads.js');
 
-const fetchPages = async ({
-                            profiler,
-                            browsersThreads,
-                            config,
-                            percentCost,
-                            prepare = () => (data) => data
-                          }) => {
+const fetchPages = ({
+                      profiler,
+                      browsersThreads,
+                      config,
+                      percentCost,
+                      prepare = () => (data) => data,
+                      checkStatus = async () => true
+                    }) => {
   const { count, logger, progress } = config;
+  let isRunning = checkStatus();
 
   const functions = config.pages.reduce((acc, page) => {
     const preparing = prepare(page.name);
@@ -15,6 +17,14 @@ const fetchPages = async ({
     return ({
       ...acc,
       [page.name]: Array(count).fill(async (stop, browser) => {
+        const nowRunning = await checkStatus();
+
+        if (nowRunning !== isRunning && !nowRunning) {
+          isRunning = nowRunning;
+          await runner.stop();
+          await logger(`fetching stopped`);
+        }
+
         await logger(`start fetching: ${page.url}`);
 
         try {
@@ -33,7 +43,7 @@ const fetchPages = async ({
 
           return preparing(data);
         } catch (error) {
-          await logger(`fetch failed: ${error}`);
+          await logger(`fetch failed: ${error.stack}`);
           await logger(`try to retry: ${page.url}`);
 
           throw error;
@@ -42,7 +52,9 @@ const fetchPages = async ({
     })
   }, {});
 
-  return await parallelizeObject(functions, browsersThreads, 5000);
+  const runner = parallelizeObject(functions, browsersThreads, 5000);
+
+  return runner;
 };
 
 module.exports = {
