@@ -35,19 +35,22 @@ const separateNetworkEvents = (networkEvents) => Object.values(networkEvents)
   }))
   .filter(({ finish, request, response }) => finish && request && response);
 
-const prepareSeparatedNetwork = (separatedNetwork, evaluatingMap, coverageMap, internalTest) => separatedNetwork
+const prepareSeparatedNetwork = (separatedNetwork, evaluationMap, coverageMap, internalTest) => separatedNetwork
   .map(({
+          request: { args: { data: { url, requestMethod } } },
+          response: { args: { data: { mimeType, statusCode } } },
+          finish: { args: { data: { decodedBodyLength, encodedDataLength } } },
           request,
-          request: { args: { data: { url } } },
           response,
-          data,
-          finish
+          finish,
+          data
         }) => ({
       url,
-      evaluating: evaluatingMap[url],
+      evaluation: evaluationMap[url],
+      evaluationTotal: evaluationMap[url].reduce((acc, { duration }) => acc + duration, 0),
       coverage: coverageMap[url],
       internal: internalTest(url),
-      type: response.args.data.mimeType,
+      type: mimeType,
       timings: {
         start: request.ts,
         response: response.ts,
@@ -58,17 +61,19 @@ const prepareSeparatedNetwork = (separatedNetwork, evaluatingMap, coverageMap, i
         finish: finish.ts,
         total: finish.ts - request.ts
       },
-      extension: mime.extension(response.args.data.mimeType) || getExtension(url),
-      size: finish.args.data.decodedBodyLength,
-      transfer: finish.args.data.encodedDataLength,
+      extension: mime.extension(mimeType) || getExtension(url),
+      size: decodedBodyLength,
+      transfer: encodedDataLength,
+      status: statusCode,
+      method: requestMethod || 'GET'
     })
   );
 
-const parseNetwork = (events, evaluatingMap, coverageMap, internalTest) => prepareSeparatedNetwork(
+const parseNetwork = (events, evaluationMap, coverageMap, internalTest) => prepareSeparatedNetwork(
   separateNetworkEvents(
     filterNetworkEvents(events)
   ),
-  evaluatingMap,
+  evaluationMap,
   coverageMap,
   internalTest
 );
@@ -102,12 +107,12 @@ const splitNetworkByLocation = (network) => ({
 
 const castNetworkToResources = (network) => map(
   splitNetworkByTypes(network, {
-    images: imagesTypes,
-    fonts: fontsTypes,
+    total: totalTypes,
     js: jsTypes,
     css: cssTypes,
-    html: htmlTypes,
-    total: totalTypes
+    images: imagesTypes,
+    fonts: fontsTypes,
+    html: htmlTypes
   }),
   (filteredNetwork) => ({
     size: summarizeSizes(filteredNetwork),
@@ -127,9 +132,9 @@ const getNetworkStats = (statsGetter, network) => {
   const { internal, external } = splitNetworkByLocation(network);
 
   return {
+    total: statsGetter(network),
     internal: statsGetter(internal),
-    external: statsGetter(external),
-    total: statsGetter(network)
+    external: statsGetter(external)
   };
 };
 

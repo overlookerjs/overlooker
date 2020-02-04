@@ -87,12 +87,56 @@ const deepSet = (obj, path, value) => {
   return obj;
 };
 
-const deepMap = (obj, mapper) => map(obj, (innerObj) =>
+const deepMapUntilArray = (obj, mapper) => map(obj, (innerObj) =>
   Object.values(innerObj).every((value) => Array.isArray(value)) ? (
     mapper(innerObj)
   ) : (
-    deepMap(innerObj, mapper)
+    deepMapUntilArray(innerObj, mapper)
   ));
+
+const deepMap = (obj, mapper) => map(obj, (innerObj, key) =>
+  innerObj instanceof Object && !Array.isArray(innerObj) ? (
+    deepMap(innerObj, mapper)
+  ) : (
+    mapper(innerObj, key)
+  ));
+
+const objToArray = (obj, skipSymbols = [], parent = '', acc = []) => (
+  Object.entries(obj)
+    .reduce((acc, [key, value]) => {
+      const complexKey = parent ? parent + '.' + key : key;
+
+      if (skipSymbols.includes(complexKey)) {
+        acc.push([complexKey, flat(value, skipSymbols.filter((symbol) => symbol === complexKey))]);
+      } else if (value instanceof Object) {
+        objToArray(value, skipSymbols, complexKey, acc);
+      } else {
+        acc.push([complexKey, value]);
+      }
+
+      return acc;
+    }, acc)
+);
+
+const flat = (obj, skipSymbols) => make(objToArray(obj, skipSymbols));
+
+const addPrefix = (obj, prefix) => Object.entries(obj)
+  .reduce((acc, [key, value]) => {
+    acc[prefix + key] = value;
+
+    return acc;
+  }, {});
+
+const raiseFields = (obj, symbols) => Object.entries(obj)
+  .reduce((acc, [key, value]) => {
+    if (symbols.includes(key)) {
+      Object.assign(acc, addPrefix(value, key + '.'));
+    } else {
+      acc[key] = value;
+    }
+
+    return acc;
+  }, {});
 
 module.exports = {
   map,
@@ -109,5 +153,9 @@ module.exports = {
   make,
   fill,
   deepSet,
-  deepMap
+  deepMap,
+  deepMapUntilArray,
+  flat,
+  raiseFields,
+  addPrefix
 };

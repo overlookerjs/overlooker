@@ -109,11 +109,11 @@ const getRequestsDiff = (first, second) => ({
     size: second.size - first.size,
     transfer: second.transfer - first.transfer,
     timings: map(first.timings, (value, key) => second.timings[key] - value),
-    evaluating: second.evaluating.map((secondEval, index) => ({
+    evaluation: second.evaluation.map((secondEval, index) => ({
       url: secondEval.url,
-      duration: secondEval - (first.evaluating[index] ? first.evaluating[index].duration : 0),
-      timings: map(secondEval, (value, key) => first.evaluating[index] ? (
-        value - first.evaluating[index].timings[key]
+      duration: secondEval - (first.evaluation[index] ? first.evaluation[index].duration : 0),
+      timings: map(secondEval, (value, key) => first.evaluation[index] ? (
+        value - first.evaluation[index].timings[key]
       ) : value)
     })),
     coverage: second.coverage && first.coverage ? {

@@ -1,5 +1,5 @@
 const jStat = require('jstat');
-const { map, deepMap } = require('./../objects-utils.js');
+const { map, deepMapUntilArray } = require('./../objects-utils.js');
 
 const calcMDE = (stdev, n) => (
   2 * stdev / Math.sqrt(n) * (jStat.studentt.inv(1 - 0.2, n - 2) + jStat.studentt.inv(1 - 0.025, n - 2))
@@ -32,7 +32,7 @@ const aggregate = (array) => {
 
 const objAggregation = (obj) => map(obj, aggregate);
 
-const objDeepAggregation = (obj) => deepMap(obj, objAggregation);
+const objDeepAggregation = (obj) => deepMapUntilArray(obj, objAggregation);
 
 module.exports = {
   objAggregation,

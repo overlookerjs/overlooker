@@ -6,24 +6,24 @@ const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
 const {
-  getScriptsEvaluating,
-  getScriptsEvaluatingStats,
-  makeScriptsEvaluatingMap
-} = require('./events-evaluating.js');
+  getScriptsEvaluation,
+  getScriptsEvaluationStats,
+  makeScriptsEvaluationMap
+} = require('./events-evaluation.js');
 
 const getAllStats = async ({ tracing, coverage, actions, heroElementPaints }, internalTest, firstEventName) => {
   const firstEvent = getEventInMainFrame(tracing, firstEventName);
   const mainFrame = firstEvent.args.frame;
   const relativeEvents = makeEventsRelative(tracing, firstEvent);
 
-  const rawEvaluating = getScriptsEvaluating(relativeEvents);
-  const evaluatingMap = makeScriptsEvaluatingMap(rawEvaluating);
+  const rawEvaluation = getScriptsEvaluation(relativeEvents);
+  const evaluationMap = makeScriptsEvaluationMap(rawEvaluation);
   const coverageMap = makeCoverageMap(coverage);
 
-  const network = parseNetwork(relativeEvents, evaluatingMap, coverageMap, internalTest);
+  const network = parseNetwork(relativeEvents, evaluationMap, coverageMap, internalTest);
 
   const resourcesStats = getResourcesStats(network);
-  const evaluatingStats = getScriptsEvaluatingStats(rawEvaluating, internalTest);
+  const evaluationStats = getScriptsEvaluationStats(rawEvaluation, internalTest);
   const coverageStats = getCoverageStats(network);
 
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
@@ -41,7 +41,7 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementPaints }, in
       timings,
       userCentric,
       custom,
-      evaluating: evaluatingStats,
+      evaluation: evaluationStats,
       resources: resourcesStats,
       coverage: coverageStats,
     },

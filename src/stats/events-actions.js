@@ -4,10 +4,10 @@ const { makeEventsRelative, findEventByName } = require('./events-helpers.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { map } = require('./../objects-utils');
 const {
-  getScriptsEvaluating,
-  makeScriptsEvaluatingMap,
-  getScriptsEvaluatingStats
-} = require('./events-evaluating.js');
+  getScriptsEvaluation,
+  makeScriptsEvaluationMap,
+  getScriptsEvaluationStats
+} = require('./events-evaluation.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
 
 const getActionStart = (events) => findEventByName(events, ACTION_START);
@@ -28,12 +28,12 @@ const getActionsStats = (actions, internalTest) => map(
     const actionStart = getActionStart(tracing);
     const relativeEvents = makeEventsRelative(tracing, actionStart);
 
-    const rawEvaluating = getScriptsEvaluating(relativeEvents);
-    const evaluatingMap = makeScriptsEvaluatingMap(rawEvaluating);
+    const rawEvaluation = getScriptsEvaluation(relativeEvents);
+    const evaluationMap = makeScriptsEvaluationMap(rawEvaluation);
     const coverageMap = makeCoverageMap(coverage);
-    const network = parseNetwork(relativeEvents, evaluatingMap, coverageMap, internalTest); // ToDo: add coverage from page loading
+    const network = parseNetwork(relativeEvents, evaluationMap, coverageMap, internalTest); // ToDo: add coverage from page loading
 
-    const evaluatingStats = getScriptsEvaluatingStats(rawEvaluating, internalTest);
+    const evaluationStats = getScriptsEvaluationStats(rawEvaluation, internalTest);
     const resourcesStats = getResourcesStats(network);
     const coverageStats = getCoverageStats(network);
 
@@ -44,7 +44,7 @@ const getActionsStats = (actions, internalTest) => map(
       stats: {
         timings,
         custom,
-        evaluating: evaluatingStats,
+        evaluation: evaluationStats,
         resources: resourcesStats,
         coverage: coverageStats
       },

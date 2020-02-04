@@ -1,6 +1,6 @@
 const { filterEventsByName } = require('./events-helpers.js');
 
-const getScriptsEvaluating = (events) => filterEventsByName(events, 'EvaluateScript')
+const getScriptsEvaluation = (events) => filterEventsByName(events, 'EvaluateScript')
   .map((event) => ({
     duration: event.dur,
     url: event.args.data && event.args.data.url,
@@ -36,7 +36,7 @@ const getFunctionsCalls = (events) => {
     });
 };
 
-const makeScriptsEvaluatingMap = (evaluating) => evaluating
+const makeScriptsEvaluationMap = (evaluation) => evaluation
   .reduce((acc, item) => {
     if (!acc[item.url]) {
       acc[item.url] = [];
@@ -47,24 +47,24 @@ const makeScriptsEvaluatingMap = (evaluating) => evaluating
     return acc;
   }, {});
 
-const getScriptsEvaluatingStats = (evaluating, internalTest) => {
-  const internalScriptsEvaluating = evaluating
+const getScriptsEvaluationStats = (evaluation, internalTest) => {
+  const internal = evaluation
     .filter(({ url }) => internalTest(url))
     .reduce((acc, { duration }) => acc + duration, 0) / 1000;
-  const totalScriptsEvaluating = evaluating
+  const total = evaluation
     .reduce((acc, { duration }) => acc + duration, 0) / 1000;
-  const externalScriptsEvaluating = totalScriptsEvaluating - internalScriptsEvaluating;
+  const external = total - internal;
 
   return {
-    internalScriptsEvaluating,
-    externalScriptsEvaluating,
-    totalScriptsEvaluating
+    internal,
+    total,
+    external
   };
 };
 
 module.exports = {
-  getScriptsEvaluating,
-  getScriptsEvaluatingStats,
+  getScriptsEvaluation,
+  getScriptsEvaluationStats,
   getFunctionsCalls,
-  makeScriptsEvaluatingMap
+  makeScriptsEvaluationMap
 };

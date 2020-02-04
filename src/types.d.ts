@@ -33,7 +33,7 @@ declare module "overlooker" {
   };
 
   export type ActionStats = {
-    evaluating: ProfileStatsEvaluating,
+    evaluation: ProfileStatsEvaluation,
     resources: ProfileStatsResources,
     timings: ActionsTimings
   };
@@ -44,7 +44,7 @@ declare module "overlooker" {
   };
 
   export type ProfileStats = {
-    evaluating: ProfileStatsEvaluating,
+    evaluation: ProfileStatsEvaluation,
     resources: ProfileStatsResources,
     timings: ProfileStatsTimings,
     userCentric: ProfileStatsUserCentric,
@@ -52,10 +52,10 @@ declare module "overlooker" {
     custom: ProfileStatsCustom
   };
 
-  export type ProfileStatsEvaluating = {
-    externalScriptEvaluating: AggregatedValue,
-    internalScriptEvaluating: AggregatedValue,
-    totalScriptEvaluating: AggregatedValue
+  export type ProfileStatsEvaluation = {
+    external: AggregatedValue,
+    internal: AggregatedValue,
+    total: AggregatedValue
   };
 
   export type ProfileStatsCoverage = {
@@ -139,7 +139,7 @@ declare module "overlooker" {
       finish: number,
       total: number
     },
-    evaluating: Array<{
+    evaluation: Array<{
       url: string,
       duration: number,
       timings: {
@@ -155,12 +155,15 @@ declare module "overlooker" {
         end: number
       }>
     },
+    evaluationTotal: number,
     meta?: RequestMeta,
     type: string,
     url: string,
     count: number,
     internal: boolean,
-    extension: string
+    extension: string,
+    status: number,
+    method: string
   };
 
   export type RequestMeta = {
