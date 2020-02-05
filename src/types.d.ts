@@ -202,10 +202,12 @@ declare module "overlooker" {
   };
 
   export type ComparedData = {
-    [pageName: string]: {
-      absolute: ComparedDataAbsolute,
-      percent: ComparedDataPercent
-    }
+    [pageName: string]: ComparedPageData
+  };
+
+  export type ComparedPageData = {
+    absolute: ComparedDataAbsolute,
+    percent: ComparedDataPercent
   };
 
   export type ComparedDataPercent = {
@@ -254,16 +256,18 @@ declare module "overlooker" {
   export type CheckedData = {
     success: boolean,
     results: {
-      [pageName: string]: {
-        success: boolean,
-        results: Array<{
-          path: Array<string>,
-          threshold: number,
-          value: number
-        }>
-      }
+      [pageName: string]: CheckedPageData
     }
-  }
+  };
+
+  export type CheckedPageData = {
+    success: boolean,
+    results: Array<{
+      path: Array<string>,
+      threshold: number,
+      value: number
+    }>
+  };
 
   export type BuildData = Object;
 
@@ -319,4 +323,10 @@ declare module "overlooker" {
   export function compare(firstData: ProfileData, secondData: ProfileData): ComparedData;
 
   export function check(compared: ComparedData, thresholds: { [path: string]: number }): CheckedData;
+
+  export function comparePages(firstPage: PageData, secondPage: PageData): ComparedPageData;
+
+  export function checkPage(comparedPageData: ComparedPageData): CheckedPageData;
+
+  export function merge(profileData: ProfileData): PageData;
 }
