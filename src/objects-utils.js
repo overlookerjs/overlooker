@@ -31,9 +31,13 @@ const divide = (obj = {}, divider) => map(obj, (value) => value / divider);
 
 const sub = (obj1 = {}, obj2 = {}) => map(obj1, (value, key) => (value || 0) - (obj2[key] || 0));
 
+const inverseSub = (obj1, obj2) => sub(obj2, obj1);
+
 const percent = (obj1 = {}, obj2 = {}) => map(obj1,
   (value, key) => (value && obj2[key] ? ((value / obj2[key]) - 1) : 0)
 );
+
+const inversePercent = (obj1, obj2) => percent(obj2, obj1);
 
 const filter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) => {
   if (filter(value, key)) {
@@ -145,7 +149,9 @@ module.exports = {
   summ,
   concat,
   sub,
+  inverseSub,
   percent,
+  inversePercent,
   filter,
   deepConcat,
   deepCompare,

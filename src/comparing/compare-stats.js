@@ -1,10 +1,10 @@
-const { percent, sub, map, deepCompare } = require('./../objects-utils.js');
+const { inverseSub, inversePercent, deepCompare } = require('./../objects-utils.js');
 
 const getComparator = (comparator) => (firstStats, secondStats) => deepCompare(comparator, firstStats, secondStats);
 
-const compareStats = getComparator(sub);
+const compareStats = getComparator(inverseSub);
 
-const compareStatsPercent = getComparator(percent);
+const compareStatsPercent = getComparator(inversePercent);
 
 module.exports = {
   compareStats,

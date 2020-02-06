@@ -1,4 +1,4 @@
-const parallelizeArray = (functionsArray, threads, restartTime = 0) => {
+const parallelizeArray = (functionsArray, threads, restartTime = 0, onError) => {
   const functionsArrayCopy = [...functionsArray];
   const completed = [];
 
@@ -23,6 +23,10 @@ const parallelizeArray = (functionsArray, threads, restartTime = 0) => {
         completedCount++;
         complete = true;
       } catch (e) {
+        if (onError) {
+          await onError(e);
+        }
+
         await new Promise((res) => setTimeout(res, restartTime));
       }
     }

@@ -67,7 +67,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
       .concat(pageConfig.cookies || []);
 
     if (cookies && cookies.length) {
-      await page.setCookie(cookies);
+      await Promise.all(cookies.map((cookie) => client.send('Network.setCookie', cookie)));
     }
   }
 
@@ -173,7 +173,7 @@ const profileUrl = async (context, config, pageConfig) => {
 
     const getWatchingResult = await watch(page, client);
 
-    await page.goto(url, { timeout: 60000, waitUntil: ["load"] });
+    await page.goto(url, { timeout: 60000, waitUntil: ["load", "networkidle2"] });
 
     const watchingResult = await getWatchingResult();
 

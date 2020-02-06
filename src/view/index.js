@@ -6,17 +6,28 @@ const truncateAggregation = (data, aggregateName, mapper = (value) => value) => 
   map(data, (value) => truncateAggregation(value, aggregateName, mapper))
 );
 
-const addMeaning = (obj, meaning) => deepMap(obj, (value, key) => {
+const addMeaning = (obj, meaning, digit) => deepMap(obj, (value, key) => {
   if (typeof value === 'number' && key !== 'count') {
+    let newValue;
+    const isPositive = value > 0;
+
     switch (meaning) {
       case 'kb':
-        return (value / 1024).toFixed(2) + 'KB';
+        newValue = (value / 1024).toFixed(2) + 'KB';
+        break;
       case '%':
-        return (value * 100).toFixed(2) + '%';
+        newValue = (value * 100).toFixed(2) + '%';
+        break;
       case 's':
       default:
-        return (value / 1000 / 1000 / 60).toFixed(2) + 's';
+        newValue = (value / 1000 / 1000).toFixed(2) + 's';
     }
+
+    if (digit) {
+      newValue = (isPositive ? '+' : '') + newValue;
+    }
+
+    return newValue;
   }
 });
 
@@ -48,5 +59,6 @@ module.exports = {
   makeStatsReadable,
   truncateAggregation,
   flatStats,
-  inverseTotal
+  inverseTotal,
+  addMeaning
 };

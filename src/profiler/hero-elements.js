@@ -18,7 +18,7 @@ const getPaintEventsBySelector = async (client, events, selector) => {
         selector
       });
 
-      if (typeof nodeId === 'number') {
+      if (nodeId) {
         const node = await client.send('DOM.describeNode', { nodeId }).then(({ node }) => node);
 
         return node ? findNodePaintEvents(events, node) : [];

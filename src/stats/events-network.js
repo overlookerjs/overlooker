@@ -47,7 +47,7 @@ const prepareSeparatedNetwork = (separatedNetwork, evaluationMap, coverageMap, i
         }) => ({
       url,
       evaluation: evaluationMap[url],
-      evaluationTotal: evaluationMap[url].reduce((acc, { duration }) => acc + duration, 0),
+      evaluationTotal: evaluationMap[url] && evaluationMap[url].reduce((acc, { duration }) => acc + duration, 0),
       coverage: coverageMap[url],
       internal: internalTest(url),
       type: mimeType,
