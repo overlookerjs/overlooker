@@ -318,15 +318,21 @@ declare module "overlooker" {
     }
   };
 
+  export type Thresholds = { [path: string]: number };
+
+  export type ThresholdsByPage = {
+    [pageName: string]: Thresholds
+  }
+
   export function profile(config: ProfileConfig): Promise<ProfileData>;
 
-  export function compare(firstData: ProfileData, secondData: ProfileData): ComparedData;
+  export function compare(firstData: ProfileData, secondData: ProfileData, onlyStats: boolean): ComparedData;
 
-  export function check(compared: ComparedData, thresholds: { [path: string]: number }): CheckedData;
+  export function check(compared: ComparedData, thresholdsByPage: ThresholdsByPage): CheckedData;
 
-  export function comparePages(firstPage: PageData, secondPage: PageData): ComparedPageData;
+  export function comparePages(firstPage: PageData, secondPage: PageData, onlyStats: boolean): ComparedPageData;
 
-  export function checkPage(comparedPageData: ComparedPageData): CheckedPageData;
+  export function checkPages(comparedPageData: ComparedPageData, thresholds: Thresholds): CheckedPageData;
 
   export function merge(profileData: ProfileData): PageData;
 }

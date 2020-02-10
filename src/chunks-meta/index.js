@@ -6,12 +6,11 @@ const hydrateRequestByType = (request) => {
   const { url, internal } = request;
 
   if (internal) {
-    const [, hash, fileType] = url.match(urlRegExp) || [];
+    const [, hash] = url.match(urlRegExp) || [];
 
     return {
       ...request,
-      hash,
-      fileType
+      hash
     }
   } else {
     return request;

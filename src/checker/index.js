@@ -1,4 +1,5 @@
 const { flat } = require('./../utils.js');
+const { make } = require('./../objects-utils.js');
 
 const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
 
@@ -35,13 +36,16 @@ const checkPageWithThresholds = (page, thresholdsEntries) => thresholdsEntries
 const getThresholdsEntries = (thresholds) => Object.entries(thresholds)
   .map(([path, threshold]) => [path.split('.'), threshold]);
 
-const check = (comparing, thresholds) => {
-  const thresholdsEntries = getThresholdsEntries(thresholds);
+const check = (comparing, thresholdsByPage) => {
+  const thresholdsEntries = make(
+    Object.entries(thresholdsByPage)
+      .map(([pageName, thresholds]) => [pageName, getThresholdsEntries(thresholds)])
+  );
 
   const results = Object.entries(comparing)
     .map(([page, data]) => [
       page,
-      flat(checkPageWithThresholds(data, thresholdsEntries))
+      flat(checkPageWithThresholds(data, thresholdsEntries[page] || thresholdsByPage['default']))
         .filter(Boolean)
     ])
     .filter(([, results]) => results.length)
