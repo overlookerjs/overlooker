@@ -1,21 +1,21 @@
 const { flat } = require('./../utils.js');
-const { make } = require('./../objects-utils.js');
 
 const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
 
-const checkPageWithThresholds = (page, thresholdsEntries) => thresholdsEntries
+const checkPages = (page, thresholds) => Object.entries(thresholds)
   .map(([path, threshold]) => {
+    const splitPath = path.split('.');
     let value = page;
 
-    for (let index = 0; index < path.length; index++) {
-      const key = path[index];
+    for (let index = 0; index < splitPath.length; index++) {
+      const key = splitPath[index];
       if (bunchRegExp.test(key)) {
         const entries = key.match(bunchRegExp)[1].split(/[\n\s]*,[\n\s]*/);
 
-        return checkPageWithThresholds(
+        return checkPages(
           page,
           entries.map((entry) => {
-            const replacedPath = path.slice();
+            const replacedPath = splitPath.slice();
             replacedPath.splice(index, 1, entry);
 
             return [replacedPath, threshold];
@@ -26,26 +26,20 @@ const checkPageWithThresholds = (page, thresholdsEntries) => thresholdsEntries
       }
     }
 
-    return value > threshold ? {
+    return {
       path,
+      splitPath,
       threshold,
-      value
-    } : null;
+      value,
+      success: value <= threshold
+    };
   });
 
-const getThresholdsEntries = (thresholds) => Object.entries(thresholds)
-  .map(([path, threshold]) => [path.split('.'), threshold]);
-
 const check = (comparing, thresholdsByPage) => {
-  const thresholdsEntries = make(
-    Object.entries(thresholdsByPage)
-      .map(([pageName, thresholds]) => [pageName, getThresholdsEntries(thresholds)])
-  );
-
   const results = Object.entries(comparing)
     .map(([page, data]) => [
       page,
-      flat(checkPageWithThresholds(data, thresholdsEntries[page] || thresholdsByPage['default']))
+      flat(checkPages(data, thresholdsByPage[page] || thresholdsByPage['default'] || []))
         .filter(Boolean)
     ])
     .filter(([, results]) => results.length)
@@ -63,6 +57,4 @@ const check = (comparing, thresholdsByPage) => {
   }
 };
 
-const checkPage = (page, thresholds) => checkPageWithThresholds(page, getThresholdsEntries(thresholds));
-
-module.exports = { check, checkPage };
+module.exports = { check, checkPages };

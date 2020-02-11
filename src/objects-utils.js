@@ -24,7 +24,11 @@ const summ = (obj1 = {}, obj2 = {}) => map(obj1, (value, key) => (value || 0) + 
 
 const concat = (obj1 = {}, obj2 = {}) => map(
   obj1,
-  (value, key) => value != null && obj2[key] != null ? [].concat(value, obj2[key]) : [value != null ? value : obj2[key]]
+  (value, key) => value != null && obj2[key] != null ? (
+    [].concat(value, obj2[key])
+  ) : (
+    [value != null ? value : obj2[key]]
+  )
 );
 
 const divide = (obj = {}, divider) => map(obj, (value) => value / divider);
@@ -47,13 +51,16 @@ const filter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) =
   return acc;
 }, {});
 
-const deepConcat = (obj1, obj2 = {}) => map(
+const deepConcat = (obj1 = {}, obj2 = {}) => map(
   obj1,
-  (innerObj, key) => Object.values(innerObj).every((value) => value instanceof Object) ? (
+  (innerObj, key) => innerObj instanceof Object && !Array.isArray(innerObj) ? (
     deepConcat(innerObj, obj2[key])
   ) : (
-    concat(innerObj, obj2[key])
-  ));
+    []
+      .concat(innerObj !== undefined ? innerObj : [])
+      .concat(obj2[key] !== undefined ? obj2[key] : [])
+  )
+);
 
 const deepCompare = (comparator, obj1, obj2 = {}) => map(
   obj1,
@@ -142,6 +149,9 @@ const raiseFields = (obj, symbols) => Object.entries(obj)
     return acc;
   }, {});
 
+const getByPath = (obj, path) => (Array.isArray(path) ? path : path.split('.'))
+  .reduce((acc, key) => acc[key], obj);
+
 module.exports = {
   map,
   reduce,
@@ -163,5 +173,6 @@ module.exports = {
   deepMapUntilArray,
   flat,
   raiseFields,
-  addPrefix
+  addPrefix,
+  getByPath
 };

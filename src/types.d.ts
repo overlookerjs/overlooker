@@ -264,8 +264,10 @@ declare module "overlooker" {
     success: boolean,
     results: Array<{
       path: Array<string>,
+      key: string,
       threshold: number,
-      value: number
+      value: number,
+      success: boolean
     }>
   };
 
