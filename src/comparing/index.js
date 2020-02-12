@@ -3,12 +3,12 @@ const { compareNetworks } = require('./compare-network.js');
 const { compareStats, compareStatsPercent } = require('./compare-stats.js');
 
 const getComparator = (second, onlyStats = false) => (acc, [pageName, from]) => {
-  acc[pageName] = comparePages(from, second[pageName], onlyStats);
+  acc[pageName] = compare(from, second[pageName], onlyStats);
 
   return acc;
 };
 
-const comparePages = (firstPage, secondPage, onlyStats = false) => ({
+const compare = (firstPage, secondPage, onlyStats = false) => ({
   absolute: {
     stats: compareStats(firstPage.stats, secondPage.stats),
     network: onlyStats ? null : compareNetworks(firstPage.network, secondPage.network),
@@ -25,7 +25,7 @@ const comparePages = (firstPage, secondPage, onlyStats = false) => ({
   }
 });
 
-const compare = (first, second, onlyStats = false) => Object.entries(first)
+const comparePages = (first, second, onlyStats = false) => Object.entries(first)
   .filter(([pageName]) => second[pageName])
   .reduce(getComparator(second, onlyStats), {});
 

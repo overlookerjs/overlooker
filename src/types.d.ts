@@ -328,13 +328,13 @@ declare module "overlooker" {
 
   export function profile(config: ProfileConfig): Promise<ProfileData>;
 
-  export function compare(firstData: ProfileData, secondData: ProfileData, onlyStats: boolean): ComparedData;
+  export function comparePages(firstData: ProfileData, secondData: ProfileData, onlyStats: boolean): ComparedData;
 
-  export function check(compared: ComparedData, thresholdsByPage: ThresholdsByPage): CheckedData;
+  export function checkPages(compared: ComparedData, thresholdsByPage: ThresholdsByPage): CheckedData;
 
-  export function comparePages(firstPage: PageData, secondPage: PageData, onlyStats: boolean): ComparedPageData;
+  export function compare(firstPage: PageData, secondPage: PageData, onlyStats: boolean): ComparedPageData;
 
-  export function checkPages(comparedPageData: ComparedPageData, thresholds: Thresholds): CheckedPageData;
+  export function check(comparedPageData: ComparedPageData, thresholds: Thresholds): CheckedPageData;
 
   export function merge(profileData: ProfileData): PageData;
 }

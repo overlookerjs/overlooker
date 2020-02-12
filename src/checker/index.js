@@ -1,19 +1,20 @@
 const { flat } = require('./../utils.js');
+const { make } = require('./../objects-utils.js');
 
 const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
 
-const checkPages = (page, thresholds) => Object.entries(thresholds)
+const check = (comparison, thresholds) => Object.entries(thresholds)
   .map(([path, threshold]) => {
     const splitPath = path.split('.');
-    let value = page;
+    let value = comparison;
 
     for (let index = 0; index < splitPath.length; index++) {
       const key = splitPath[index];
       if (bunchRegExp.test(key)) {
         const entries = key.match(bunchRegExp)[1].split(/[\n\s]*,[\n\s]*/);
 
-        return checkPages(
-          page,
+        return check(
+          comparison,
           entries.map((entry) => {
             const replacedPath = splitPath.slice();
             replacedPath.splice(index, 1, entry);
@@ -35,26 +36,25 @@ const checkPages = (page, thresholds) => Object.entries(thresholds)
     };
   });
 
-const check = (comparing, thresholdsByPage) => {
-  const results = Object.entries(comparing)
-    .map(([page, data]) => [
-      page,
-      flat(checkPages(data, thresholdsByPage[page] || thresholdsByPage['default'] || []))
-        .filter(Boolean)
-    ])
-    .filter(([, results]) => results.length)
-    .reduce((acc, [page, results]) => {
-      acc[page] = {
-        success: !Boolean(Object.keys(results).length),
-        results
-      };
-      return acc;
-    }, {});
+const checkPages = (comparisons, thresholdsByPage) => {
+  const results = make(
+    Object.entries(comparisons)
+      .map(([page, comparison]) => [
+        page,
+        flat(check(comparison, thresholdsByPage[page] || thresholdsByPage['default'] || []))
+          .filter(Boolean)
+      ])
+      .map(([page, results]) => [page, {
+          success: results.every((success) => success),
+          results
+        }]
+      )
+  );
 
   return {
-    success: !Boolean(Object.keys(results).length),
+    success: Object.values(results).every(({ success }) => success),
     results
   }
 };
 
-module.exports = { check, checkPages };
+module.exports = { checkPages, check };

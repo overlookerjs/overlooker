@@ -1,6 +1,6 @@
 const { profile } = require('./profiler');
 const { compare, comparePages } = require('./comparing');
-const { check, checkPage } = require('./checker');
+const { check, checkPages } = require('./checker');
 const { merge } = require('./merge');
 const view = require('./view');
 
@@ -9,7 +9,7 @@ module.exports = {
   compare,
   comparePages,
   check,
-  checkPage,
+  checkPages,
   merge,
   view
 };

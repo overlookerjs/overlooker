@@ -1,4 +1,4 @@
-const { deepMap, flat, map, raiseFields } = require('./../objects-utils.js');
+const { deepMap, flat, map, raiseFields, filter, toArray } = require('./../objects-utils.js');
 
 const truncateAggregation = (data, aggregateName, mapper = (value) => value) => data[aggregateName] != null ? (
   mapper(data[aggregateName])
@@ -55,10 +55,21 @@ const inverseTotal = (stats) => deepMap(stats.total, (obj, key) => map(obj, (val
   internal: stats.internal[key][fieldName],
 })));
 
+const excludeNetwork = ({network, actions, ...profile}) => ({
+  ...profile,
+  actions: map(actions, ({network, ...action}) => action)
+});
+
+const serializeProfile = (profile) => toArray(profile);
+
+const serializeProfiles = (profiles) => toArray(map(profiles, excludeNetwork));
+
 module.exports = {
   makeStatsReadable,
   truncateAggregation,
   flatStats,
   inverseTotal,
-  addMeaning
+  addMeaning,
+  serializeProfile,
+  serializeProfiles
 };

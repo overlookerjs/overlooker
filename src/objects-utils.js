@@ -51,10 +51,12 @@ const filter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) =
   return acc;
 }, {});
 
-const deepConcat = (obj1 = {}, obj2 = {}) => map(
-  obj1,
+const deepConcat = (obj1 = {}, obj2 = {}) => map({
+    ...map(obj2, (value) => value instanceof Object && !Array.isArray(value) ? {} : undefined), // ToDo: rework?
+    ...obj1
+  },
   (innerObj, key) => innerObj instanceof Object && !Array.isArray(innerObj) ? (
-    deepConcat(innerObj, obj2[key])
+    Object.keys(innerObj).length ? deepConcat(innerObj, obj2[key]) : deepConcat(obj2[key])
   ) : (
     []
       .concat(innerObj !== undefined ? innerObj : [])
@@ -112,7 +114,7 @@ const deepMap = (obj, mapper) => map(obj, (innerObj, key) =>
     mapper(innerObj, key)
   ));
 
-const objToArray = (obj, skipSymbols = [], parent = '', acc = []) => (
+const toArray = (obj, skipSymbols = [], parent = '', acc = []) => (
   Object.entries(obj)
     .reduce((acc, [key, value]) => {
       const complexKey = parent ? parent + '.' + key : key;
@@ -120,7 +122,7 @@ const objToArray = (obj, skipSymbols = [], parent = '', acc = []) => (
       if (skipSymbols.includes(complexKey)) {
         acc.push([complexKey, flat(value, skipSymbols.filter((symbol) => symbol === complexKey))]);
       } else if (value instanceof Object) {
-        objToArray(value, skipSymbols, complexKey, acc);
+        toArray(value, skipSymbols, complexKey, acc);
       } else {
         acc.push([complexKey, value]);
       }
@@ -129,7 +131,7 @@ const objToArray = (obj, skipSymbols = [], parent = '', acc = []) => (
     }, acc)
 );
 
-const flat = (obj, skipSymbols) => make(objToArray(obj, skipSymbols));
+const flat = (obj, skipSymbols) => make(toArray(obj, skipSymbols));
 
 const addPrefix = (obj, prefix) => Object.entries(obj)
   .reduce((acc, [key, value]) => {
@@ -174,5 +176,6 @@ module.exports = {
   flat,
   raiseFields,
   addPrefix,
-  getByPath
+  getByPath,
+  toArray
 };

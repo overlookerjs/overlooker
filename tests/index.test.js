@@ -1,6 +1,6 @@
 const compile = require('./measurable-project/compiler');
 const listen = require('./measurable-project/server/index');
-const { check, checkPage, compare, comparePages, profile, merge } = require('./../src');
+const { check, checkPages, compare, comparePages, profile, merge } = require('./../src');
 
 const thresholds = {
   'default': {
@@ -78,11 +78,11 @@ describe('main tests', () => {
     let checked;
 
     test('compare audits', async () => {
-      compared = compare(data1, data2);
+      compared = comparePages(data1, data2);
     });
 
     test('check compared audits', async () => {
-      checked = check(compared, thresholds);
+      checked = checkPages(compared, thresholds);
     });
   });
 
@@ -98,11 +98,11 @@ describe('main tests', () => {
     });
 
     test('compare merged pages', async () => {
-      compared = comparePages(firstMerge, secondMerge);
+      compared = compare(firstMerge, secondMerge);
     });
 
     test('check merged pages', async () => {
-      checked = checkPage(compared, thresholds);
+      checked = check(compared, thresholds.default);
     });
   });
 
