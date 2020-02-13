@@ -1,5 +1,5 @@
 const { aggregateProfiles } = require('./../aggregation');
-const { deepMapUntilArray, map } = require('./../objects-utils');
+const { deepMapUntilArray } = require('./../objects-utils');
 const jStat = require('jstat');
 
 const strategies = {
@@ -7,7 +7,7 @@ const strategies = {
   median: (a) => jStat.median(a)
 };
 
-const getAggregateMerger = (mergeStrategy) => (stats) => deepMapUntilArray(stats, (obj) => map(obj, mergeStrategy));
+const getAggregateMerger = (mergeStrategy) => (stats) => deepMapUntilArray(stats, mergeStrategy);
 
 const merge = (data, pages, mergeStrategyName = 'mean') => (
   aggregateProfiles(

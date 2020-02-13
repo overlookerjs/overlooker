@@ -45,7 +45,7 @@ const checkPages = (comparisons, thresholdsByPage) => {
           .filter(Boolean)
       ])
       .map(([page, results]) => [page, {
-          success: results.every((success) => success),
+          success: results.every(({ success }) => success),
           results
         }]
       )

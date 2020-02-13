@@ -101,7 +101,7 @@ const deepSet = (obj, path, value) => {
 };
 
 const deepMapUntilArray = (obj, mapper) => map(obj, (innerObj) =>
-  Object.values(innerObj).every((value) => Array.isArray(value)) ? (
+  Array.isArray(innerObj) ? (
     mapper(innerObj)
   ) : (
     deepMapUntilArray(innerObj, mapper)
@@ -154,6 +154,28 @@ const raiseFields = (obj, symbols) => Object.entries(obj)
 const getByPath = (obj, path) => (Array.isArray(path) ? path : path.split('.'))
   .reduce((acc, key) => acc[key], obj);
 
+const makePath = (obj, path, value) => {
+  path.split('.')
+    .reduce((acc, key, index, arr) => {
+      if (index === arr.length - 1 && value !== undefined) {
+        acc[key] = value;
+
+        return acc;
+      }
+
+      if (!acc[key]) {
+        acc[key] = {};
+      }
+
+      return acc[key];
+    }, obj);
+
+  return obj;
+};
+
+const expandFlat = (obj) => Object.entries(obj)
+  .reduce((acc, [path, value]) => makePath(acc, path, value), {});
+
 module.exports = {
   map,
   reduce,
@@ -177,5 +199,7 @@ module.exports = {
   raiseFields,
   addPrefix,
   getByPath,
-  toArray
+  toArray,
+  expandFlat,
+  makePath
 };

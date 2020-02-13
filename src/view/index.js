@@ -6,7 +6,7 @@ const truncateAggregation = (data, aggregateName, mapper = (value) => value) => 
   map(data, (value) => truncateAggregation(value, aggregateName, mapper))
 );
 
-const addMeaning = (obj, meaning, digit) => deepMap(obj, (value, key) => {
+const addMeaning = (value, key, meaning, digit) => {
   if (typeof value === 'number' && key !== 'count') {
     let newValue;
     const isPositive = value > 0;
@@ -29,7 +29,9 @@ const addMeaning = (obj, meaning, digit) => deepMap(obj, (value, key) => {
 
     return newValue;
   }
-});
+};
+
+const addMeaningToObj = (obj, meaning, digit) => deepMap(obj, (value, key) => addMeaning(value, key, meaning, digit));
 
 const makeStatsReadable = ({
                              timings,
@@ -39,12 +41,24 @@ const makeStatsReadable = ({
                              resources,
                              coverage
                            }) => ({
-  timings: addMeaning(timings),
-  userCentric: addMeaning(userCentric),
-  custom: addMeaning(custom),
-  evaluation: addMeaning(evaluation),
-  resources: addMeaning(resources, 'kb'),
-  coverage: addMeaning(coverage, 'kb'),
+  timings: addMeaningToObj(timings),
+  userCentric: addMeaningToObj(userCentric),
+  custom: addMeaningToObj(custom),
+  evaluation: addMeaningToObj(evaluation),
+  resources: addMeaningToObj(resources, 'kb'),
+  coverage: addMeaningToObj(coverage, 'kb'),
+});
+
+const makeProfileReadable = (profile, isPercent) => ({
+  stats: isPercent ? addMeaningToObj(profile.stats, '%', true) : makeStatsReadable(profile.stats),
+  actions: map(profile.actions, ({ stats }) => ({
+    stats: addMeaningToObj(stats, isPercent ? '%' : undefined, isPercent)
+  }))
+});
+
+const makeComparisonReadable = (comparison) => ({
+  absolute: makeProfileReadable(comparison.absolute),
+  percent: makeProfileReadable(comparison.percent, true)
 });
 
 const flatStats = (stats) => map(raiseFields(stats, ['resources', 'coverage']), (value) => flat(value));
@@ -55,9 +69,9 @@ const inverseTotal = (stats) => deepMap(stats.total, (obj, key) => map(obj, (val
   internal: stats.internal[key][fieldName],
 })));
 
-const excludeNetwork = ({network, actions, ...profile}) => ({
+const excludeNetwork = ({ network, actions, ...profile }) => ({
   ...profile,
-  actions: map(actions, ({network, ...action}) => action)
+  actions: map(actions, ({ network, ...action }) => action)
 });
 
 const serializeProfile = (profile) => toArray(profile);
@@ -70,6 +84,9 @@ module.exports = {
   flatStats,
   inverseTotal,
   addMeaning,
+  addMeaningToObj,
   serializeProfile,
+  makeProfileReadable,
+  makeComparisonReadable,
   serializeProfiles
 };

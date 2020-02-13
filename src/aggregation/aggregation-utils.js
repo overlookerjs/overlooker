@@ -32,7 +32,7 @@ const aggregate = (array) => {
 
 const objAggregation = (obj) => map(obj, aggregate);
 
-const objDeepAggregation = (obj) => deepMapUntilArray(obj, objAggregation);
+const objDeepAggregation = (obj) => deepMapUntilArray(obj, aggregate);
 
 module.exports = {
   objAggregation,

@@ -4,7 +4,7 @@ const getSpeedIndex = async (events) => {
   try {
     const { speedIndex } = await speedline(events);
 
-    return speedIndex;
+    return speedIndex * 1000;
   } catch (e) {
     return 0;
   }
