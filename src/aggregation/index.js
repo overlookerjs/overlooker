@@ -21,7 +21,7 @@ const aggregateProfiles = (profiles,
   return {
     stats: aggregation(stats),
     network: expandNetwork(normalizeNetworkSummary(network), buildData),
-    actions: normalizeActionsSummary(actions, buildData)
+    actions: normalizeActionsSummary(actions, buildData, mergeRequests, aggregation)
   };
 };
 

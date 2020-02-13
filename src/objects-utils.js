@@ -51,10 +51,12 @@ const filter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) =
   return acc;
 }, {});
 
-const deepConcat = (obj1 = {}, obj2 = {}) => map({
-    ...map(obj2, (value) => value instanceof Object && !Array.isArray(value) ? {} : undefined), // ToDo: rework?
-    ...obj1
-  },
+const keysExtend = (obj1, obj2) => ({
+  ...map(obj2, (value) => value instanceof Object && !Array.isArray(value) ? {} : undefined), // ToDo: rework?
+  ...obj1
+});
+
+const deepConcat = (obj1 = {}, obj2 = {}) => map(keysExtend(obj1, obj2),
   (innerObj, key) => innerObj instanceof Object && !Array.isArray(innerObj) ? (
     Object.keys(innerObj).length ? deepConcat(innerObj, obj2[key]) : deepConcat(obj2[key])
   ) : (
@@ -201,5 +203,6 @@ module.exports = {
   getByPath,
   toArray,
   expandFlat,
-  makePath
+  makePath,
+  keysExtend
 };

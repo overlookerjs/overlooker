@@ -163,17 +163,14 @@ const compareNetworks = (firstNetwork, secondNetwork) => {
           fileStatus: isNotChanged ? 'not_changed' : 'changed',
           contentStatus: isContentNotChanged ? 'not_changed' : 'changed',
           modules: first.meta && second.meta && first.meta.modules && second.meta.modules ? (
-            compareChunks(first, second)
+            compareModules(first.meta.modules, second.meta.modules)
           ) : null
         }
       }
     });
 };
 
-const compareChunks = (firstRequest, secondRequest) => {
-  const plainModulesLeft = firstRequest.meta.modules;
-  const plainModulesRight = secondRequest.meta.modules;
-
+const compareModules = (plainModulesLeft, plainModulesRight) => {
   const similar = plainModulesLeft.filter(({ source }) => plainModulesRight
     .some((module) => module.source && source && module.source.hash === source.hash));
   const changed = plainModulesRight.filter(({ source, file }) => plainModulesLeft
@@ -192,6 +189,6 @@ const compareChunks = (firstRequest, secondRequest) => {
 };
 
 module.exports = {
-  compareChunks,
+  compareModules,
   compareNetworks
 };

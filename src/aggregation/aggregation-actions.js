@@ -3,21 +3,37 @@ const { expandNetwork } = require('./../chunks-meta');
 const { map, deepConcat } = require('./../objects-utils.js');
 const { objDeepAggregation } = require('./aggregation-utils.js');
 
-const getActionsSummary = (actions, summaryActions, mergeRequests) => (
-  map(actions, (action, name) => ({
-    stats: deepConcat(action.stats, summaryActions.stats),
+const getActionsSummary = (actions, summaryActions) => ({
+  ...summaryActions,
+  ...Object.entries(actions).reduce((acc, [key, value]) => {
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+
+    acc[key].push(value);
+
+    return acc;
+  }, summaryActions)
+});
+
+const normalizeActionsSummary = (actions, buildData, mergeRequests, aggregation) => map(actions, (action) => {
+  const summarizedAction = action.reduce((summary, actionChunk) => ({
+    stats: deepConcat(actionChunk.stats, summary.stats),
     network: getNetworkSummary(
-      action.network,
-      summaryActions[name] ? summaryActions[name].network : {},
+      actionChunk.network,
+      summary.network,
       mergeRequests
     )
-  }))
-);
+  }), {
+    stats: {},
+    network: {}
+  });
 
-const normalizeActionsSummary = (actions, buildData) => map(actions, (action) => ({
-  stats: objDeepAggregation(action.stats),
-  network: expandNetwork(normalizeNetworkSummary(action.network), buildData),
-}));
+  return ({
+    stats: aggregation(summarizedAction.stats),
+    network: expandNetwork(normalizeNetworkSummary(summarizedAction.network), buildData),
+  })
+});
 
 module.exports = {
   getActionsSummary,
