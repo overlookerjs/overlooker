@@ -50,9 +50,9 @@ const makeScriptsEvaluationMap = (evaluation) => evaluation
 const getScriptsEvaluationStats = (evaluation, internalTest) => {
   const internal = evaluation
     .filter(({ url }) => internalTest(url))
-    .reduce((acc, { duration }) => acc + duration, 0) / 1000;
+    .reduce((acc, { duration }) => acc + duration, 0);
   const total = evaluation
-    .reduce((acc, { duration }) => acc + duration, 0) / 1000;
+    .reduce((acc, { duration }) => acc + duration, 0);
   const external = total - internal;
 
   return {

@@ -24,7 +24,11 @@ const addMeaning = (value, key, meaning, digit) => {
         break;
       case 's':
       default:
-        newValue = (value / 1000 / 1000).toFixed(2) + 's';
+        if (value / 1000 > 1000) {
+          newValue = (value / 1000 / 1000).toFixed(2) + 's';
+        } else {
+          newValue = (value / 1000).toFixed(2) + 'ms';
+        }
     }
 
     if (digit) {
