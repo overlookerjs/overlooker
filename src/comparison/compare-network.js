@@ -1,4 +1,5 @@
-const { getType, map } = require('./../objects-utils.js');
+const { map } = require('./../objects-utils.js');
+const { getType } = require('./../utils.js');
 
 const COMPARING_MODULES_THRESHOLD = 0.5;
 

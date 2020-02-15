@@ -27,7 +27,7 @@ const addMeaning = (value, key, meaning, digit) => {
         if (value / 1000 > 1000) {
           newValue = (value / 1000 / 1000).toFixed(2) + 's';
         } else {
-          newValue = (value / 1000).toFixed(2) + 'ms';
+          newValue = (value / 1000).toFixed(0) + 'ms';
         }
     }
 

@@ -263,11 +263,11 @@ declare module "overlooker" {
   export type CheckedPageData = {
     success: boolean,
     results: Array<{
-      path: Array<string>,
-      key: string,
+      splitPath: Array<string>,
+      path: string,
       threshold: number,
       value: number,
-      success: boolean
+      status: 'warning' | 'worsening' | 'partial_worsening' | 'improvement' | 'partial_improvement' | 'without_changes'
     }>
   };
 
