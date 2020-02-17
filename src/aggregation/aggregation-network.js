@@ -12,6 +12,7 @@ const getNetworkSummary = (network, inception = {}, merge) => {
       size,
       transfer,
       evaluation,
+      evaluationTotal,
       coverage,
       ...rest
     }) => {
@@ -24,6 +25,7 @@ const getNetworkSummary = (network, inception = {}, merge) => {
         networkSummary[clearedUrl] = {
           size: size + similarSummary.size,
           transfer: transfer + similarSummary.transfer,
+          evaluationTotal: evaluationTotal + similarSummary.evaluationTotal,
           timings: similarSummary.timings ? summ(similarSummary.timings, timings) : timings,
           count: similarSummary.count + 1,
           evaluation: similarSummary.evaluation.concat([evaluation]),
@@ -37,6 +39,7 @@ const getNetworkSummary = (network, inception = {}, merge) => {
           timings,
           size,
           transfer,
+          evaluationTotal,
           count: 1,
           evaluation: [evaluation],
           coverage: [coverage],
@@ -56,12 +59,14 @@ const normalizeNetworkSummary = (summaryNetwork) => Object.entries(summaryNetwor
     type,
     transfer,
     evaluation,
+    evaluationTotal,
     coverage,
     count,
     ...rest
   }]) => ({
     size: size / count,
     transfer: transfer / count,
+    evaluationTotal: evaluationTotal / count,
     timings: divide(timings, count),
     evaluation: normalizeEvaluationSummary(evaluation),
     coverage: normalizeCoverageSummary(coverage),
