@@ -60,7 +60,7 @@ const parallelizeArray = (functionsArray, threads, restartTime = 0, onError) => 
   }
 };
 
-const parallelizeObject = (functionsObject, threads, restartTime) => {
+const parallelizeObject = (functionsObject, threads, restartTime, onError) => {
   const keysOrder = Object.keys(functionsObject);
   const objectPlaceholder = keysOrder.reduce((acc, key) => ({ ...acc, [key]: [] }), {});
 
@@ -77,7 +77,7 @@ const parallelizeObject = (functionsObject, threads, restartTime) => {
   }), {});
   const functions = flattedObject.map(({ fn }) => fn);
 
-  const { stop, then } = parallelizeArray(functions, threads, restartTime);
+  const { stop, then } = parallelizeArray(functions, threads, restartTime, onError);
 
   return {
     stop,

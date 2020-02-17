@@ -10,6 +10,7 @@ const {
   getScriptsEvaluationStats,
   makeScriptsEvaluationMap
 } = require('./events-evaluation.js');
+const { map } = require('./../objects-utils.js');
 
 const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints }, internalTest, firstEventName) => {
   const firstEvent = getEventInMainFrame(tracing, firstEventName);

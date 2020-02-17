@@ -271,6 +271,7 @@ declare module "overlooker" {
       path: string,
       threshold: number,
       value: number,
+      difference: number,
       status: 'warning' | 'worsening' | 'partial_worsening' | 'improvement' | 'partial_improvement' | 'without_changes'
     }>
   };

@@ -52,7 +52,9 @@ const fetchPages = ({
     })
   }, {});
 
-  const runner = parallelizeObject(functions, browsersThreads, 5000);
+  const runner = parallelizeObject(functions, browsersThreads, 5000, async (e) => {
+    await logger(`error while fetching: ${e.stack}`);
+  });
 
   return runner;
 };

@@ -55,6 +55,7 @@ const check = (comparison, thresholds) => Object.entries(thresholds)
       splitPath,
       threshold,
       value,
+      difference: value - threshold,
       status: checkValue(value, threshold)
     };
   });
