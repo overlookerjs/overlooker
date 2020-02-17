@@ -1,14 +1,12 @@
 const { deepMap, flat, map, raiseFields, toArray } = require('./../objects-utils.js');
 
-const truncateAggregation = (data, aggregateName, mapper = (value) => value) => {
-  if (data.hasOwnProperty(aggregateName))
-    console.log(data, aggregateName);
-  return data.hasOwnProperty(aggregateName) ? (
+const truncateAggregation = (data, aggregateName, mapper = (value) => value) => (
+  data.hasOwnProperty(aggregateName) ? (
     mapper(data[aggregateName])
   ) : (
     map(data, (value) => truncateAggregation(value, aggregateName, mapper))
-  );
-};
+  )
+);
 
 const addMeaning = (value, key, meaning, digit) => {
   if (typeof value === 'number' && key !== 'count') {
