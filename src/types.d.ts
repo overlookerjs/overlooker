@@ -123,8 +123,12 @@ declare module "overlooker" {
 
   export type ProfileStatsUserCentric = {
     speedIndex: AggregatedValue,
-    heroElementFirstPaint: AggregatedValue,
-    heroElementLastPaint: AggregatedValue
+    heroElements: {
+      [heroElementName: string]: {
+        firstPaint: AggregatedValue,
+        lastPaint: AggregatedValue
+      }
+    }
   };
 
   export type ProfileNetwork = Array<ProfileRequest>;
@@ -285,13 +289,16 @@ declare module "overlooker" {
     pages: Array<{
       name: string,
       url: string,
-      heroElement?: string,
+      heroElements?: {
+        [heroElementName: string]: string
+      },
       cookies?: Cookies,
       actions?: Array<{
         name: string,
         action: (page: Object) => Promise<void>
       }>
     }>,
+    host?: string,
     throttling?: {
       cpu?: number,
       network?: 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi'

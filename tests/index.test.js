@@ -18,10 +18,13 @@ jest.setTimeout(60000);
 
 describe('main tests', () => {
   const config = {
+    host: 'http://localhost:3000',
     pages: [{
       name: 'main',
-      url: 'http://localhost:3000',
-      heroElement: '#hero-element',
+      url: '/',
+      heroElements: {
+        main: '#hero-element'
+      },
       actions: [{
         name: 'test-action',
         action: async (page) => {
@@ -43,7 +46,7 @@ describe('main tests', () => {
       }]
     }, {
       name: 'category',
-      url: 'http://localhost:3000'
+      url: '/'
     }],
     count: 1,
     throttling: {

@@ -1,3 +1,4 @@
+const { map } = require('./../objects-utils.js');
 const speedline = require('speedline/core');
 
 const getSpeedIndex = async (events) => {
@@ -11,11 +12,16 @@ const getSpeedIndex = async (events) => {
 };
 
 const getHeroElementPaints = (events) => events.length ? {
-  heroElementFirstPaint: events[0].ts,
-  heroElementLastPaint: events[events.length - 1].ts,
+  firstPaint: events[0].ts,
+  lastPaint: events[events.length - 1].ts,
 } : {};
+
+const getHeroElementsPaints = (heroElementsPaintEvents) => map(
+  heroElementsPaintEvents,
+  getHeroElementPaints
+);
 
 module.exports = {
   getSpeedIndex,
-  getHeroElementPaints
+  getHeroElementsPaints
 };

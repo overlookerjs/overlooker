@@ -1,3 +1,5 @@
+const { asyncMap } = require('./../objects-utils.js');
+
 const findNodePaintEvents = (events, node) => (
   events.filter(({ name, args }) => (
     (
@@ -33,4 +35,8 @@ const getPaintEventsBySelector = async (client, events, selector) => {
   return [];
 };
 
-module.exports = { getPaintEventsBySelector };
+const getPaintEventsBySelectors = async (client, events, selectors = {}) => (
+  asyncMap(selectors, (selector) => getPaintEventsBySelector(client, events, selector))
+);
+
+module.exports = { getPaintEventsBySelectors };

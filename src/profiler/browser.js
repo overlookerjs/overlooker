@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const networkPresets = require('../network-presets.js');
 const devices = require('puppeteer/DeviceDescriptors');
 const cache = require('./cache.js');
-const { getPaintEventsBySelector } = require('./hero-elements.js');
+const { getPaintEventsBySelectors } = require('./hero-elements.js');
 const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
 const { make } = require('./../objects-utils.js');
@@ -159,7 +159,7 @@ const profileActions = async (page, config, pageConfig, client) => {
 };
 
 const profileUrl = async (context, config, pageConfig) => {
-  const { url, heroElement } = pageConfig;
+  const { url, heroElements } = pageConfig;
 
   const page = await context.newPage();
 
@@ -177,7 +177,7 @@ const profileUrl = async (context, config, pageConfig) => {
 
     const watchingResult = await getWatchingResult();
 
-    const heroElementPaints = await getPaintEventsBySelector(client, watchingResult.tracing, heroElement);
+    const heroElementsPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, heroElements);
 
     const actions = await profileActions(page, config, pageConfig);
 
@@ -186,7 +186,7 @@ const profileUrl = async (context, config, pageConfig) => {
     return {
       ...watchingResult,
       actions,
-      heroElementPaints
+      heroElementsPaints
     };
   } catch (error) {
     await page.close();

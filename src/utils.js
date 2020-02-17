@@ -42,6 +42,8 @@ const getHost = (url) => {
   return match && match[1];
 };
 
+const urlJoin = (...urls) => urls.map((url) => url.replace(/(^\/)|(\/$)/g, '')).join('/');
+
 const makeInternalTest = (page) => {
   const rule = new RegExp(`^https?:\/\/[^/]*${(getDomain(page) || '').replace('.', '\\.')}`);
 
@@ -182,5 +184,6 @@ module.exports = {
   isRelativeUrl,
   memoize,
   makeRule,
-  flat
+  flat,
+  urlJoin
 };
