@@ -65,7 +65,7 @@ const checkPages = (comparisons, thresholdsByPage) => {
     Object.entries(comparisons)
       .map(([page, comparison]) => [
         page,
-        flat(check(comparison, thresholdsByPage[page] || thresholdsByPage['default'] || []))
+        flat(check(comparison, thresholdsByPage[page] || thresholdsByPage['default'] || {}))
           .filter(Boolean)
       ])
       .map(([page, results]) => [page, {

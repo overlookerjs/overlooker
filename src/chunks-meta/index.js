@@ -1,5 +1,3 @@
-const { memoize } = require('../utils.js');
-
 const urlRegExp = /^.*?\/([^/]+)\.(css|js)$/;
 
 const hydrateRequestByType = (request) => {
@@ -35,9 +33,7 @@ const makeChunkMetaBuilder = (request, modulesMap, filesMap) => (chunk) => ({
   modules: extractModules(modulesMap, filesMap, chunk.modules)
 });
 
-const expandRequest = (request, build) => {
-  const modulesMap = makeMap(build, 'modules', 'id');
-  const filesMap = makeMap(build, 'files', 'path');
+const expandRequest = (request, build, modulesMap, filesMap) => {
   const hydratedRequest = hydrateRequestByType(request);
   const makeChunkMeta = makeChunkMetaBuilder(hydratedRequest, modulesMap, filesMap);
 
@@ -59,11 +55,14 @@ const expandRequest = (request, build) => {
 };
 
 const expandNetwork = (network, build) => {
+  const modulesMap = makeMap(build, 'modules', 'id');
+  const filesMap = makeMap(build, 'files', 'path');
+
   return build ? network
-    .map((request) => expandRequest(request, build)) : network;
+    .map((request) => expandRequest(request, build, modulesMap, filesMap)) : network;
 };
 
-const makeMap = memoize((build, inputKey, itemKey) => {
+const makeMap = (build, inputKey, itemKey) => {
   const list = build && build.input ? build.input[inputKey] : [];
 
   return list.reduce((acc, item) => {
@@ -71,7 +70,7 @@ const makeMap = memoize((build, inputKey, itemKey) => {
 
     return acc;
   }, {});
-});
+};
 
 module.exports = {
   expandNetwork
