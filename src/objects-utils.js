@@ -1,3 +1,5 @@
+const isIterableObject = (obj) => obj instanceof Object && !Array.isArray(obj);
+
 const map = (obj = {}, mapper) => Object.entries(obj)
   .reduce((acc, [key, value]) => {
     acc[key] = mapper(value, key);
@@ -33,31 +35,22 @@ const concat = (obj1 = {}, obj2 = {}) => map(
 
 const divide = (obj = {}, divider) => map(obj, (value) => value / divider);
 
-const sub = (obj1 = {}, obj2 = {}) => map(obj1, (value, key) => (value || 0) - (obj2[key] || 0));
+const filter = (obj, filter) => Object.entries(obj)
+  .reduce((acc, [key, value]) => {
+    if (filter(value, key)) {
+      acc[key] = value;
+    }
 
-const inverseSub = (obj1, obj2) => sub(obj2, obj1);
-
-const percent = (obj1 = {}, obj2 = {}) => map(obj1,
-  (value, key) => (value && obj2[key] ? ((value / obj2[key]) - 1) : 0)
-);
-
-const inversePercent = (obj1, obj2) => percent(obj2, obj1);
-
-const filter = (obj, filter) => Object.entries(obj).reduce((acc, [key, value]) => {
-  if (filter(value, key)) {
-    acc[key] = value;
-  }
-
-  return acc;
-}, {});
+    return acc;
+  }, {});
 
 const keysExtend = (obj1, obj2) => ({
-  ...map(obj2, (value) => value instanceof Object && !Array.isArray(value) ? {} : undefined), // ToDo: rework?
+  ...map(obj2, (value) => isIterableObject(value) ? {} : undefined), // ToDo: rework?
   ...obj1
 });
 
 const deepConcat = (obj1 = {}, obj2 = {}) => map(keysExtend(obj1, obj2),
-  (innerObj, key) => innerObj instanceof Object && !Array.isArray(innerObj) ? (
+  (innerObj, key) => isIterableObject(innerObj) ? (
     Object.keys(innerObj).length ? deepConcat(innerObj, obj2[key]) : deepConcat(obj2[key])
   ) : (
     []
@@ -68,11 +61,12 @@ const deepConcat = (obj1 = {}, obj2 = {}) => map(keysExtend(obj1, obj2),
 
 const deepCompare = (comparator, obj1, obj2 = {}) => map(
   obj1,
-  (innerObj, key) => Object.values(innerObj).every((value) => value instanceof Object) ? (
-    deepCompare(comparator, innerObj, obj2[key])
+  (value, key) => isIterableObject(value) ? (
+    deepCompare(comparator, value, obj2[key])
   ) : (
-    comparator(innerObj, obj2[key])
-  ));
+    comparator(value, obj2[key])
+  )
+);
 
 const asyncMap = async (obj, map) => {
   const results = await Promise.all(
@@ -184,10 +178,6 @@ module.exports = {
   divide,
   summ,
   concat,
-  sub,
-  inverseSub,
-  percent,
-  inversePercent,
   filter,
   deepConcat,
   deepCompare,

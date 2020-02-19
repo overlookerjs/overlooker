@@ -1,4 +1,5 @@
-const { inverseSub, inversePercent, deepCompare } = require('./../objects-utils.js');
+const { deepCompare } = require('./../objects-utils.js');
+const { inverseSub, inversePercent } = require('./../math-utils.js');
 
 const getComparator = (comparator) => (firstStats, secondStats) => deepCompare(comparator, firstStats, secondStats);
 

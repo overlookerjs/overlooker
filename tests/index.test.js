@@ -48,7 +48,7 @@ describe('main tests', () => {
       name: 'category',
       url: '/'
     }],
-    count: 1,
+    count: 5,
     throttling: {
       cpu: 1,
       network: 'WiFi'
