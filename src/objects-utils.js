@@ -103,11 +103,11 @@ const deepMapUntilArray = (obj, mapper) => map(obj, (innerObj) =>
     deepMapUntilArray(innerObj, mapper)
   ));
 
-const deepMap = (obj, mapper) => map(obj, (innerObj, key) =>
+const deepMap = (obj, mapper, initialPath = []) => map(obj, (innerObj, key) =>
   innerObj instanceof Object && !Array.isArray(innerObj) ? (
-    deepMap(innerObj, mapper)
+    deepMap(innerObj, mapper, [...initialPath, key])
   ) : (
-    mapper(innerObj, key)
+    mapper(innerObj, key, initialPath)
   ));
 
 const toArray = (obj, skipSymbols = [], parent = '', acc = []) => (

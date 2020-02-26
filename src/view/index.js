@@ -37,7 +37,19 @@ const addMeaning = (value, key, meaning, digit) => {
   }
 };
 
-const addMeaningToObj = (obj, meaning, digit) => deepMap(obj, (value, key) => addMeaning(value, key, meaning, digit));
+const addMeaningToObj = (obj, meaning, digit) => deepMap(
+  obj,
+  (value, key, path) => {
+    const meaningIsObject = meaning instanceof Object;
+    const joinedPath = meaningIsObject ? path.join('.') : '';
+    const meaningKey = meaningIsObject ? (
+      Object.keys(meaning)
+        .find((key) => joinedPath.includes(key)) || '*'
+    ) : null;
+
+    return addMeaning(value, key, meaningKey ? meaning[meaningKey] : meaning, digit);
+  }
+);
 
 const makeStatsReadable = ({
                              timings,
@@ -52,7 +64,7 @@ const makeStatsReadable = ({
   custom: addMeaningToObj(custom),
   evaluation: addMeaningToObj(evaluation),
   resources: addMeaningToObj(resources, 'kb'),
-  coverage: addMeaningToObj(coverage, 'kb'),
+  coverage: addMeaningToObj(coverage, { '*': 'kb', 'percent': '%' })
 });
 
 const makeProfileReadable = (profile, isPercent) => ({
@@ -80,6 +92,28 @@ const excludeNetwork = ({ network, actions, ...profile }) => ({
   actions: map(actions, ({ network, ...action }) => action)
 });
 
+const makeRequestReadable = (request) => {
+  const {
+    size,
+    transfer,
+    evaluationTime,
+    timings,
+    coverage,
+    ...rest
+  } = request;
+
+  return {
+    size: addMeaning(size, 'kb'),
+    transfer: addMeaning(transfer, 'kb'),
+    evaluationTime: addMeaning(evaluationTime, 'kb'),
+    timings: addMeaningToObj(timings),
+    coverage: addMeaningToObj(coverage, { '*': 'kb', 'percent': '%' }),
+    ...rest
+  };
+};
+
+const makeNetworkReadable = (network) => network.map(makeRequestReadable);
+
 const serializeProfile = (profile) => toArray(profile);
 
 const serializeProfiles = (profiles) => toArray(map(profiles, excludeNetwork));
@@ -94,5 +128,7 @@ module.exports = {
   serializeProfile,
   makeProfileReadable,
   makeComparisonReadable,
+  makeNetworkReadable,
+  makeRequestReadable,
   serializeProfiles
 };

@@ -1,4 +1,5 @@
-const { map } = require('./../objects-utils.js');
+const { inverseSub } = require('../math-utils.js');
+const { map, deepCompare } = require('./../objects-utils.js');
 const { getType } = require('./../utils.js');
 
 const COMPARING_MODULES_THRESHOLD = 0.5;
@@ -107,23 +108,14 @@ const getRequestsDiff = (first, second) => ({
   ...(first || {}),
   ...(second || {}),
   ...(first && second ? {
-    size: second.size - first.size,
-    transfer: second.transfer - first.transfer,
-    timings: map(first.timings, (value, key) => second.timings[key] - value),
+    stats: deepCompare(inverseSub, first, second),
     evaluation: second.evaluation.map((secondEval, index) => ({
       url: secondEval.url,
       duration: secondEval - (first.evaluation[index] ? first.evaluation[index].duration : 0),
       timings: map(secondEval, (value, key) => first.evaluation[index] ? (
         value - first.evaluation[index].timings[key]
       ) : value)
-    })),
-    coverage: second.coverage && first.coverage ? {
-      total: second.coverage.total - first.coverage.total,
-      used: second.coverage.used - first.coverage.used,
-      ranges: first.coverage.ranges && second.coverage.ranges && second.coverage.ranges
-        .filter(({ start, end }) => !first.coverage.ranges
-          .some((range) => range.start === start && range.end === end))
-    } : null
+    }))
   } : {})
 });
 

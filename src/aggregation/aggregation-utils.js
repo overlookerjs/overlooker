@@ -24,9 +24,7 @@ const aggregate = (array) => {
     median,
     standardDeviation,
     mde,
-    mean,
-    count: array.length,
-    raw: array
+    mean
   }
 };
 

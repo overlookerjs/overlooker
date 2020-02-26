@@ -1,6 +1,6 @@
 const { divide, summ } = require('../objects-utils.js');
 
-const normalizeEvaluationSummary = (evaluation = []) => {
+const aggregateEvaluation = (evaluation = []) => {
   const clearEvaluation = evaluation.filter(Boolean);
 
   return clearEvaluation && clearEvaluation.length ? (
@@ -25,5 +25,5 @@ const normalizeEvaluationSummary = (evaluation = []) => {
 };
 
 module.exports = {
-  normalizeEvaluationSummary
+  aggregateEvaluation
 };

@@ -145,22 +145,30 @@ const memoize = (fn) => {
   }
 };
 
-const makeRule = (rule) => {
-  if (rule instanceof Function) {
-    return rule;
-  } else if (rule instanceof RegExp) {
-    return (value) => rule.test(value);
-  } else if (rule instanceof Array) {
-    const rules = rule.map(makeRule);
+const makeRule = (rule, returnString) => {
+  let result;
 
-    return (value) => rules.some((rule) => rule(value));
+  if (rule instanceof Function) {
+    result = rule;
+  } else if (rule instanceof RegExp) {
+    result = (value) => rule.test(value) && rule.toString();
+  } else if (rule instanceof Array) {
+    const rules = rule.map((innerRule) => makeRule(innerRule, returnString));
+
+    result = (value) => {
+      const matchedRule = rules.find((innerRule) => innerRule(value));
+
+      return matchedRule && matchedRule(value);
+    };
   } else if (typeof rule === 'string') {
     const regexp = new RegExp(rule);
 
-    return (value) => regexp.test(value);
+    result = (value) => regexp.test(value) && rule.toString();
   } else {
-    return undefined;
+    result = undefined;
   }
+
+  return returnString ? result : (value) => !!result(value);
 };
 
 const isRelativeUrl = (url) => !/^https?:\/\//.test(url);

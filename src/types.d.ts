@@ -76,13 +76,19 @@ declare module "overlooker" {
   };
 
   export type ProfileStatsCoverageSection = {
-    js: {
+    js: CoverageStats,
+    css: CoverageStats
+  };
+
+  export type CoverageStats = {
+    absolute: {
+      total: number,
+      unused: number,
       used: number,
-      total: number
     },
-    css: {
+    percent: {
       used: number,
-      total: number
+      unused: number
     }
   };
 
@@ -134,14 +140,18 @@ declare module "overlooker" {
   export type ProfileNetwork = Array<ProfileRequest>;
 
   export type ProfileRequest = {
-    size: number,
-    transfer: number,
-    timings: {
-      start: number,
-      response: number,
-      firstByte: number,
-      finish: number,
-      total: number
+    stats: {
+      size: number,
+      transfer: number,
+      evaluationTotal: number,
+      timings: {
+        start: number,
+        response: number,
+        firstByte: number,
+        finish: number,
+        total: number
+      },
+      coverage?: CoverageStats,
     },
     evaluation: Array<{
       url: string,
@@ -151,15 +161,6 @@ declare module "overlooker" {
         end: number
       }
     }>,
-    coverage?: {
-      total: number,
-      used: number,
-      ranges: Array<{
-        start: number,
-        end: number
-      }>
-    },
-    evaluationTotal: number,
     meta?: RequestMeta,
     type: string,
     url: string,
@@ -278,7 +279,7 @@ declare module "overlooker" {
 
   export type BuildData = Object;
 
-  export type Rule = string | RegExp | ((url: string) => boolean) | Array<string | RegExp | Function>;
+  export type Rule = string | RegExp | ((url: string) => boolean | string) | Array<string | RegExp | Function>;
 
   export type Cookies = Array<{
     name: string,

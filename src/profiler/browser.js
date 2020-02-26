@@ -45,19 +45,21 @@ const getContext = async (config) => {
 };
 
 const setupPageConfig = async (context, page, client, config, pageConfig) => {
+  const { logger, throttling } = config;
+
   if (config.platform === 'mobile') {
     await page.emulate(pixel2);
   } else {
     await page.setViewport({ width: 1366, height: 768 });
   }
 
-  if (config.throttling) {
-    if (config.throttling.network) {
-      await client.send('Network.emulateNetworkConditions', networkPresets[config.throttling.network]);
+  if (throttling) {
+    if (throttling.network) {
+      await client.send('Network.emulateNetworkConditions', networkPresets[throttling.network]);
     }
 
-    if (config.throttling.cpu) {
-      await client.send('Emulation.setCPUThrottlingRate', { rate: config.throttling.cpu });
+    if (throttling.cpu) {
+      await client.send('Emulation.setCPUThrottlingRate', { rate: throttling.cpu });
     }
   }
 
@@ -72,11 +74,16 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 
   if (config.requests) {
-    page.on('request', (interceptedRequest) => {
+    page.on('request', async (interceptedRequest) => {
       const url = interceptedRequest.url();
 
       if (config.requests.ignore && config.requests.ignore(url)) {
-        interceptedRequest.abort();
+        try {
+          await interceptedRequest.abort();
+        } catch (e) {
+          logger(e.stack);
+        }
+
         return;
       }
 
@@ -86,15 +93,23 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
         const cachedObject = cache.get(url + postData);
 
         if (cachedObject) {
-          setTimeout(() => {
-            interceptedRequest.respond(cachedObject);
+          setTimeout(async () => {
+            try {
+              await interceptedRequest.respond(cachedObject);
+            } catch (e) {
+              logger(e.stack);
+            }
           }, 500);
 
           return;
         }
       }
 
-      interceptedRequest.continue();
+      try {
+        await interceptedRequest.continue();
+      } catch (e) {
+        logger(e.stack);
+      }
     });
 
     if (config.proxy) {
@@ -123,7 +138,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
 
               cache.set(key, data);
             } catch (e) {
-              await config.logger(e.stack);
+              await logger(e.stack);
             }
           }
         }

@@ -6,13 +6,20 @@ const IS_DEBUG = process.argv.some((arg) => arg === '--debug');
 const parseCoverage = (coverage) => (
   coverage.map(({ ranges, url, text }) => {
     const total = text.length;
-    const used = ranges.reduce((acc, { start, end }) => acc + (end - start), 0) / total;
+    const used = ranges.reduce((acc, { start, end }) => acc + (end - start), 0);
+    const unused = total - used;
 
     return {
       url,
-      used,
-      total,
-      ranges
+      absolute: {
+        total,
+        unused,
+        used
+      },
+      percent: {
+        used: total ? used / total : 0,
+        unused: total ? unused / total : 0
+      }
     }
   })
 );

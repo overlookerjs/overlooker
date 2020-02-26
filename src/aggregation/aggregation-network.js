@@ -1,84 +1,60 @@
-const { divide, summ } = require('../objects-utils.js');
-const { normalizeEvaluationSummary } = require('./aggregation-evaluation.js');
-const { normalizeCoverageSummary } = require('./aggregation-coverage.js');
+const { deepConcat } = require('../objects-utils.js');
+const { aggregateEvaluation } = require('./aggregation-evaluation.js');
 
 const clearUrl = (url) => url && url.replace(/\?.*?$/, '');
 
-const getNetworkSummary = (network, inception = {}, merge) => {
+const concatNetworks = (network, inception = {}, merge) => {
   return network
-    .reduce((networkSummary, {
-      url,
-      timings,
-      size,
-      transfer,
-      evaluation,
-      evaluationTotal,
-      coverage,
-      ...rest
-    }) => {
+    .reduce((networkSummary, request) => {
+      const { url } = request;
       const similarMergedUrl = url && merge ? merge(url) : false;
       const clearedUrl = similarMergedUrl || clearUrl(url);
 
       if (networkSummary[clearedUrl]) {
-        const similarSummary = networkSummary[clearedUrl];
-
-        networkSummary[clearedUrl] = {
-          size: size + similarSummary.size,
-          transfer: transfer + similarSummary.transfer,
-          evaluationTotal: evaluationTotal + similarSummary.evaluationTotal,
-          timings: similarSummary.timings ? summ(similarSummary.timings, timings) : timings,
-          count: similarSummary.count + 1,
-          evaluation: similarSummary.evaluation.concat([evaluation]),
-          coverage: similarSummary.coverage.concat(coverage),
-          url,
-          ...rest
-        };
+        networkSummary[clearedUrl].push(request);
       } else {
-        networkSummary[clearedUrl] = {
-          url,
-          timings,
-          size,
-          transfer,
-          evaluationTotal,
-          count: 1,
-          evaluation: [evaluation],
-          coverage: [coverage],
-          ...rest
-        };
+        networkSummary[clearedUrl] = [request];
       }
 
       return networkSummary;
     }, inception);
 };
 
-const normalizeNetworkSummary = (summaryNetwork) => Object.entries(summaryNetwork)
-  .map(([url, {
-    internal,
-    timings,
-    size,
-    type,
-    transfer,
+const concatRequests = (requests) => requests
+  .reduce((acc, {
+    stats,
     evaluation,
-    evaluationTotal,
-    coverage,
-    count,
     ...rest
-  }]) => ({
-    size: size / count,
-    transfer: transfer / count,
-    evaluationTotal: evaluationTotal / count,
-    timings: divide(timings, count),
-    evaluation: normalizeEvaluationSummary(evaluation),
-    coverage: normalizeCoverageSummary(coverage),
-    type,
-    url,
-    count,
-    internal,
+  }) => ({
+    stats: deepConcat(acc.stats, stats),
+    evaluation: acc.evaluation ? acc.evaluation.concat([evaluation]) : [evaluation],
     ...rest
-  }))
-  .sort(({ size: fSize }, { size: sSize }) => sSize - fSize);
+  }), {});
+
+const aggregateRequests = (aggregation, requests, {
+  stats,
+  evaluation,
+  ...rest
+}) => ({
+  stats: aggregation(stats),
+  evaluation: aggregateEvaluation(evaluation),
+  count: requests.reduce((acc, { count }) => acc + (count || 0), 0) || requests.length,
+  ...rest
+});
+
+const aggregateNetwork = (aggregation, summaryNetwork) => Object.entries(summaryNetwork)
+  .filter(([, requests]) => requests.length)
+  .map(([url, requests]) => [
+    requests,
+    {
+      ...concatRequests(requests),
+      url
+    }
+  ])
+  .map(([requests, summarizedRequests]) => aggregateRequests(aggregation, requests, summarizedRequests))
+  .sort(({ stats: { size: fSize } }, { stats: { size: sSize } }) => sSize - fSize);
 
 module.exports = {
-  getNetworkSummary,
-  normalizeNetworkSummary
+  concatNetworks,
+  aggregateNetwork
 };

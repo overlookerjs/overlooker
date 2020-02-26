@@ -24,6 +24,8 @@ const extractModules = (modulesMap, filesMap, dependencies) => {
     ) : module)
     .map((module) => ({
       ...module,
+      reasons: [...new Set(module.reasons.map(({ module }) => module))],
+      deps: [...new Set(module.deps.map(({ module }) => module))],
       source: filesMap[module.file]
     }))
 };

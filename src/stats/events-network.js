@@ -46,24 +46,26 @@ const prepareSeparatedNetwork = (separatedNetwork, evaluationMap, coverageMap, i
           data
         }) => ({
       url,
+      stats: {
+        size: decodedBodyLength,
+        transfer: encodedDataLength,
+        evaluation: evaluationMap[url] && evaluationMap[url].reduce((acc, { duration }) => acc + duration, 0),
+        timings: {
+          start: request.ts,
+          response: response.ts,
+          firstByte: data
+            .reduce((acc, { ts }) => (
+              acc > ts ? ts : acc
+            ), data[0] ? data[0].ts : response.ts),
+          finish: finish.ts,
+          total: finish.ts - request.ts
+        },
+        coverage: coverageMap[url]
+      },
       evaluation: evaluationMap[url],
-      evaluationTotal: evaluationMap[url] && evaluationMap[url].reduce((acc, { duration }) => acc + duration, 0),
-      coverage: coverageMap[url],
       internal: internalTest(url),
       type: mimeType,
-      timings: {
-        start: request.ts,
-        response: response.ts,
-        firstByte: data
-          .reduce((acc, { ts }) => (
-            acc > ts ? ts : acc
-          ), data[0] ? data[0].ts : response.ts),
-        finish: finish.ts,
-        total: finish.ts - request.ts
-      },
       extension: mime.extension(mimeType) || getExtension(url),
-      size: decodedBodyLength,
-      transfer: encodedDataLength,
       status: statusCode,
       method: requestMethod || 'GET'
     })
@@ -81,18 +83,28 @@ const parseNetwork = (events, evaluationMap, coverageMap, internalTest) => prepa
 const filterNetwork = (network, extensions) => network
   .filter(({ extension }) => !extensions.length || extensions.includes(extension));
 
-const summarizeSizes = (network) => network.reduce((acc, { size }) => acc + size, 0);
-const summarizeTransfer = (network) => network.reduce((acc, { transfer }) => acc + transfer, 0);
-const summarizeCoverage = (network) => network.reduce((acc, { coverage }) => {
+const summarizeSizes = (network) => network.reduce((acc, { stats: { size } }) => acc + size, 0);
+const summarizeTransfer = (network) => network.reduce((acc, { stats: { transfer } }) => acc + transfer, 0);
+const summarizeCoverage = (network) => network.reduce((acc, { stats: { coverage } }) => {
   if (coverage) {
-    acc.total += coverage.total;
-    acc.used += coverage.used;
+    acc.total += coverage.absolute.total;
+    acc.unused += coverage.absolute.unused;
+    acc.used += coverage.absolute.used;
   }
 
   return acc;
 }, {
   total: 0,
+  unused: 0,
   used: 0
+});
+
+const addCoveragePercent = (coverage) => ({
+  absolute: coverage,
+  percent: {
+    used: coverage.total ? coverage.used / coverage.total : 0,
+    unused: coverage.total ? coverage.unused / coverage.total : 0
+  }
 });
 
 const splitNetworkByTypes = (network, types) => map(
@@ -125,7 +137,7 @@ const castNetworkToTotalCoverage = (network) => map(
     js: jsTypes,
     css: cssTypes
   }),
-  (filteredNetwork) => summarizeCoverage(filteredNetwork)
+  (filteredNetwork) => addCoveragePercent(summarizeCoverage(filteredNetwork))
 );
 
 const getNetworkStats = (statsGetter, network) => {
