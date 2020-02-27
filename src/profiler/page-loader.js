@@ -1,48 +1,11 @@
-const puppeteer = require('puppeteer');
 const networkPresets = require('../network-presets.js');
-const devices = require('puppeteer/DeviceDescriptors');
 const cache = require('./cache.js');
 const { getPaintEventsBySelectors } = require('./hero-elements.js');
 const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
 const { make } = require('./../objects-utils.js');
-
+const devices = require('puppeteer/DeviceDescriptors');
 const pixel2 = devices['Pixel 2'];
-
-const viewports = {
-  mobile: pixel2.viewport,
-  desktop: {
-    width: 1366,
-    height: 768
-  }
-};
-
-const getContext = async (config) => {
-  const browser = await puppeteer.launch({
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--ignore-certificate-errors',
-      '--ignore-urlfetcher-cert-requests'
-    ]
-      .concat(config.browserArgs)
-      .concat(config.proxy && config.proxy.address ? `--proxy-server=${config.proxy.address}` : []),
-    ignoreHTTPSErrors: true,
-    defaultViewport: viewports[config.platform],
-    headless: !config.debug,
-    handleSIGINT: config.gracefulShutdown
-  });
-
-  const context = await browser.createIncognitoBrowserContext();
-
-  return {
-    context,
-    close: async () => {
-      await context.close();
-      await browser.close();
-    }
-  };
-};
 
 const setupPageConfig = async (context, page, client, config, pageConfig) => {
   const { logger, throttling } = config;
@@ -164,7 +127,12 @@ const profileActions = async (page, config, pageConfig, client) => {
       /* istanbul ignore next */
       await page.evaluate((ae) => window.performance.mark(ae), ACTION_END);
 
-      res[name] = await getWatchingResult();
+      const content = await page.content();
+
+      res[name] = {
+        ...await getWatchingResult(),
+        content
+      };
 
       await logger(`action "${name}" completed`);
     }
@@ -173,7 +141,7 @@ const profileActions = async (page, config, pageConfig, client) => {
   return res;
 };
 
-const profileUrl = async (context, config, pageConfig) => {
+const loadPage = async (context, config, pageConfig) => {
   const { url, heroElements } = pageConfig;
 
   const page = await context.newPage();
@@ -191,6 +159,7 @@ const profileUrl = async (context, config, pageConfig) => {
     await page.goto(url, { timeout: 60000, waitUntil: ["load", "networkidle2"] });
 
     const watchingResult = await getWatchingResult();
+    const content = await page.content();
 
     const heroElementsPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, heroElements);
 
@@ -200,6 +169,7 @@ const profileUrl = async (context, config, pageConfig) => {
 
     return {
       ...watchingResult,
+      content,
       actions,
       heroElementsPaints
     };
@@ -211,6 +181,5 @@ const profileUrl = async (context, config, pageConfig) => {
 };
 
 module.exports = {
-  getContext,
-  profileUrl
+  loadPage
 };

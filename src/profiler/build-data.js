@@ -29,6 +29,8 @@ const fetchBuildData = async (config) => {
     }
   };
 
+  await logger('request build data');
+
   try {
     if (getter) {
       const data = await getter(url);
