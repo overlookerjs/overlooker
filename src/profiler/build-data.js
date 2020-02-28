@@ -16,39 +16,44 @@ const fetchBuildData = async (config) => {
     },
     pages: [{ url }],
     logger,
-    progress
+    progress,
+    host
   } = config;
   let complete = 0;
   const axiosConfig = {
-    onUploadProgress: (progressEvent) => {
+    onUploadProgress: async (progressEvent) => {
       const oldComplete = complete;
 
       complete = Math.round((progressEvent.loaded / progressEvent.total) / 100);
 
-      progress(complete - oldComplete);
+      await progress(complete - oldComplete);
     }
   };
 
   await logger('request build data');
 
   try {
+    let data;
+
     if (getter) {
-      const data = await getter(url);
-
-      progress(0.01);
-
-      return data;
+      data = await getter(url);
     } else if (buildDataUrl) {
-      const { data } = await (
+      const response = await (
         isRelativeUrl(buildDataUrl) ? (
-          instance.get(getHost(url) + buildDataUrl, axiosConfig)
+          instance.get((host || getHost(url)) + buildDataUrl, axiosConfig)
         ) : (
           instance.get(buildDataUrl, axiosConfig)
         )
       );
 
-      return data;
+      data = response.data;
     }
+
+    await progress(0.01);
+
+    await logger('build data received');
+
+    return data;
   } catch (e) {
     await logger(`cannot receive build data\n${e.stack}`);
 

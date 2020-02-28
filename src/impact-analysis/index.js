@@ -1,9 +1,9 @@
 const { prepareConfig } = require('../profiler/preparing.js');
 const { fetchBuildData } = require('../profiler/build-data.js');
 const { content } = require('../profiler/pages-fetchers');
-const browsers = require('../profiler/browsers.js');
 const { checkDescriptions } = require('./description-checker.js');
 const { describePages } = require('./description-builder.js');
+const browsers = require('../profiler/browsers.js');
 
 const impactAnalysis = async (previousDescriptions, config, strategy) => {
   const preparedConfig = prepareConfig(config);
@@ -15,6 +15,8 @@ const impactAnalysis = async (previousDescriptions, config, strategy) => {
     return {};
   }
 
+  await logger('start impact analysis');
+
   const openedBrowsers = await browsers.open(preparedConfig);
   const wrappedBrowsers = browsers.wrap(openedBrowsers);
 
@@ -25,7 +27,9 @@ const impactAnalysis = async (previousDescriptions, config, strategy) => {
   await browsers.close(openedBrowsers);
 
   const descriptions = describePages(profiles);
-  const impactConfig = checkDescriptions(previousDescriptions, descriptions, config);
+  const impactConfig = previousDescriptions ? checkDescriptions(previousDescriptions, descriptions, config) : config;
+
+  await logger(`impact analysis done!`);
 
   return {
     config: impactConfig,

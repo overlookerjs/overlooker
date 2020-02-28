@@ -41,7 +41,7 @@ const fetchPages = ({
           await logger(`fetch page ${page.url} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
           await progress(percentCost);
 
-          return preparing(data);
+          return await preparing(data);
         } catch (error) {
           await logger(`fetch failed: ${error.stack}`);
           await logger(`try to retry: ${page.url}`);
