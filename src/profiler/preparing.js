@@ -21,7 +21,11 @@ const prepareConfig = ({
                          pages,
                          ...rest
                        }) => ({
-  requests: map(requests, makeRule),
+  requests: {
+    merge: requests.merge && makeRule(requests.merge, true),
+    internalTest: requests.internalTest && makeRule(requests.internalTest),
+    ignore: requests.ignore && makeRule(requests.ignore)
+  },
   count: 5,
   threads: 1,
   platform: 'desktop',
