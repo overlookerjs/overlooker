@@ -21,7 +21,7 @@ const getDifference = (previousDescription, currentDescription) => {
       .filter(({ hash }) => sameElements
         .some((element) => element.hash === hash)
       )
-      .filter(({ hash }, index) => sameElements[index].hash === hash);
+      .filter(({ hash }, index) => sameElements[index].hash !== hash);
 
     const difference = {
       same: sameElements,
@@ -37,12 +37,17 @@ const getDifference = (previousDescription, currentDescription) => {
   }
 
   return {
-    difference: [],
+    difference: {
+      same: currentDescription.elements,
+      new: [],
+      deleted: [],
+      disordered: []
+    },
     isSame: true
   }
 };
 
-const checkDescriptions = (previousDescriptions, currentDescriptions) => (
+const compareDescriptions = (previousDescriptions, currentDescriptions) => (
   map(
     filter(
       currentDescriptions,
@@ -70,5 +75,5 @@ const checkDescriptions = (previousDescriptions, currentDescriptions) => (
 );
 
 module.exports = {
-  checkDescriptions
+  compareDescriptions
 };
