@@ -163,7 +163,7 @@ const describePage = ({ content, profile }, elementsFilter, requestsConfig) => (
   )
 });
 
-const describePages = (profilesWithContent, elementsFilter, config) => map(
+const describePages = (profilesWithContent, config, elementsFilter = () => true) => map(
   profilesWithContent,
   (profileWithContent, pageName) => describePage(
     profileWithContent,

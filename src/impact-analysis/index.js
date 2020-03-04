@@ -26,7 +26,7 @@ const impactAnalysis = async (previousDescriptions, config, elementsFilter) => {
 
   await browsers.close(openedBrowsers);
 
-  const descriptions = describePages(profiles, elementsFilter, preparedConfig);
+  const descriptions = describePages(profiles, preparedConfig, elementsFilter);
 
   const difference = previousDescriptions && compareDescriptions(previousDescriptions, descriptions);
 

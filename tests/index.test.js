@@ -1,6 +1,6 @@
 const compile = require('./measurable-project/compiler');
 const listen = require('./measurable-project/server/index');
-const { check, checkPages, compare, comparePages, profile, merge } = require('./../src');
+const { check, checkPages, compare, comparePages, profile, merge, impactAnalysis } = require('./../src');
 
 const thresholds = {
   'default': {
@@ -74,6 +74,11 @@ describe('main tests', () => {
   test('profile', async () => {
     data1 = await profile(config);
     data2 = await profile(config);
+  });
+
+  test('impact analysis', async () => {
+    const impact1 = await impactAnalysis(null, config);
+    const impact2 = await impactAnalysis(impact1.descriptions, config);
   });
 
   describe('audits tests', () => {

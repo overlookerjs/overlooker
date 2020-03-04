@@ -15,7 +15,7 @@ const prepareResult = async (result, config, buildData) => (
 );
 
 const prepareConfig = ({
-                         requests,
+                         requests = {},
                          progress,
                          host,
                          pages,
