@@ -67,7 +67,7 @@ const findSimilarExpandedRequest = (request, network) => {
         return { comparedRequest, similarity, rate };
       })
       .filter(({ comparedRequest, similarity, rate }) => (
-        getType(comparedRequest.url) === getType(request.url)
+        comparedRequest.extension === request.extension
       ) && (
         similarity > COMPARING_MODULES_THRESHOLD
       ) && (
@@ -75,12 +75,12 @@ const findSimilarExpandedRequest = (request, network) => {
       ))
       .sort(({ similarity: sf }, { similarity: ss }) => ss - sf);
 
-    if (similarsByModules.length === 1) {
-      return similarsByModules[0].comparedRequest;
-    } else {
-      const similar = similarsByModules.find(({ similarity }) => similarity === 1);
+    const fullSimilarity = similarsByModules.find(({ similarity }) => similarity === 1);
 
-      return similar ? similar.comparedRequest : null;
+    if (fullSimilarity) {
+      return fullSimilarity.comparedRequest;
+    } else if (similarsByModules.length > 1) {
+      return similarsByModules[0].comparedRequest;
     }
   }
 
@@ -107,8 +107,8 @@ const findSimilarsRequests = (firstNetwork, secondNetwork) => {
 const getRequestsDiff = (first, second) => ({
   ...(first || {}),
   ...(second || {}),
+  stats: deepCompare(inverseSub, first ? first.stats : undefined, second ? second.stats : undefined),
   ...(first && second ? {
-    stats: deepCompare(inverseSub, first, second),
     evaluation: second.evaluation.map((secondEval, index) => ({
       url: secondEval.url,
       duration: secondEval - (first.evaluation[index] ? first.evaluation[index].duration : 0),

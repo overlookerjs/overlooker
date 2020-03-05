@@ -49,7 +49,8 @@ const keysExtend = (obj1, obj2) => ({
   ...obj1
 });
 
-const deepConcat = (obj1 = {}, obj2 = {}) => map(keysExtend(obj1, obj2),
+const deepConcat = (obj1 = {}, obj2 = {}) => map(
+  keysExtend(obj1, obj2),
   (innerObj, key) => isIterableObject(innerObj) ? (
     Object.keys(innerObj).length ? deepConcat(innerObj, obj2[key]) : deepConcat(obj2[key])
   ) : (
@@ -59,8 +60,8 @@ const deepConcat = (obj1 = {}, obj2 = {}) => map(keysExtend(obj1, obj2),
   )
 );
 
-const deepCompare = (comparator, obj1, obj2 = {}) => map(
-  obj1,
+const deepCompare = (comparator, obj1 = {}, obj2 = {}) => map(
+  keysExtend(obj1, obj2),
   (value, key) => isIterableObject(value) ? (
     deepCompare(comparator, value, obj2[key])
   ) : (

@@ -1,4 +1,4 @@
-const sub = (a, b) => typeof a === 'number' && typeof b === 'number' ? (a || 0) - (b || 0) : null;
+const sub = (a, b) => (parseFloat(a) || 0) - (parseFloat(b) || 0);
 
 const inverseSub = (a, b) => sub(b, a);
 
