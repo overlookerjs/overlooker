@@ -4,6 +4,7 @@ const { content } = require('../profiler/pages-fetchers');
 const { compareDescriptions } = require('./description-comparison.js');
 const { describePages } = require('./description-builder.js');
 const browsers = require('../profiler/browsers.js');
+const { getImpactedPages, affectConfigByImpact } = require('./config-filtration.js');
 
 const impactAnalysis = async (previousDescriptions, config, elementsFilter) => {
   const preparedConfig = prepareConfig(config);
@@ -34,10 +35,12 @@ const impactAnalysis = async (previousDescriptions, config, elementsFilter) => {
 
   return {
     difference,
-    descriptions
+    descriptions,
+    pages: getImpactedPages(difference)
   };
 };
 
 module.exports = {
-  impactAnalysis
+  impactAnalysis,
+  affectConfigByImpact
 };

@@ -287,19 +287,21 @@ declare module "overlooker" {
     domain: string
   }>;
 
-  export type ProfileConfig = {
-    pages: Array<{
+  export type ProfileConfigPages = Array<{
+    name: string,
+    url: string,
+    heroElements?: {
+      [heroElementName: string]: string
+    },
+    cookies?: Cookies,
+    actions?: Array<{
       name: string,
-      url: string,
-      heroElements?: {
-        [heroElementName: string]: string
-      },
-      cookies?: Cookies,
-      actions?: Array<{
-        name: string,
-        action: (page: Object) => Promise<void>
-      }>
-    }>,
+      action: (page: Object) => Promise<void>
+    }>
+  }>;
+
+  export type ProfileConfig = {
+    pages: ProfileConfigPages,
     host?: string,
     throttling?: {
       cpu?: number,
@@ -373,7 +375,7 @@ declare module "overlooker" {
     elements: Array<ImpactDescriptionElement>
   };
 
-  export type ImpactDescription = {
+  export type ImpactDescriptions = {
     [pageName: string]: {
       load: ImpactDescriptionSection,
       actions: {
@@ -384,9 +386,8 @@ declare module "overlooker" {
 
   export type ImpactData = {
     difference: ImpactDifference,
-    descriptions: {
-      [pageName: string]: ImpactDescription
-    }
+    descriptions: ImpactDescriptions,
+    pages: ProfileConfigPages
   };
 
   export function profile(config: ProfileConfig): Promise<ProfileData>;
@@ -402,8 +403,13 @@ declare module "overlooker" {
   export function merge(profileData: ProfileData): PageData;
 
   export function impactAnalysis(
-    previousDescription: ImpactDescription | null,
+    previousDescription: ImpactDescriptions | null,
     config: ProfileConfig,
     elementsFilter: (element: ImpactDescriptionElement, pageName: string, actionName: string | null) => boolean
   ): ImpactData;
+
+  export function affectConfigByImpact(
+    config: ProfileConfig,
+    impact: ImpactData
+  ): ProfileConfig
 }
