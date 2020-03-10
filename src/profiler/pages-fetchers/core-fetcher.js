@@ -1,17 +1,17 @@
-const { parallelizeObject } = require('./threads.js');
+const { loadPage } = require('../page-loader.js');
+const { parallelizeObject } = require('../threads.js');
 
 const fetchPages = ({
-                      profiler,
                       browsersThreads,
                       config,
                       percentCost,
                       prepare = () => (data) => data,
                       checkStatus = async () => true
                     }) => {
-  const { count, logger, progress } = config;
+  const { count, logger, progress, pages } = config;
   let isRunning = checkStatus();
 
-  const functions = config.pages.reduce((acc, page) => {
+  const functions = pages.reduce((acc, page) => {
     const preparing = prepare(page.name);
 
     return ({
@@ -30,7 +30,7 @@ const fetchPages = ({
         try {
           const pageStartTime = Date.now();
 
-          const data = await profiler(
+          const data = await loadPage(
             browser.context,
             config,
             page
@@ -41,7 +41,7 @@ const fetchPages = ({
           await logger(`fetch page ${page.url} in ${Math.floor((pageEndTime - pageStartTime) / 1000)}s`);
           await progress(percentCost);
 
-          return preparing(data);
+          return await preparing(data);
         } catch (error) {
           await logger(`fetch failed: ${error.stack}`);
           await logger(`try to retry: ${page.url}`);
