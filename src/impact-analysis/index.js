@@ -36,7 +36,7 @@ const impactAnalysis = async (previousDescriptions, config, elementsFilter) => {
   return {
     difference,
     descriptions,
-    pages: getImpactedPages(difference)
+    pages: difference ? getImpactedPages(difference) : pages.map(({ name }) => name)
   };
 };
 

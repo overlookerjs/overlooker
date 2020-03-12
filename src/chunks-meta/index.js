@@ -15,29 +15,47 @@ const hydrateRequestByType = (request) => {
   }
 };
 
-const extractModules = (modulesMap, filesMap, dependencies) => {
-  return [...new Set(dependencies)]
-    .map((id) => modulesMap[id])
+const flatConcatenatedModules = (modules) => [
+  ...modules.filter(({ concatenated }) => !concatenated),
+  ...modules
+    .map(({ concatenated }) => concatenated)
+    .filter(Boolean)
+    .map(flatConcatenatedModules)
+    .reduce((acc, arr) => acc.concat(arr), [])
+];
+
+const findModule = (modulesMaps, id, normalFirst) => normalFirst ? (
+  modulesMaps.normal[id] || modulesMaps.concatenated[id]
+) : (
+  modulesMaps.concatenated[id] || modulesMaps.normal[id]
+);
+
+const extractModules = (modulesMaps, filesMap, modules, normalFirst) => (
+  [...new Set(modules)]
+    .map((id) => findModule(modulesMaps, id, normalFirst))
     .filter(Boolean)
     .map((module) => module.extractedFrom != null ? (
-      modulesMap[module.extractedFrom]
+      findModule(modulesMaps, module.extractedFrom, normalFirst)
     ) : module)
     .map((module) => ({
       ...module,
+      concatenated: module.type === 'ConcatenatedModule' ? (
+        extractModules(modulesMaps, filesMap, module.concatenated || [], true)
+      ) : null,
       reasons: module.reasons ? [...new Set(module.reasons.map(({ module }) => module))] : [],
       deps: module.deps ? [...new Set(module.deps.map(({ module }) => module))] : [],
       source: filesMap[module.file]
     }))
-};
+);
 
 const makeChunkMetaBuilder = (request, modulesMap, filesMap) => (chunk) => ({
   ...chunk,
-  modules: extractModules(modulesMap, filesMap, chunk.modules)
+  modules: flatConcatenatedModules(extractModules(modulesMap, filesMap, chunk.modules))
 });
 
-const expandRequest = (request, build, modulesMap, filesMap) => {
+const expandRequest = (request, build, modulesMaps, filesMap) => {
   const hydratedRequest = hydrateRequestByType(request);
-  const makeChunkMeta = makeChunkMetaBuilder(hydratedRequest, modulesMap, filesMap);
+  const makeChunkMeta = makeChunkMetaBuilder(hydratedRequest, modulesMaps, filesMap);
 
   if (hydratedRequest.internal && build && build.output) {
     const { hash } = hydratedRequest;
@@ -57,22 +75,25 @@ const expandRequest = (request, build, modulesMap, filesMap) => {
 };
 
 const expandNetwork = (network, build) => {
-  const modulesMap = makeMap(build, 'modules', 'id');
-  const filesMap = makeMap(build, 'files', 'path');
+  const filesMap = build && makeMap(build.input.files, 'path');
+  const modulesMaps = build && makeModulesMaps(build.input.modules);
 
   return build ? network
-    .map((request) => expandRequest(request, build, modulesMap, filesMap)) : network;
+    .map((request) => expandRequest(request, build, modulesMaps, filesMap)) : network;
 };
 
-const makeMap = (build, inputKey, itemKey) => {
-  const list = build && build.input ? build.input[inputKey] : [];
+const makeModulesMaps = (allModules) => ({
+  concatenated: makeMap(allModules.filter(({ type }) => type === 'ConcatenatedModule'), 'id'),
+  normal: makeMap(allModules.filter(({ type }) => type !== 'ConcatenatedModule'), 'id')
+});
 
-  return list.reduce((acc, item) => {
+const makeMap = (list, itemKey) => (
+  list.reduce((acc, item) => {
     acc[item[itemKey]] = item;
 
     return acc;
-  }, {});
-};
+  }, {})
+);
 
 module.exports = {
   expandNetwork

@@ -79,8 +79,8 @@ const hydrateElementByRequest = (profile) => (el) => ({
 const parseElement = (el) => ({
   attributes: el.attribs,
   content: el.children
-    .filter(({type}) => type === 'text')
-    .map(({data}) => data)
+    .filter(({ type }) => type === 'text')
+    .map(({ data }) => data)
     .join('\n'),
   type: el.name,
   location: getDeepestParent(el).name
@@ -91,11 +91,15 @@ const makeRequestHash = (request) => {
 
   if (modules) {
     return hash(
-      modules
-        .filter(({ file }) => file)
-        .sort((a, b) => a.file.localeCompare(b.file))
-        .map(({ source }) => source.hash)
-        .join('')
+      modules.length ? (
+        modules
+          .filter(({ file }) => file)
+          .sort((a, b) => a.file.localeCompare(b.file))
+          .map(({ source }) => source.hash)
+          .join('')
+      ) : (
+        request.meta.name
+      )
     );
   }
 

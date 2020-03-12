@@ -31,12 +31,12 @@ const findSimilarExpandedRequest = (request, network) => {
   }
 
   if (request.meta && request.meta.modules) {
-    if (request.meta.bundle) {
-      const { name } = request.meta.bundle;
-      const similarByBundle = network.find(({ meta, url }) => (
-        meta && meta.bundle && meta.bundle.name === name
+    if (!request.meta.modules.length) {
+      const { name } = request.meta;
+      const similarByBundle = network.find(({ meta, extension }) => (
+        meta && meta.name === name
       ) && (
-        getType(url) === getType(request.url)
+        extension === request.extension
       ));
 
       if (similarByBundle) {

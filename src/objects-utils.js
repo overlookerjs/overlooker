@@ -45,18 +45,18 @@ const filter = (obj, filter) => Object.entries(obj)
   }, {});
 
 const keysExtend = (obj1, obj2) => ({
-  ...map(obj2, (value) => isIterableObject(value) ? {} : undefined), // ToDo: rework?
-  ...obj1
+  ...map(obj2 || {}, (value) => isIterableObject(value) ? {} : undefined), // ToDo: rework?
+  ...obj1 || {}
 });
 
 const deepConcat = (obj1 = {}, obj2 = {}) => map(
   keysExtend(obj1, obj2),
   (innerObj, key) => isIterableObject(innerObj) ? (
-    Object.keys(innerObj).length ? deepConcat(innerObj, obj2[key]) : deepConcat(obj2[key])
+    Object.keys(innerObj).length ? deepConcat(innerObj, obj2 && obj2[key]) : deepConcat(obj2 && obj2[key])
   ) : (
     []
       .concat(innerObj !== undefined ? innerObj : [])
-      .concat(obj2[key] !== undefined ? obj2[key] : [])
+      .concat(obj2 && obj2[key] !== undefined ? obj2[key] : [])
   )
 );
 
