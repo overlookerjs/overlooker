@@ -10,11 +10,11 @@ const makeEventsRelative = (events, relativeEvent) => events.map((event) => ({
   ts: event.ts - relativeEvent.ts
 }));
 
-const findEventByName = (events, name) => events.find((event) => event.name === name);
+const findEventByName = (events, name, isLast) => (isLast ? events.slice().reverse() : events).find((event) => event.name === name);
 
 const filterEventsByName = (events, names) => events.filter(({ name }) => names.includes(name));
 
-const filterByFrame = (events, frame) => events.filter(({args}) => args && args.frame === frame);
+const filterByFrame = (events, frame) => events.filter(({ args }) => args && args.frame === frame);
 
 module.exports = {
   getEventsTimestamps,

@@ -28,7 +28,7 @@ const filterNetworkEvents = (events) => filterEventsByName(events, [
 
 const separateNetworkEvents = (networkEvents) => Object.values(networkEvents)
   .map((items) => ({
-    request: findEventByName(items, 'ResourceSendRequest'),
+    request: findEventByName(items, 'ResourceSendRequest', true),
     response: findEventByName(items, 'ResourceReceiveResponse'),
     data: filterEventsByName(items, 'ResourceReceivedData'),
     finish: findEventByName(items, 'ResourceFinish')
