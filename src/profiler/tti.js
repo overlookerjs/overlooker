@@ -43,7 +43,7 @@ const getTti = async (page, logger) => {
         })
     })
 
-    await page.addScriptTag({ path: path.resolve(__dirname, '../../node_modules/tti-polyfill/tti-polyfill.js') });
+    await page.addScriptTag({ path: path.resolve(__dirname, './tti-polyfill.js') });
 
     const result = await page.evaluate(({ttiPropName}) => {
         if(!window.ttiPolyfill || !window.ttiPolyfill.getFirstConsistentlyInteractive){
