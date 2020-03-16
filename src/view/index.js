@@ -21,6 +21,8 @@ const addMeaning = (value, key, meaning, digit) => {
         newValue = (value * 100).toFixed(2) + '%';
         break;
       case 's':
+        newValue = (value / 1000).toFixed(2) + 's';
+        break; 
       default:
         if (value / 1000 > 1000) {
           newValue = (value / 1000 / 1000).toFixed(2) + 's';
@@ -60,7 +62,7 @@ const makeStatsReadable = ({
                              coverage
                            }) => ({
   timings: addMeaningToObj(timings),
-  userCentric: addMeaningToObj(userCentric),
+  userCentric: addMeaningToObj(userCentric, {timeToInteractive: 's'}),
   custom: addMeaningToObj(custom),
   evaluation: addMeaningToObj(evaluation),
   resources: addMeaningToObj(resources, 'kb'),
