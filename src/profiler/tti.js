@@ -17,10 +17,10 @@ const runTTIObserver = (name) => {
 };
 
 const injectLongTasksObserver = async (page) => {
+     /* istanbul ignore next */
     await page.evaluateOnNewDocument(runTTIObserver, globalTTIName);
 }
 const getTti = async (page, logger) => {
-
     let ttiPolyfillUpdates = 0;
     await page.exposeFunction('countTtiPolyfillUpdate', () => {
         ++ttiPolyfillUpdates;
@@ -29,6 +29,7 @@ const getTti = async (page, logger) => {
         }
     });    
    
+     /* istanbul ignore next */
     await page.evaluate(() => {
         let target = null;
         Object.defineProperty(window, 'ttiPolyfill', {
@@ -45,6 +46,7 @@ const getTti = async (page, logger) => {
 
     await page.addScriptTag({ path: path.resolve(__dirname, './tti-polyfill.js') });
 
+     /* istanbul ignore next */
     const result = await page.evaluate(({ttiPropName}) => {
         if(!window.ttiPolyfill || !window.ttiPolyfill.getFirstConsistentlyInteractive){
             return 60000;

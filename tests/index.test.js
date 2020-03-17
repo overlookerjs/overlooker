@@ -14,7 +14,7 @@ const thresholds = {
   }
 };
 
-jest.setTimeout(60000);
+jest.setTimeout(150000);
 
 describe('main tests', () => {
   const config = {
@@ -53,7 +53,7 @@ describe('main tests', () => {
       cpu: 1,
       network: 'WiFi'
     },
-    logger: () => null,
+    logger: (msg) => console.log(msg),
     buildData: {
       url: '/build.json',
     }
