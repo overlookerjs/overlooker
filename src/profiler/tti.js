@@ -54,7 +54,7 @@ const getTti = async (page, logger) => {
         return window.ttiPolyfill.getFirstConsistentlyInteractive({ttiPropName});
     }, {ttiPropName: globalTTIName})
 
-    return result;
+    return result * 1000;
 }
 
 module.exports = {
