@@ -57,34 +57,6 @@ const getTti = async (page, logger) => {
     return result;
 }
 
-//for testing, delete it when tti is tested in production
-
-// const getTtiFromAvito = (page) => {
-//     const TIMEOUT = 1000 * 60;
-//     const TTI_EVENT = 'timetointeractive';
-
-//     const ttiPromise = new Promise(async (resolve, reject) => {
-//         setTimeout(()=> {
-//             resolve(TIMEOUT);
-//         }, TIMEOUT)
-
-//         await page.exposeFunction('onCustomEvent', ({type, detail}) => {
-//             if(type !== TTI_EVENT){
-//                 return;
-//             }
-//             resolve(detail ? detail.value : null);
-//         });
-
-//         await page.evaluate((eventType) => {
-//             window.addEventListener(eventType, e => {
-//                 window.onCustomEvent({ type: eventType, detail: e.detail });
-//             });
-//         }, TTI_EVENT);
-//     });
-
-//     return ttiPromise;
-// }
-
 module.exports = {
     injectLongTasksObserver,
     getTti
