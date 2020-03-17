@@ -166,10 +166,9 @@ const loadPage = async (context, config, pageConfig) => {
     const heroElementsPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, heroElements);
 
     const timeToInteractive = await getTti(page, config.logger, config.firstEvent);
-    
+
     const actions = await profileActions(page, config, pageConfig);
 
-    
     await page.close();
 
     return {
