@@ -1,6 +1,7 @@
 const networkPresets = require('../network-presets.js');
 const cache = require('./cache.js');
 const { getPaintEventsBySelectors } = require('./hero-elements.js');
+const { injectLongTasksObserver, getTti } = require('./tti.js');
 const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
 const { make } = require('./../objects-utils.js');
@@ -156,12 +157,15 @@ const loadPage = async (context, config, pageConfig) => {
 
     const getWatchingResult = await watch(page, client);
 
+    await injectLongTasksObserver(page);
     await page.goto(url, { timeout: 60000, waitUntil: ["load", "networkidle2"] });
 
     const watchingResult = await getWatchingResult();
     const content = await page.content();
 
     const heroElementsPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, heroElements);
+
+    const timeToInteractive = await getTti(page, config.logger, config.firstEvent);
 
     const actions = await profileActions(page, config, pageConfig);
 
@@ -171,7 +175,8 @@ const loadPage = async (context, config, pageConfig) => {
       ...watchingResult,
       content,
       actions,
-      heroElementsPaints
+      heroElementsPaints,
+      timeToInteractive
     };
   } catch (error) {
     await page.close();

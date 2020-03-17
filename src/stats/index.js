@@ -12,7 +12,7 @@ const {
 } = require('./events-evaluation.js');
 const { map } = require('./../objects-utils.js');
 
-const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints }, internalTest, firstEventName) => {
+const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints, timeToInteractive }, internalTest, firstEventName) => {
   const firstEvent = getEventInMainFrame(tracing, firstEventName);
   const mainFrame = firstEvent.args.frame;
   const relativeEvents = makeEventsRelative(tracing, firstEvent);
@@ -37,7 +37,8 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints }, i
         heroElementsPaints,
         (heroElementPaints) => makeEventsRelative(heroElementPaints, firstEvent)
       )
-    )
+    ),
+    timeToInteractive
   };
 
   const actionsStats = getActionsStats(actions, internalTest);
