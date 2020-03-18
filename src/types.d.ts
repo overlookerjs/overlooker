@@ -134,7 +134,8 @@ declare module "overlooker" {
         firstPaint: AggregatedValue,
         lastPaint: AggregatedValue
       }
-    }
+    },
+    timeToInteractive: AggregatedValue
   };
 
   export type ProfileNetwork = Array<ProfileRequest>;
