@@ -140,12 +140,11 @@ const compareNetworks = (firstNetwork, secondNetwork) => {
         );
         const firstModules = first.meta && first.meta.modules && first.meta.modules;
         const secondModules = second.meta && second.meta.modules && second.meta.modules;
-        const isContentNotChanged = firstModules && secondModules ? (
-          firstModules.length === secondModules.length
-        ) && (
-          firstModules.every(({ source }) => secondModules.some((module) => (
-            module.source && source && module.source.hash === source.hash
-          )))
+        const modules = firstModules && secondModules ? (
+          compareModules(firstModules, secondModules)
+        ) : null;
+        const isContentNotChanged = modules ? (
+          !modules.added.length && !modules.changed.length && !modules.removed.length
         ) : (
           first.size === second.size
         );
@@ -155,9 +154,7 @@ const compareNetworks = (firstNetwork, secondNetwork) => {
           difference: getRequestsDiff(first, second),
           fileStatus: isNotChanged ? 'not_changed' : 'changed',
           contentStatus: isContentNotChanged ? 'not_changed' : 'changed',
-          modules: first.meta && second.meta && first.meta.modules && second.meta.modules ? (
-            compareModules(first.meta.modules, second.meta.modules)
-          ) : null
+          modules
         }
       }
     });
