@@ -55,14 +55,23 @@ const getTti = async (page, logger, firstEvent) => {
   /* istanbul ignore next */
   const result = await page.evaluate(async ({ ttiPropName, firstEvent }) => {
     const firstEventValue = window.performance.getEntriesByType("navigation")[0][firstEvent];
+    const errRes = 60000;
 
     if (!window.ttiPolyfill || !window.ttiPolyfill.getFirstConsistentlyInteractive) {
-      return 60000;
+      return errRes;
     }
 
-    const res = await window.ttiPolyfill.getFirstConsistentlyInteractive({ ttiPropName });
+    const res = await new Promise(async (resolve) => {
+        setTimeout(() => {
+            resolve(errRes);       
+        }, 60000)
 
-    return res - firstEventValue;
+        const ttiRes = await window.ttiPolyfill.getFirstConsistentlyInteractive({ ttiPropName });
+
+        resolve(ttiRes - firstEventValue);
+    })
+
+    return res;
   }, { ttiPropName: globalTTIName, firstEvent });
 
   return result * 1000;
