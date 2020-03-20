@@ -2,29 +2,29 @@ const { fill } = require('./../objects-utils.js');
 
 const defaultHash = 'nearest-marks';
 
-const timingRegExp = /^overlooker\.metrics\.timing:(.*?)$/i;
-const durationRegExp = /^overlooker\.metrics\.duration\.(start|end):(.*?)(?:#(.*?))?$/i;
-
-const getCustomMetrics = (events) => {
+const getCustomMetrics = (events, customMetrics) => {
+  const { timing, durationStart, durationEnd } = customMetrics;
   const timings = fill(
     events
-      .filter((event) => timingRegExp.test(event.name))
-      .map((event) => [event.name.match(timingRegExp)[1].split('.'), event.ts])
+      .filter((event) => timing.test(event.name))
+      .map((event) => [event.name.match(timing)[1].split('.'), event.ts])
   );
   const durations = fill(
     Object.entries(
       Object.entries(
         fill(
           events
-            .filter((event) => durationRegExp.test(event.name))
+            .filter((event) => durationStart.test(event.name) || durationEnd.test(event.name))
             .map((event) => {
-              const [, type, name, hash = defaultHash] = event.name.match(durationRegExp);
+              const start = event.name.match(durationStart);
+              const end = event.name.match(durationEnd);
+              const [, name, hash = defaultHash] = start || end;
 
               return [
                 [
                   hash,
                   name,
-                  type,
+                  start ? 'start' : 'end',
                 ],
                 event.ts
               ];

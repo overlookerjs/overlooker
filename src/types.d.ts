@@ -329,6 +329,11 @@ declare module "overlooker" {
       ignore?: Rule,
       merge?: Rule,
       internalTest?: Rule,
+    },
+    customMetrics?: {
+      timing?: RegExp,
+      durationStart?: RegExp,
+      durationEnd?: RegExp
     }
   };
 

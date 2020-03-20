@@ -1,11 +1,10 @@
 const { prepareResult } = require('../preparing.js');
 const { fetchPages } = require('./core-fetcher.js');
 const { getAllStats } = require('../../stats');
-const { makeInternalTest } = require('../../utils.js');
 const { map } = require('../../objects-utils.js');
 
 const content = async (config, browsersThreads, buildData) => {
-  const { checkStatus, logger, requests, firstEvent, pages } = config;
+  const { checkStatus, logger } = config;
 
   const impactConfig = {
     ...config,
@@ -21,21 +20,13 @@ const content = async (config, browsersThreads, buildData) => {
       percentCost: 0,
       checkStatus,
       browsersThreads,
-      prepare: (pageName) => {
-        const isInternal = requests && requests.internalTest ? (
-          requests.internalTest
-        ) : (
-          makeInternalTest(pages.find(({ name }) => pageName === name).url)
-        );
-
-        return async (data) => ({
-          profile: await getAllStats(data, isInternal, firstEvent),
-          content: {
-            load: data.content,
-            actions: map(data.actions, ({ content }) => content)
-          }
-        });
-      }
+      prepare: async (data) => ({
+        profile: await getAllStats(data, impactConfig),
+        content: {
+          load: data.content,
+          actions: map(data.actions, ({ content }) => content)
+        }
+      })
     });
 
     const preparedProfiles = await prepareResult(

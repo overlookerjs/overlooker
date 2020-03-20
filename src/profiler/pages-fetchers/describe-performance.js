@@ -1,10 +1,9 @@
 const { prepareResult } = require('../preparing.js');
 const { fetchPages } = require('./core-fetcher.js');
 const { getAllStats } = require('../../stats');
-const { makeInternalTest } = require('../../utils.js');
 
 const describePerformance = async (config, browsersThreads, percentCost, buildData) => {
-  const { pages, checkStatus, logger, requests, firstEvent } = config;
+  const { checkStatus, logger } = config;
 
   try {
     const result = await fetchPages({
@@ -12,15 +11,7 @@ const describePerformance = async (config, browsersThreads, percentCost, buildDa
       browsersThreads,
       percentCost,
       checkStatus,
-      prepare: (pageName) => {
-        const isInternal = requests && requests.internalTest ? (
-          requests.internalTest
-        ) : (
-          makeInternalTest(pages.find(({ name }) => pageName === name).url)
-        );
-
-        return (data) => getAllStats(data, isInternal, firstEvent);
-      }
+      prepare: (data) => getAllStats(data, config)
     });
 
     await logger(`fetching done!`);

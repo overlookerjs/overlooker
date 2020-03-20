@@ -12,7 +12,9 @@ const {
 } = require('./events-evaluation.js');
 const { map } = require('./../objects-utils.js');
 
-const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints, timeToInteractive }, internalTest, firstEventName) => {
+const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints, timeToInteractive }, config) => {
+  const { requests: { internalTest }, firstEvent: firstEventName, customMetrics } = config;
+
   const firstEvent = getEventInMainFrame(tracing, firstEventName);
   const mainFrame = firstEvent.args.frame;
   const relativeEvents = makeEventsRelative(tracing, firstEvent);
@@ -28,7 +30,7 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints, tim
   const coverageStats = getCoverageStats(network);
 
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
-  const custom = getCustomMetrics(relativeEvents);
+  const custom = getCustomMetrics(relativeEvents, customMetrics);
 
   const userCentric = {
     speedIndex: await getSpeedIndex(tracing),
@@ -41,7 +43,7 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints, tim
     timeToInteractive
   };
 
-  const actionsStats = getActionsStats(actions, internalTest);
+  const actionsStats = getActionsStats(actions, config);
 
   return {
     stats: {

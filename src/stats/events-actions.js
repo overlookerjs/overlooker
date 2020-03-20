@@ -22,9 +22,11 @@ const getActionsTimings = (events) => {
   };
 };
 
-const getActionsStats = (actions, internalTest) => map(
+const getActionsStats = (actions, config) => map(
   actions,
   ({ tracing, coverage }) => {
+    const { requests: { internalTest }, customMetrics } = config;
+
     const actionStart = getActionStart(tracing);
     const relativeEvents = makeEventsRelative(tracing, actionStart);
 
@@ -38,7 +40,7 @@ const getActionsStats = (actions, internalTest) => map(
     const coverageStats = getCoverageStats(network);
 
     const timings = getActionsTimings(relativeEvents);
-    const custom = getCustomMetrics(relativeEvents);
+    const custom = getCustomMetrics(relativeEvents, customMetrics);
 
     return {
       stats: {
