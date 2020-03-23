@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "test": "jest",
-    "watch": "cd ./tests/measurable-project && webpack --watch",
-    "server": "node ./tests/measurable-project/server/debug.js"
+    "watch": "cd measurable-project && webpack --watch",
+    "server": "node measurable-project/server/debug.js"
   },
   "repository": {
     "type": "git",
@@ -17,7 +17,8 @@
     "collectCoverage": true,
     "coverageReporters": [
       "text"
-    ]
+    ],
+    "modulePathIgnorePatterns": ["(/__tests__/.*(\\.|/)(data))\\.[jt]sx?$"]
   },
   "author": "Nikolay Ryabov",
   "license": "ISC",

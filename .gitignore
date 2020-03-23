@@ -1,5 +1,5 @@
 /node_modules
 .idea
 .cache
-/tests/measurable-project/static
+/measurable-project/static
 .DS_Store

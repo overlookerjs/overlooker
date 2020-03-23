@@ -35,7 +35,7 @@ const concat = (obj1 = {}, obj2 = {}) => map(
 
 const divide = (obj = {}, divider) => map(obj, (value) => value / divider);
 
-const filter = (obj, filter) => Object.entries(obj)
+const filter = (obj = {}, filter) => Object.entries(obj)
   .reduce((acc, [key, value]) => {
     if (filter(value, key)) {
       acc[key] = value;

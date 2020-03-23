@@ -161,11 +161,11 @@ const loadPage = async (context, config, pageConfig) => {
     await page.goto(url, { timeout: 60000, waitUntil: ["load", "networkidle2"] });
 
     const watchingResult = await getWatchingResult();
+    const timeToInteractive = await getTti(page, config.logger, config.firstEvent);
+
     const content = await page.content();
 
     const heroElementsPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, heroElements);
-
-    const timeToInteractive = await getTti(page, config.logger, config.firstEvent);
 
     const actions = await profileActions(page, config, pageConfig);
 

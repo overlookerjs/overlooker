@@ -1,6 +1,7 @@
-const compile = require('./measurable-project/compiler');
-const listen = require('./measurable-project/server/index');
-const { check, checkPages, compare, comparePages, profile, merge, impactAnalysis } = require('./../src');
+const compile = require('../../measurable-project/compiler.js');
+const listen = require('../../measurable-project/server');
+const { check, checkPages, compare, comparePages, profile, merge, impactAnalysis } = require('../index.js');
+const config = require('./config.data.js');
 
 const thresholds = {
   'default': {
@@ -17,48 +18,6 @@ const thresholds = {
 jest.setTimeout(150000);
 
 describe('main tests', () => {
-  const config = {
-    host: 'http://localhost:3000',
-    pages: [{
-      name: 'main',
-      url: '/',
-      heroElements: {
-        main: '#hero-element'
-      },
-      actions: [{
-        name: 'test-action',
-        action: async (page) => {
-          await page.waitForSelector('button');
-          await page.click('button');
-          await page.evaluate(() => performance.mark('overlooker.metrics.timing:main-button.click'));
-
-          await page.evaluate(() => performance.mark('overlooker.metrics.duration.start:image-loading'));
-          await page.waitForSelector('#loaded-image');
-          await page.evaluate(() => {
-            const image = document.querySelector('#loaded-image');
-
-            if (!image.complete) {
-              return new Promise((resolve) => image.addEventListener('load', resolve));
-            }
-          });
-          await page.evaluate(() => performance.mark('overlooker.metrics.duration.end:image-loading'));
-        }
-      }]
-    }, {
-      name: 'category',
-      url: '/'
-    }],
-    count: 5,
-    throttling: {
-      cpu: 1,
-      network: 'WiFi'
-    },
-    logger: (msg) => console.log(msg),
-    buildData: {
-      url: '/build.json',
-    }
-  };
-
   let server;
   let data1;
   let data2;
