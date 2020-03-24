@@ -1,5 +1,5 @@
 const webpack = require('webpack');
-const config = require('./webpack.config');
+const config = require('./webpack.config.js');
 
 const compiler = webpack(config);
 const compile = () => new Promise((resolve, reject) => compiler.run((err, stats) => {
