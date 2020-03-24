@@ -155,14 +155,173 @@ describe('Object-utils unit tests', () => {
     });
   });
 
-  describe('filter', () => {
-    test('filter with data', () => {
-      const output = {
-        b: 2,
-        c: 4
-      };
+  describe('deepConcat', () => {
+    const inputFull = {
+      a: {
+        b: 1,
+        c: {
+          e: 2,
+          f: [3, 5]
+        }
+      },
+      d: 4
+    };
+    const inputHoley = {
+      a: {
+        b: 1
+      }
+    };
+    const outputFull = {
+      a: {
+        b: [1, 1],
+        c: {
+          e: [2, 2],
+          f: [3, 5, 3, 5]
+        }
+      },
+      d: [4, 4]
+    };
+    const outputHoley = {
+      a: {
+        b: [1, 1],
+        c: {
+          e: [2],
+          f: [3, 5]
+        }
+      },
+      d: [4]
+    };
+    const outputOneEmpty = {
+      a: {
+        b: [1],
+        c: {
+          e: [2],
+          f: [3, 5]
+        }
+      },
+      d: [4]
+    };
 
-      expect(filter(defaultInput, (value, key) => value === 4 || key === 'b')).toStrictEqual(output);
+    test('deepConcat full data', () => {
+      expect(deepConcat(inputFull, inputFull)).toStrictEqual(outputFull);
+    });
+
+    test('deepConcat holey data left', () => {
+      expect(deepConcat(inputHoley, inputFull)).toStrictEqual(outputHoley);
+    });
+
+    test('deepConcat holey data right', () => {
+      expect(deepConcat(inputFull, inputHoley)).toStrictEqual(outputHoley);
+    });
+
+    test('deepConcat empty data', () => {
+      expect(deepConcat({}, {})).toStrictEqual({});
+    });
+
+    test('deepConcat empty data left', () => {
+      expect(deepConcat({}, inputFull)).toStrictEqual(outputOneEmpty);
+    });
+
+    test('deepConcat empty data right', () => {
+      expect(deepConcat(inputFull, {})).toStrictEqual(outputOneEmpty);
+    });
+  });
+
+  describe('deepCompare', () => {
+    const comparator = (a, b) => Array.isArray(a) || Array.isArray(b) ? (
+      (a || Array(b.length).fill(null)).map((i, index) => (b && b[index] || 0) - (i || 0))
+    ) : (b || 0) - (a || 0);
+    const inputFullFirst = {
+      a: {
+        b: 3,
+        c: {
+          e: 2,
+          f: [3, 5]
+        }
+      },
+      d: 4
+    };
+    const inputFullSecond = {
+      a: {
+        b: 1,
+        c: {
+          e: 7,
+          f: [4, 8]
+        }
+      },
+      d: 1
+    };
+    const outputFull = {
+      a: {
+        b: -2,
+        c: {
+          e: 5,
+          f: [1, 3]
+        }
+      },
+      d: -3
+    };
+    const inputHoley = {
+      a: {
+        b: 1,
+        c: {
+          f: [1]
+        }
+      }
+    };
+    const outputHoleyLeft = {
+      a: {
+        b: 2,
+        c: {
+          e: 2,
+          f: [2]
+        }
+      },
+      d: 4
+    };
+    const outputHoleyRight = {
+      a: {
+        b: -2,
+        c: {
+          e: -2,
+          f: [-2, -5]
+        }
+      },
+      d: -4
+    };
+    const outputEmpty = {
+      a: {
+        b: -3,
+        c: {
+          e: -2,
+          f: [-3, -5]
+        }
+      },
+      d: -4
+    };
+
+    test('deepConcat full data', () => {
+      expect(deepCompare(comparator, inputFullFirst, inputFullSecond)).toStrictEqual(outputFull);
+    });
+
+    test('deepConcat holey data left', () => {
+      expect(deepCompare(comparator, inputHoley, inputFullFirst)).toStrictEqual(outputHoleyLeft);
+    });
+
+    test('deepConcat holey data right', () => {
+      expect(deepCompare(comparator, inputFullFirst, inputHoley)).toStrictEqual(outputHoleyRight);
+    });
+
+    test('deepConcat empty data', () => {
+      expect(deepCompare(comparator, {}, {})).toStrictEqual({});
+    });
+
+    test('deepConcat empty data left', () => {
+      expect(deepCompare(comparator, {}, inputFullFirst)).toStrictEqual(inputFullFirst);
+    });
+
+    test('deepConcat empty data right', () => {
+      expect(deepCompare(comparator, inputFullFirst, {})).toStrictEqual(outputEmpty);
     });
   });
 });
