@@ -37,8 +37,6 @@ describe('Stats unit tests', () => {
     expect(result.actions['test-action'].coverage).toEqual(output.testActionCoverage);
 
     expect(result.actions['test-action'].network).toEqual(output.testActionNetwork);
-
-    debugger;
   });
 });
 
