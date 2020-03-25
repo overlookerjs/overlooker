@@ -300,27 +300,27 @@ describe('Object-utils unit tests', () => {
       d: -4
     };
 
-    test('deepConcat full data', () => {
+    test('deepCompare full data', () => {
       expect(deepCompare(comparator, inputFullFirst, inputFullSecond)).toStrictEqual(outputFull);
     });
 
-    test('deepConcat holey data left', () => {
+    test('deepCompare holey data left', () => {
       expect(deepCompare(comparator, inputHoley, inputFullFirst)).toStrictEqual(outputHoleyLeft);
     });
 
-    test('deepConcat holey data right', () => {
+    test('deepCompare holey data right', () => {
       expect(deepCompare(comparator, inputFullFirst, inputHoley)).toStrictEqual(outputHoleyRight);
     });
 
-    test('deepConcat empty data', () => {
+    test('deepCompare empty data', () => {
       expect(deepCompare(comparator, {}, {})).toStrictEqual({});
     });
 
-    test('deepConcat empty data left', () => {
+    test('deepCompare empty data left', () => {
       expect(deepCompare(comparator, {}, inputFullFirst)).toStrictEqual(inputFullFirst);
     });
 
-    test('deepConcat empty data right', () => {
+    test('deepCompare empty data right', () => {
       expect(deepCompare(comparator, inputFullFirst, {})).toStrictEqual(outputEmpty);
     });
   });
