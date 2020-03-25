@@ -30,7 +30,7 @@ const prepareConfig = ({
       host ? (
         makeInternalTest(host)
       ) : (
-        pages.map(({ url }) => makeInternalTest(url))
+        makeRule(pages.map(({ url }) => makeInternalTest(url)))
       )
     ),
     ignore: requests.ignore && makeRule(requests.ignore)

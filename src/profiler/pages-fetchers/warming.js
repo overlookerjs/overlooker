@@ -1,7 +1,7 @@
 const { fetchPages } = require('./core-fetcher.js');
 const cache = require('../cache.js');
 
-const warming = async (config, browsersThreads, percentCost) => {
+const warming = async (config, percentCost) => {
   const { checkStatus, logger, proxy } = config;
 
   if (proxy) {
@@ -27,8 +27,7 @@ const warming = async (config, browsersThreads, percentCost) => {
       await fetchPages({
         config: warmingConfig,
         percentCost,
-        checkStatus,
-        browsersThreads,
+        checkStatus
       });
 
       await logger(`warming done!`);

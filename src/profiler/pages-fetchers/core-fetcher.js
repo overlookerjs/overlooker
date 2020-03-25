@@ -1,8 +1,8 @@
 const { loadPage } = require('../page-loader.js');
 const { parallelizeObject } = require('../threads.js');
+const browsers = require('./../browsers.js');
 
-const fetchPages = ({
-                      browsersThreads,
+const fetchPages = async ({
                       config,
                       percentCost,
                       prepare = (data) => data,
@@ -10,6 +10,9 @@ const fetchPages = ({
                     }) => {
   const { count, logger, progress, pages } = config;
   let isRunning = checkStatus();
+
+  const openedBrowsers = await browsers.open(config);
+  const wrappedBrowsers = browsers.wrap(openedBrowsers);
 
   const functions = pages.reduce((acc, page) => ({
     ...acc,
@@ -48,11 +51,15 @@ const fetchPages = ({
     })
   }), {});
 
-  const runner = parallelizeObject(functions, browsersThreads, 5000, async (e) => {
+  const runner = parallelizeObject(functions, wrappedBrowsers, 5000, async (e) => {
     await logger(`error while fetching: ${e.stack}`);
   });
 
-  return runner;
+  const data = await runner;
+
+  await browsers.close(openedBrowsers);
+
+  return data;
 };
 
 module.exports = {

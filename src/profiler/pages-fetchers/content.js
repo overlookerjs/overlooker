@@ -3,7 +3,7 @@ const { fetchPages } = require('./core-fetcher.js');
 const { getAllStats } = require('../../stats');
 const { map } = require('../../objects-utils.js');
 
-const content = async (config, browsersThreads, buildData) => {
+const content = async (config, buildData) => {
   const { checkStatus, logger } = config;
 
   const impactConfig = {
@@ -19,7 +19,6 @@ const content = async (config, browsersThreads, buildData) => {
       config: impactConfig,
       percentCost: 0,
       checkStatus,
-      browsersThreads,
       prepare: async (data) => ({
         profile: await getAllStats(data, impactConfig),
         content: {
