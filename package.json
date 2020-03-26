@@ -1,6 +1,6 @@
 {
   "name": "overlooker",
-  "version": "0.12.3",
+  "version": "0.12.4",
   "description": "tool for profile front-end performance",
   "main": "src/index.js",
   "scripts": {
@@ -18,7 +18,9 @@
     "coverageReporters": [
       "text"
     ],
-    "modulePathIgnorePatterns": ["(/__tests__/.*(\\.|/)(data))\\.[jt]sx?$"]
+    "modulePathIgnorePatterns": [
+      "(/__tests__/.*(\\.|/)(data))\\.[jt]sx?$"
+    ]
   },
   "author": "Nikolay Ryabov",
   "license": "ISC",
