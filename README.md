@@ -1,6 +1,6 @@
 # overlooker
 
-[![Build Status](https://travis-ci.com/overlookerjs/overlooker.svg?branch=master)](https://travis-ci.com/pyatyispyatil/overlooker) [![npm overlooker package](https://img.shields.io/npm/v/overlooker)](https://www.npmjs.com/package/overlooker)
+[![Build Status](https://travis-ci.com/overlookerjs/overlooker.svg?branch=master)](https://travis-ci.com/overlookerjs/overlooker) [![npm overlooker package](https://img.shields.io/npm/v/overlooker)](https://www.npmjs.com/package/overlooker)
 
 ### Install
 ```
