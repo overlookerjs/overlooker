@@ -1,9 +1,21 @@
+const { map } = require('./../objects-utils.js');
+
+const getLastEvent = (events, name) => {
+  for (let index = events.length - 1; index--;) {
+    if (events[index] && events[index].name === name) {
+      return events[index];
+    }
+  }
+};
+
 const getEventsTimestamps = (events, names) => filterEventsByName(events, names)
   .reduce((acc, { name, ts }) => {
     acc[name] = ts;
 
     return acc;
   }, {});
+
+const getTimestamps = (eventsMap) => map(eventsMap, ({ ts }) => ts);
 
 const makeEventsRelative = (events, relativeEvent) => events.map((event) => ({
   ...event,
@@ -21,5 +33,7 @@ module.exports = {
   findEventByName,
   filterEventsByName,
   filterByFrame,
-  makeEventsRelative
+  makeEventsRelative,
+  getLastEvent,
+  getTimestamps
 };
