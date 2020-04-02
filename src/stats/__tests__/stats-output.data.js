@@ -3,7 +3,7 @@ module.exports.stats = {
     "firstPaint": 44208,
     "firstContentfulPaint": 44208,
     "firstImagePaint": 44208,
-    "largestContentfulPaint": 307757,
+    "largestContentfulPaint": 127700,
     "domInteractive": 198696,
     "domContentLoadedEventStart": 198716,
     "domContentLoadedEventEnd": 207181,
