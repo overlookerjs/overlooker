@@ -26,7 +26,7 @@ class App extends Component {
           <Fragment>
             <Input/>
             <Input/>
-            <img id="loaded-image" src={require('./loaded-image.png')}/>
+            <img id="loaded-image" src={require('./loaded-image.png')} elementtiming={'timing-image'}/>
           </Fragment>
         )
       });
@@ -38,7 +38,7 @@ class App extends Component {
   render() {
     return (
       <div className={styles.root}>
-        <h2>
+        <h2 elementtiming={'timing-header'}>
           Header
         </h2>
         <button className={styles.button} onClick={() => this.handleClick()}>

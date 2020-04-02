@@ -79,7 +79,7 @@ const findSimilarExpandedRequest = (request, network) => {
 
     if (fullSimilarity) {
       return fullSimilarity.comparedRequest;
-    } else if (similarsByModules.length > 1) {
+    } else if (similarsByModules.length) {
       return similarsByModules[0].comparedRequest;
     }
   }

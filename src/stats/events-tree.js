@@ -63,7 +63,7 @@ const getEventsTree = (events) => (
         acc.push({
           event,
           children: []
-        })
+        });
       }
 
       return acc;
