@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pyatyispyatil/overlooker.git"
+    "url": "git+https://github.com/overlookerjs/overlooker.git"
   },
   "jest": {
     "testEnvironment": "node",
@@ -25,10 +25,10 @@
   "author": "Nikolay Ryabov",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/pyatyispyatil/overlooker/issues"
+    "url": "https://github.com/overlookerjs/overlooker/issues"
   },
   "types": "src/types.d.ts",
-  "homepage": "https://github.com/pyatyispyatil/overlooker#readme",
+  "homepage": "https://github.com/overlookerjs/overlooker#readme",
   "dependencies": {
     "axios": "^0.19.0",
     "cheerio": "^1.0.0-rc.3",
