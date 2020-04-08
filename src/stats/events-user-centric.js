@@ -1,3 +1,4 @@
+const { makeEventsRelative } = require('./events-helpers.js');
 const { map } = require('./../objects-utils.js');
 const speedline = require('speedline/core');
 
@@ -21,7 +22,37 @@ const getHeroElementsPaints = (heroElementsPaintEvents) => map(
   getHeroElementPaints
 );
 
+const prepareHeroElementsPaints = (heroElementsPaints, firstEvent) => (
+  getHeroElementsPaints(
+    map(
+      heroElementsPaints,
+      (heroElementPaints) => makeEventsRelative(heroElementPaints, firstEvent)
+    )
+  )
+);
+
+const prepareElementsTimings = (elementsTimings, navigationStartDelta) => map(
+  elementsTimings
+    .reduce((acc, et) => {
+      if (!acc[et.name]) {
+        acc[et.name] = [];
+      }
+
+      acc[et.name].push({
+        visiblePercent: elementsTimings.view.visiblePercent,
+        timings: map(
+          elementsTimings.timings,
+          (value, name) => name === 'duration' ? value : value + navigationStartDelta
+        )
+      });
+
+      return acc;
+    }, {}),
+  (value) => value
+);
+
 module.exports = {
   getSpeedIndex,
-  getHeroElementsPaints
+  prepareHeroElementsPaints,
+  prepareElementsTimings
 };

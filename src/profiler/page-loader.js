@@ -1,20 +1,19 @@
 const networkPresets = require('../network-presets.js');
 const cache = require('./cache.js');
-const { getPaintEventsBySelectors } = require('./hero-elements.js');
+const { injectElementTimingObserver, getElementsTimings, injectElementTimingHandler } = require('./hero-elements.js');
 const { injectLongTasksObserver, getTti } = require('./tti.js');
 const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
 const { make } = require('./../objects-utils.js');
-const devices = require('puppeteer/DeviceDescriptors');
-const pixel2 = devices['Pixel 2'];
+const { devices, viewports } = require('./viewports.js');
 
 const setupPageConfig = async (context, page, client, config, pageConfig) => {
   const { logger, throttling } = config;
 
   if (config.platform === 'mobile') {
-    await page.emulate(pixel2);
+    await page.emulate(devices.mobile);
   } else {
-    await page.setViewport({ width: 1366, height: 768 });
+    await page.setViewport(viewports.desktop);
   }
 
   if (throttling) {
@@ -130,8 +129,12 @@ const profileActions = async (page, config, pageConfig, client) => {
 
       const content = await page.content();
 
+      const watchingResult = await getWatchingResult();
+      const elementsTimings = await getElementsTimings(page);
+
       res[name] = {
-        ...await getWatchingResult(),
+        ...watchingResult,
+        elementsTimings,
         content
       };
 
@@ -158,6 +161,8 @@ const loadPage = async (context, config, pageConfig) => {
     const getWatchingResult = await watch(page, client);
 
     await injectLongTasksObserver(page);
+    await injectElementTimingObserver(page);
+
     await page.goto(url, { timeout: 60000, waitUntil: ["load", "networkidle2"] });
 
     const watchingResult = await getWatchingResult();
@@ -165,7 +170,8 @@ const loadPage = async (context, config, pageConfig) => {
 
     const content = await page.content();
 
-    const heroElementsPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, heroElements);
+    await injectElementTimingHandler(page);
+    const elementsTimings = await getElementsTimings(page);
 
     const actions = await profileActions(page, config, pageConfig);
 
@@ -175,8 +181,8 @@ const loadPage = async (context, config, pageConfig) => {
       ...watchingResult,
       content,
       actions,
-      heroElementsPaints,
-      timeToInteractive
+      timeToInteractive,
+      elementsTimings
     };
   } catch (error) {
     await page.close();
