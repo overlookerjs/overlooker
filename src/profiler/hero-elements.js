@@ -1,5 +1,5 @@
 const { asyncMap } = require('./../objects-utils.js');
-const path = require('path');
+const fs = require('fs');
 
 const findNodePaintEvents = (events, node) => (
   events.filter(({ name, args }) => (
@@ -40,35 +40,45 @@ const getPaintEventsBySelectors = async (client, events, selectors = {}) => (
   asyncMap(selectors, (selector) => getPaintEventsBySelector(client, events, selector))
 );
 
-const runElementTimingObserver = () => {
-  if (!window.oet) {
-    window.oet = [];
+const globalOETName = '__oet__';
+
+const runElementTimingObserver = (oetPropName) => {
+  if (!window[oetPropName]) {
+    window[oetPropName] = [];
 
     new PerformanceObserver(function(list) {
-      window.oet.push(...list.getEntries());
-      console.log('timings elem', list.getEntries());
+      window[oetPropName].push(...list.getEntries());
     }).observe({ entryTypes: ['element'] });
   }
 };
 
 const injectElementTimingObserver = async (page) => {
   /* istanbul ignore next */
-  await page.evaluateOnNewDocument(runElementTimingObserver);
+  await page.evaluateOnNewDocument(runElementTimingObserver, globalOETName);
 };
 
 const injectElementTimingHandler = async (page) => {
-  await page.addScriptTag({ path: require.resolve('overlooker-element-timing/dist/index.min.js') });
+  await page.addScriptTag({
+    type: 'module',
+    content: `
+      ${fs.readFileSync(require.resolve('overlooker-element-timing'))}
+      
+      if (!(window['${globalOETName}'] instanceof OverlookerElementTiming)) {
+        new OverlookerElementTiming('${globalOETName}');
+      }
+  `
+  });
 };
 
 const getElementsTimings = async (page) => {
   /* istanbul ignore next */
-  return await page.evaluate(() => {
-    const timingEntries = window.oet.getAll();
+  return await page.evaluate((oetPropName) => {
+    const timingEntries = window[oetPropName].getAll();
 
-    window.oet.clear();
+    window[oetPropName].clear();
 
     return timingEntries;
-  });
+  }, globalOETName);
 };
 
 module.exports = {
