@@ -1,6 +1,11 @@
 const networkPresets = require('../network-presets.js');
 const cache = require('./cache.js');
-const { injectElementTimingObserver, getElementsTimings, injectElementTimingHandler } = require('./hero-elements.js');
+const {
+  injectElementTimingObserver,
+  getElementsTimings,
+  injectElementTimingHandler,
+  getPaintEventsBySelectors
+} = require('./hero-elements.js');
 const { injectLongTasksObserver, getTti } = require('./tti.js');
 const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
@@ -110,16 +115,16 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 };
 
-const profileActions = async (page, config, pageConfig, client) => {
+const profileActions = async (page, client, config, pageConfig) => {
   const res = {};
   const { logger } = config;
   const pages = make(config.pages.map(({ name, url }) => [name, url]));
 
   if (pageConfig.actions && pageConfig.actions.length) {
-    for (const { name, action } of pageConfig.actions) {
+    for (const { name, action, layers } of pageConfig.actions) {
       await logger(`action "${name}" started`);
 
-      const getWatchingResult = await watch(page, client);
+      const getWatchingResult = await watch(page);
 
       /* istanbul ignore next */
       await page.evaluate((as) => window.performance.mark(as), ACTION_START);
@@ -130,11 +135,14 @@ const profileActions = async (page, config, pageConfig, client) => {
       const content = await page.content();
 
       const watchingResult = await getWatchingResult();
+
+      const layersPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, layers);
       const elementsTimings = await getElementsTimings(page);
 
       res[name] = {
         ...watchingResult,
         elementsTimings,
+        layersPaints,
         content
       };
 
@@ -146,7 +154,7 @@ const profileActions = async (page, config, pageConfig, client) => {
 };
 
 const loadPage = async (context, config, pageConfig) => {
-  const { url, heroElements } = pageConfig;
+  const { url, layers } = pageConfig;
 
   const page = await context.newPage();
 
@@ -170,10 +178,12 @@ const loadPage = async (context, config, pageConfig) => {
 
     const content = await page.content();
 
+    const layersPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, layers);
+
     await injectElementTimingHandler(page);
     const elementsTimings = await getElementsTimings(page);
 
-    const actions = await profileActions(page, config, pageConfig);
+    const actions = await profileActions(page, client, config, pageConfig);
 
     await page.close();
 
@@ -182,6 +192,7 @@ const loadPage = async (context, config, pageConfig) => {
       content,
       actions,
       timeToInteractive,
+      layersPaints,
       elementsTimings
     };
   } catch (error) {

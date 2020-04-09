@@ -1,7 +1,7 @@
 const { makeEventsRelative } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
-const { getSpeedIndex, prepareElementsTimings } = require('./events-user-centric.js');
+const { getSpeedIndex, prepareElementsTimings, prepareLayersPaints } = require('./events-user-centric.js');
 const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
@@ -11,7 +11,7 @@ const {
   makeScriptsEvaluationMap
 } = require('./events-evaluation.js');
 
-const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings }, config) => {
+const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings, layersPaints }, config) => {
   const { requests: { internalTest }, firstEvent: firstEventName, customMetrics } = config;
 
   const firstEvent = getEventInMainFrame(tracing, firstEventName);
@@ -37,10 +37,11 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
   const userCentric = {
     speedIndex: await getSpeedIndex(tracing),
     elementsTimings: prepareElementsTimings(elementsTimings, navigationStartDelta),
+    layersPaints: prepareLayersPaints(layersPaints, firstEvent),
     timeToInteractive
   };
 
-  const actionsStats = getActionsStats(actions, config);
+  const actionsStats = getActionsStats(actions, navigationStart, config);
 
   return {
     stats: {

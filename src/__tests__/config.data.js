@@ -3,11 +3,14 @@ module.exports = {
   pages: [{
     name: 'main',
     url: '/',
-    heroElements: {
-      main: '#hero-element'
+    layers: {
+      main: '#hero-layer'
     },
     actions: [{
       name: 'test-action',
+      layers: {
+        'action-main': '#action-hero-layer'
+      },
       action: async (page) => {
         await page.waitForSelector('button');
         await page.click('button');

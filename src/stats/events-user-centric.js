@@ -12,21 +12,21 @@ const getSpeedIndex = async (events) => {
   }
 };
 
-const getHeroElementPaints = (events) => events.length ? {
+const getLayerPaints = (events) => events.length ? {
   firstPaint: events[0].ts,
   lastPaint: events[events.length - 1].ts,
 } : {};
 
-const getHeroElementsPaints = (heroElementsPaintEvents) => map(
-  heroElementsPaintEvents,
-  getHeroElementPaints
+const getLayersPaints = (layersPaintEvents) => map(
+  layersPaintEvents,
+  getLayerPaints
 );
 
-const prepareHeroElementsPaints = (heroElementsPaints, firstEvent) => (
-  getHeroElementsPaints(
+const prepareLayersPaints = (layersPaints, firstEvent) => (
+  getLayersPaints(
     map(
-      heroElementsPaints,
-      (heroElementPaints) => makeEventsRelative(heroElementPaints, firstEvent)
+      layersPaints,
+      (layerPaints) => makeEventsRelative(layerPaints, firstEvent)
     )
   )
 );
@@ -34,17 +34,13 @@ const prepareHeroElementsPaints = (heroElementsPaints, firstEvent) => (
 const prepareElementsTimings = (elementsTimings, navigationStartDelta) => map(
   elementsTimings
     .reduce((acc, et) => {
-      if (!acc[et.name]) {
-        acc[et.name] = [];
-      }
-
-      acc[et.name].push({
-        visiblePercent: elementsTimings.view.visiblePercent,
+      acc[et.name] = {
+        visiblePercent: et.view.visiblePercent,
         timings: map(
-          elementsTimings.timings,
-          (value, name) => name === 'duration' ? value : value + navigationStartDelta
+          et.timings,
+          (value, name) => name === 'duration' ? value * 1000 : value * 1000 + navigationStartDelta
         )
-      });
+      };
 
       return acc;
     }, {}),
@@ -53,6 +49,6 @@ const prepareElementsTimings = (elementsTimings, navigationStartDelta) => map(
 
 module.exports = {
   getSpeedIndex,
-  prepareHeroElementsPaints,
+  prepareLayersPaints,
   prepareElementsTimings
 };

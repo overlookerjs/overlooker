@@ -143,6 +143,12 @@ declare module "overlooker" {
         }
       }
     },
+    layersPaints: {
+      [layerName: string]: {
+        firstPaint: AggregatedValue,
+        lastPaint: AggregatedValue
+      }
+    },
     timeToInteractive: AggregatedValue
   };
 
@@ -300,8 +306,14 @@ declare module "overlooker" {
     name: string,
     url: string,
     cookies?: Cookies,
+    layers: {
+      [layerName: string]: string // layer selector
+    },
     actions?: Array<{
       name: string,
+      layers: {
+        [layerName: string]: string // layer selector
+      },
       action: (page: Object) => Promise<void>
     }>
   }>;

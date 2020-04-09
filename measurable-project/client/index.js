@@ -24,6 +24,7 @@ class App extends Component {
       this.setState({
         content: (
           <Fragment>
+            <div className={styles.hero} id={'action-hero-layer'}>Action hero content</div>
             <Input />
             <Input />
             <img id="loaded-image" src={require('./loaded-image.png')} elementtiming={'timing-action-image'} />
@@ -44,7 +45,7 @@ class App extends Component {
         <button className={styles.button} onClick={() => this.handleClick()}>
           test button
         </button>
-        <div className={styles.hero}>Hero content</div>
+        <div className={styles.hero} id={'hero-layer'}>Hero content</div>
         {
           this.state.content
         }
