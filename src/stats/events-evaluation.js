@@ -1,40 +1,6 @@
+const { filterByNestedSequenceEvents, getNestedEventsBySequence } = require('./events-tree.js');
+const { make, map } = require('../objects-utils.js');
 const { filterEventsByName } = require('./events-helpers.js');
-
-const getScriptsEvaluation = (events) => filterEventsByName(events, 'EvaluateScript')
-  .map((event) => ({
-    duration: event.dur,
-    url: event.args.data && event.args.data.url,
-    timings: {
-      start: event.ts,
-      end: event.ts + event.dur
-    }
-  }));
-
-const getFunctionsCalls = (events) => {
-  const functions = filterEventsByName(events, 'FunctionCall');
-
-  const begins = functions.filter(({ ph }) => ph === 'B');
-  const endings = functions.filter(({ ph }) => ph === 'E');
-
-  const pairs = begins
-    .map((begin) => [begin, endings.find(({ tid }) => tid === begin.tid)])
-    .filter(([, end]) => end);
-
-  return pairs
-    .map(([begin, end]) => {
-      const duration = end.ts - begin.ts;
-      const { url } = begin.args.data;
-
-      return {
-        duration,
-        url,
-        timings: {
-          start: begin.ts,
-          end: end.ts
-        }
-      }
-    });
-};
 
 const makeScriptsEvaluationMap = (evaluation) => evaluation
   .reduce((acc, item) => {
@@ -47,24 +13,122 @@ const makeScriptsEvaluationMap = (evaluation) => evaluation
     return acc;
   }, {});
 
-const getScriptsEvaluationStats = (evaluation, internalTest) => {
-  const internal = evaluation
-    .filter(({ url }) => internalTest(url))
-    .reduce((acc, { duration }) => acc + duration, 0);
-  const total = evaluation
-    .reduce((acc, { duration }) => acc + duration, 0);
-  const external = total - internal;
+const separateEvaluationByType = (events) => events
+  .reduce((acc, event) => {
+    if (!acc[event.type]) {
+      acc[event.type] = [];
+    }
 
-  return {
-    internal,
-    total,
-    external
-  };
+    acc[event.type].push(event);
+    acc.total.push(event);
+
+    return acc;
+  }, { total: [] });
+
+const separateEvaluationByOrigin = (events, internalTest) => events
+  .reduce((acc, event) => {
+    const isInternal = internalTest(event.url);
+
+    acc[isInternal ? 'internal' : 'external'].push(event);
+
+    acc.total.push(event);
+
+    return acc;
+  }, {
+    total: [],
+    internal: [],
+    external: []
+  });
+
+const getScriptsEvaluationStats = (evaluation, internalTest) => {
+  const separatedByOrigin = separateEvaluationByOrigin(evaluation, internalTest);
+
+  return map(
+    separatedByOrigin,
+    (events) => map(
+      separateEvaluationByType(events),
+      (nestedEvents) => nestedEvents.reduce((acc, { duration }) => acc + duration, 0)
+    )
+  );
+};
+
+const meaningEvaluationEventNames = {
+  functionCall: ['FunctionCall'],
+  evaluateScript: ['EvaluateScript'],
+  parseHTML: ['ParseHTML'],
+  eventDispatch: ['EventDispatch', 'FunctionCall'],
+  timerFire: ['TimerFire', 'FunctionCall'],
+  fireIdleCallback: ['FireIdleCallback', 'FunctionCall'],
+  xhrReadyStateChange: ['ResourceDispatcher::OnRequestComplete', 'WebURLLoaderImpl::Context::OnCompletedRequest', 'XHRReadyStateChange', 'FunctionCall'],
+  startLoadResponseBody: ['URLLoaderClientImpl::OnStartLoadingResponseBody', 'XHRReadyStateChange', 'FunctionCall'],
+  animationFrame: ['PageAnimator::serviceScriptedAnimations', 'FireAnimationFrame', 'FunctionCall']
+};
+
+const extractPayloadFromEvent = (type, event, eventWithUrl = { event }) => ({
+  type,
+  duration: event.dur,
+  url: (eventWithUrl.event.args.data ? eventWithUrl.event.args.data.url : '') || '',
+  timings: {
+    start: event.ts,
+    end: event.ts + event.dur
+  }
+});
+
+const castEventToPayload = (name, events) => {
+  switch (name) {
+    case 'functionCall':
+    case 'evaluateScript':
+      return events.map(({ event }) => extractPayloadFromEvent('evaluation', event));
+    case 'parseHTML':
+      return events.map(({ event }) => extractPayloadFromEvent('parseHTML', event, { event: { args: { data: { url: event.args.beginData.url } } } }));
+    case 'eventDispatch':
+      return events
+        .map(({ children }) => children
+          .filter(({ event: { name } }) => name === 'FunctionCall')
+          .map(({ event }) => extractPayloadFromEvent('event', event))
+        )
+        .reduce((acc, arr) => acc.concat(arr), []);
+    case 'timerFire':
+    case 'fireIdleCallback':
+      return events
+        .map(({ event, children }) => extractPayloadFromEvent(
+          'timer',
+          event,
+          children.find(({ event: { name } }) => name === 'FunctionCall')
+        ));
+    case 'xhrReadyStateChange':
+    case 'startLoadResponseBody':
+      return events
+        .map(({ event, children }) => extractPayloadFromEvent(
+          'xhr',
+          event,
+          getNestedEventsBySequence(children, meaningEvaluationEventNames[name].slice(1))[0]
+        ));
+    case 'animationFrame':
+      return events
+        .map(({ children }) => children
+          .map(({ event, children }) => extractPayloadFromEvent(
+            'animation',
+            event,
+            children.find(({ event: { name } }) => name === 'FunctionCall'))
+          ))
+        .reduce((acc, arr) => acc.concat(arr), []);
+  }
+};
+
+const prepareEvaluations = (meaningEvaluations) => Object.entries(meaningEvaluations)
+  .map(([name, events]) => castEventToPayload(name, events))
+  .reduce((acc, arr) => acc.concat(arr), []);
+
+const getMeaningEvaluationEvents = (threadEvents) => {
+  return map(meaningEvaluationEventNames, (eventNames) =>
+    filterByNestedSequenceEvents(threadEvents, eventNames)
+  );
 };
 
 module.exports = {
-  getScriptsEvaluation,
   getScriptsEvaluationStats,
-  getFunctionsCalls,
-  makeScriptsEvaluationMap
+  makeScriptsEvaluationMap,
+  getMeaningEvaluationEvents,
+  prepareEvaluations
 };

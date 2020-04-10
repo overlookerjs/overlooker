@@ -79,7 +79,7 @@ const makeComparisonReadable = (comparison) => ({
   percent: makeProfileReadable(comparison.percent, true)
 });
 
-const flatStats = (stats) => map(raiseFields(stats, ['resources', 'coverage']), (value) => flat(value));
+const flatStats = (stats) => map(raiseFields(stats, ['resources', 'coverage', 'evaluation']), (value) => typeof value === 'object' ? flat(value) : { value });
 
 const inverseTotal = (stats) => deepMap(stats.total, (obj, key) => map(obj, (value, fieldName) => ({
   total: stats[key],

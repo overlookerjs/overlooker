@@ -62,7 +62,7 @@ const prepareSeparatedNetwork = (separatedNetwork, evaluationMap, coverageMap, i
         },
         coverage: coverageMap[url]
       },
-      evaluation: evaluationMap[url],
+      evaluation: evaluationMap[url] && evaluationMap[url].map(({ url, ...evaluationRest }) => evaluationRest),
       internal: internalTest(url),
       type: mimeType,
       extension: mime.extension(mimeType) || getExtension(url),
