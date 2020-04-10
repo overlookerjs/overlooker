@@ -11,8 +11,8 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - name: "Publish"
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: "Publish release"
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
