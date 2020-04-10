@@ -1,7 +1,7 @@
 const { makeEventsRelative } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
-const { getSpeedIndex, getHeroElementsPaints } = require('./events-user-centric.js');
+const { getSpeedIndex, prepareElementsTimings, prepareLayersPaints } = require('./events-user-centric.js');
 const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
@@ -10,12 +10,14 @@ const {
   getScriptsEvaluationStats,
   makeScriptsEvaluationMap
 } = require('./events-evaluation.js');
-const { map } = require('./../objects-utils.js');
 
-const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints, timeToInteractive }, config) => {
+const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings, layersPaints }, config) => {
   const { requests: { internalTest }, firstEvent: firstEventName, customMetrics } = config;
 
   const firstEvent = getEventInMainFrame(tracing, firstEventName);
+  const navigationStart = getEventInMainFrame(tracing, 'navigationStart');
+  const navigationStartDelta = navigationStart.ts - firstEvent.ts;
+
   const mainFrame = firstEvent.args.frame;
   const relativeEvents = makeEventsRelative(tracing, firstEvent);
 
@@ -34,16 +36,12 @@ const getAllStats = async ({ tracing, coverage, actions, heroElementsPaints, tim
 
   const userCentric = {
     speedIndex: await getSpeedIndex(tracing),
-    heroElements: getHeroElementsPaints(
-      map(
-        heroElementsPaints,
-        (heroElementPaints) => makeEventsRelative(heroElementPaints, firstEvent)
-      )
-    ),
+    elementsTimings: prepareElementsTimings(elementsTimings, navigationStartDelta),
+    layersPaints: prepareLayersPaints(layersPaints, firstEvent),
     timeToInteractive
   };
 
-  const actionsStats = getActionsStats(actions, config);
+  const actionsStats = getActionsStats(actions, navigationStart, config);
 
   return {
     stats: {

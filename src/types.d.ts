@@ -129,8 +129,22 @@ declare module "overlooker" {
 
   export type ProfileStatsUserCentric = {
     speedIndex: AggregatedValue,
-    heroElements: {
-      [heroElementName: string]: {
+    elementsTimings: {
+      [elementTimingName: string]: {
+        visiblePercent: AggregatedValue,
+        timings: {
+          fetchStart: AggregatedValue,
+          loadComplete: AggregatedValue,
+          loadAndAssociated: AggregatedValue,
+          render: AggregatedValue,
+          duration: AggregatedValue
+        } | {
+          render: AggregatedValue
+        }
+      }
+    },
+    layersPaints: {
+      [layerName: string]: {
         firstPaint: AggregatedValue,
         lastPaint: AggregatedValue
       }
@@ -291,12 +305,15 @@ declare module "overlooker" {
   export type ProfileConfigPages = Array<{
     name: string,
     url: string,
-    heroElements?: {
-      [heroElementName: string]: string
-    },
     cookies?: Cookies,
+    layers: {
+      [layerName: string]: string // layer selector
+    },
     actions?: Array<{
       name: string,
+      layers: {
+        [layerName: string]: string // layer selector
+      },
       action: (page: Object) => Promise<void>
     }>
   }>;
@@ -334,7 +351,8 @@ declare module "overlooker" {
       timing?: RegExp,
       durationStart?: RegExp,
       durationEnd?: RegExp
-    }
+    },
+    debug: boolean
   };
 
   export type Thresholds = { [path: string]: number };

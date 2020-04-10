@@ -24,9 +24,10 @@ class App extends Component {
       this.setState({
         content: (
           <Fragment>
-            <Input/>
-            <Input/>
-            <img id="loaded-image" src={require('./loaded-image.png')} elementtiming={'timing-image'}/>
+            <div className={styles.hero} id={'action-hero-layer'}>Action hero content</div>
+            <Input />
+            <Input />
+            <img id="loaded-image" src={require('./loaded-image.png')} elementtiming={'timing-action-image'} />
           </Fragment>
         )
       });
@@ -44,7 +45,7 @@ class App extends Component {
         <button className={styles.button} onClick={() => this.handleClick()}>
           test button
         </button>
-        <div className={styles.hero} id='hero-element'>Hero content</div>
+        <div className={styles.hero} id={'hero-layer'}>Hero content</div>
         {
           this.state.content
         }
@@ -56,7 +57,7 @@ class App extends Component {
 document.addEventListener('DOMContentLoaded', () => {
     performance.mark('overlooker.metrics.duration.start:render');
 
-    ReactDom.render(<App/>, document.getElementById('app'));
+    ReactDom.render(<App />, document.getElementById('app'));
 
     performance.mark('overlooker.metrics.duration.end:render');
   }

@@ -14,12 +14,13 @@ module.exports.stats = {
   },
   "userCentric": {
     "speedIndex": 230801.3599999994,
-    "heroElements": {
+    "layersPaints": {
       "main": {
         "firstPaint": 296554,
         "lastPaint": 296554
       }
     },
+    "elementsTimings": {},
     "timeToInteractive": 207845.00000087428
   },
   "custom": {
@@ -306,6 +307,15 @@ module.exports.testActionStats = {
         "click": 535928
       },
       "image-loading": 520625
+    }
+  },
+  "userCentric": {
+    "elementsTimings": {},
+    "layersPaints": {
+      "main-action": {
+        "firstPaint": 4000,
+        "lastPaint": 4000
+      }
     }
   },
   "evaluation": {

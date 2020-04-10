@@ -1,4 +1,3 @@
-
 // ========================= //
 // ======== tracing ======== //
 // ========================= //
@@ -3353,6 +3352,39 @@ module.exports.actions = {
         }
       }
     ],
+    "elementsTimings": [],
+    "layersPaints": {
+      "main-action": [
+        {
+          "args": {
+            "data": {
+              "clip": [
+                28,
+                118,
+                1338,
+                118,
+                1338,
+                136,
+                28,
+                136
+              ],
+              "frame": "677F96705AFCA678062ABA1E01EF4EE6",
+              "layerId": 14,
+              "nodeId": 6
+            }
+          },
+          "cat": "devtools.timeline,rail",
+          "dur": 74,
+          "name": "Paint",
+          "ph": "X",
+          "pid": 2521,
+          "tdur": 75,
+          "tid": 775,
+          "ts": 14854838886,
+          "tts": 191439
+        }
+      ]
+    },
     "tracing": [
       {
         "args": {
@@ -6092,7 +6124,7 @@ module.exports.coverage = [
   }
 ];
 
-module.exports.heroElementsPaints = {
+module.exports.layersPaints = {
   "main": [
     {
       "args": {
@@ -6124,5 +6156,7 @@ module.exports.heroElementsPaints = {
     }
   ]
 };
+
+module.exports.elementsTimings = [];
 
 module.exports.timeToInteractive = 207845.00000087428;

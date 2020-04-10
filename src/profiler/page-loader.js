@@ -1,20 +1,24 @@
 const networkPresets = require('../network-presets.js');
 const cache = require('./cache.js');
-const { getPaintEventsBySelectors } = require('./hero-elements.js');
+const {
+  injectElementTimingObserver,
+  getElementsTimings,
+  injectElementTimingHandler,
+  getPaintEventsBySelectors
+} = require('./hero-elements.js');
 const { injectLongTasksObserver, getTti } = require('./tti.js');
 const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
 const { make } = require('./../objects-utils.js');
-const devices = require('puppeteer/DeviceDescriptors');
-const pixel2 = devices['Pixel 2'];
+const { devices, viewports } = require('./viewports.js');
 
 const setupPageConfig = async (context, page, client, config, pageConfig) => {
   const { logger, throttling } = config;
 
   if (config.platform === 'mobile') {
-    await page.emulate(pixel2);
+    await page.emulate(devices.mobile);
   } else {
-    await page.setViewport({ width: 1366, height: 768 });
+    await page.setViewport(viewports.desktop);
   }
 
   if (throttling) {
@@ -111,16 +115,16 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 };
 
-const profileActions = async (page, config, pageConfig, client) => {
+const profileActions = async (page, client, config, pageConfig) => {
   const res = {};
   const { logger } = config;
   const pages = make(config.pages.map(({ name, url }) => [name, url]));
 
   if (pageConfig.actions && pageConfig.actions.length) {
-    for (const { name, action } of pageConfig.actions) {
+    for (const { name, action, layers } of pageConfig.actions) {
       await logger(`action "${name}" started`);
 
-      const getWatchingResult = await watch(page, client);
+      const getWatchingResult = await watch(page);
 
       /* istanbul ignore next */
       await page.evaluate((as) => window.performance.mark(as), ACTION_START);
@@ -130,8 +134,15 @@ const profileActions = async (page, config, pageConfig, client) => {
 
       const content = await page.content();
 
+      const watchingResult = await getWatchingResult();
+
+      const layersPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, layers);
+      const elementsTimings = await getElementsTimings(page);
+
       res[name] = {
-        ...await getWatchingResult(),
+        ...watchingResult,
+        elementsTimings,
+        layersPaints,
         content
       };
 
@@ -143,7 +154,7 @@ const profileActions = async (page, config, pageConfig, client) => {
 };
 
 const loadPage = async (context, config, pageConfig) => {
-  const { url, heroElements } = pageConfig;
+  const { url, layers } = pageConfig;
 
   const page = await context.newPage();
 
@@ -158,6 +169,8 @@ const loadPage = async (context, config, pageConfig) => {
     const getWatchingResult = await watch(page, client);
 
     await injectLongTasksObserver(page);
+    await injectElementTimingObserver(page);
+
     await page.goto(url, { timeout: 60000, waitUntil: ["load", "networkidle2"] });
 
     const watchingResult = await getWatchingResult();
@@ -165,9 +178,12 @@ const loadPage = async (context, config, pageConfig) => {
 
     const content = await page.content();
 
-    const heroElementsPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, heroElements);
+    const layersPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, layers);
 
-    const actions = await profileActions(page, config, pageConfig);
+    await injectElementTimingHandler(page);
+    const elementsTimings = await getElementsTimings(page);
+
+    const actions = await profileActions(page, client, config, pageConfig);
 
     await page.close();
 
@@ -175,8 +191,9 @@ const loadPage = async (context, config, pageConfig) => {
       ...watchingResult,
       content,
       actions,
-      heroElementsPaints,
-      timeToInteractive
+      timeToInteractive,
+      layersPaints,
+      elementsTimings
     };
   } catch (error) {
     await page.close();

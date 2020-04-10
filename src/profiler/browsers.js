@@ -1,15 +1,5 @@
 const puppeteer = require('puppeteer');
-const devices = require('puppeteer/DeviceDescriptors');
-
-const pixel2 = devices['Pixel 2'];
-
-const viewports = {
-  mobile: pixel2.viewport,
-  desktop: {
-    width: 1366,
-    height: 768
-  }
-};
+const {viewports} = require('./viewports.js');
 
 const getContext = async (config) => {
   const browser = await puppeteer.launch({
