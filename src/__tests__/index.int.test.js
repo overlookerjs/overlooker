@@ -17,7 +17,7 @@ const thresholds = {
 
 jest.setTimeout(150000);
 
-describe('main tests', () => {
+describe('main integration tests', () => {
   let server;
   let data1;
   let data2;

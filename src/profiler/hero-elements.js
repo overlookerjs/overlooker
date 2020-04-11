@@ -72,6 +72,9 @@ const injectElementTimingHandler = async (page) => {
 
 const getElementsTimings = async (page) => {
   /* istanbul ignore next */
+  await page.waitForFunction((oetPropName) => !!(window[oetPropName] && window[oetPropName].getAll), {}, globalOETName);
+
+  /* istanbul ignore next */
   return await page.evaluate((oetPropName) => {
     const timingEntries = window[oetPropName].getAll();
 
