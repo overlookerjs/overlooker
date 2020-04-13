@@ -12,7 +12,6 @@ const {
   getMeaningEvaluationEvents,
   prepareEvaluations
 } = require('./events-evaluation.js');
-const {} = require('./events-tree.js');
 
 const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings, layersPaints }, config) => {
   const { requests: { internalTest }, firstEvent: firstEventName, customMetrics } = config;
@@ -26,15 +25,15 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
 
   const mainEvents = getEventsTreeByThreads(makeEventsRelative(tracing, firstEvent)).find(({ name }) => name === 'main').events;
   const meaningfulEvaluations = getMeaningEvaluationEvents(mainEvents);
-  const preparedEvaluations = prepareEvaluations(meaningfulEvaluations);
+  const extractEvaluationValues = prepareEvaluations(meaningfulEvaluations);
 
-  const evaluationMap = makeScriptsEvaluationMap(preparedEvaluations.filter(({ url }) => url));
+  const evaluationMap = makeScriptsEvaluationMap(extractEvaluationValues.filter(({ url }) => url));
   const coverageMap = makeCoverageMap(coverage);
 
   const network = parseNetwork(relativeEvents, evaluationMap, coverageMap, internalTest);
 
   const resourcesStats = getResourcesStats(network);
-  const evaluationStats = getScriptsEvaluationStats(preparedEvaluations, internalTest);
+  const evaluationStats = getScriptsEvaluationStats(extractEvaluationValues, internalTest);
   const coverageStats = getCoverageStats(network);
 
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);

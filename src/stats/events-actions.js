@@ -37,13 +37,13 @@ const getActionsStats = (actions, navigationStart, config) => map(
 
     const mainEvents = getEventsTreeByThreads(makeEventsRelative(tracing, actionStart)).find(({ name }) => name === 'main').events;
     const meaningfulEvaluations = getMeaningEvaluationEvents(mainEvents);
-    const preparedEvaluations = prepareEvaluations(meaningfulEvaluations);
+    const extractEvaluationValues = prepareEvaluations(meaningfulEvaluations);
 
-    const evaluationMap = makeScriptsEvaluationMap(preparedEvaluations.filter(({ url }) => url));
+    const evaluationMap = makeScriptsEvaluationMap(extractEvaluationValues.filter(({ url }) => url));
     const coverageMap = makeCoverageMap(coverage);
     const network = parseNetwork(relativeEvents, evaluationMap, coverageMap, internalTest); // ToDo: add coverage from page loading
 
-    const evaluationStats = getScriptsEvaluationStats(preparedEvaluations, internalTest);
+    const evaluationStats = getScriptsEvaluationStats(extractEvaluationValues, internalTest);
     const resourcesStats = getResourcesStats(network);
     const coverageStats = getCoverageStats(network);
 
