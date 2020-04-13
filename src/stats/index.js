@@ -1,3 +1,4 @@
+const { getEventsTreeByThreads } = require('./events-tree.js');
 const { makeEventsRelative } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
@@ -6,9 +7,10 @@ const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
 const {
-  getScriptsEvaluation,
   getScriptsEvaluationStats,
-  makeScriptsEvaluationMap
+  makeScriptsEvaluationMap,
+  getMeaningEvaluationEvents,
+  prepareEvaluations
 } = require('./events-evaluation.js');
 
 const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings, layersPaints }, config) => {
@@ -21,14 +23,17 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
   const mainFrame = firstEvent.args.frame;
   const relativeEvents = makeEventsRelative(tracing, firstEvent);
 
-  const rawEvaluation = getScriptsEvaluation(relativeEvents);
-  const evaluationMap = makeScriptsEvaluationMap(rawEvaluation);
+  const mainEvents = getEventsTreeByThreads(makeEventsRelative(tracing, firstEvent)).find(({ name }) => name === 'main').events;
+  const meaningfulEvaluations = getMeaningEvaluationEvents(mainEvents);
+  const extractEvaluationValues = prepareEvaluations(meaningfulEvaluations);
+
+  const evaluationMap = makeScriptsEvaluationMap(extractEvaluationValues.filter(({ url }) => url));
   const coverageMap = makeCoverageMap(coverage);
 
   const network = parseNetwork(relativeEvents, evaluationMap, coverageMap, internalTest);
 
   const resourcesStats = getResourcesStats(network);
-  const evaluationStats = getScriptsEvaluationStats(rawEvaluation, internalTest);
+  const evaluationStats = getScriptsEvaluationStats(extractEvaluationValues, internalTest);
   const coverageStats = getCoverageStats(network);
 
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);

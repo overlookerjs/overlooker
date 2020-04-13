@@ -34,9 +34,20 @@ module.exports.stats = {
     }
   },
   "evaluation": {
-    "internal": 71208,
-    "total": 72708,
-    "external": 1500
+    "external": {
+      "evaluation": 1500,
+      "total": 1500
+    },
+    "internal": {
+      "evaluation": 71208,
+      "parseHTML": 9961,
+      "total": 81169
+    },
+    "total": {
+      "evaluation": 72708,
+      "parseHTML": 9961,
+      "total": 82669
+    }
   },
   "resources": {
     "total": {
@@ -215,6 +226,7 @@ module.exports.network = [
     "stats": {
       "size": 261,
       "transfer": 362,
+      "evaluation": 9961,
       "timings": {
         "start": 2881,
         "response": 2911,
@@ -223,6 +235,24 @@ module.exports.network = [
         "total": 6292
       }
     },
+    "evaluation": [
+      {
+        "duration": 1010,
+        "timings": {
+          "end": 10668,
+          "start": 9658
+        },
+        "type": "parseHTML"
+      },
+      {
+        "duration": 8951,
+        "timings": {
+          "end": 207614,
+          "start": 198663
+        },
+        "type": "parseHTML"
+      }
+    ],
     "internal": true,
     "type": "text/html",
     "extension": "html",
@@ -276,7 +306,7 @@ module.exports.network = [
     "evaluation": [
       {
         "duration": 71208,
-        "url": "http://localhost:3000/main.0ebfa121.js",
+        "type": "evaluation",
         "timings": {
           "start": 127408,
           "end": 198616
@@ -319,9 +349,22 @@ module.exports.testActionStats = {
     }
   },
   "evaluation": {
-    "internal": 1003,
-    "total": 1003,
-    "external": 0
+    "external": {
+      "evaluation": 72,
+      "total": 72
+    },
+    "internal": {
+      "evaluation": 1367,
+      "event": 460,
+      "timer": 5709,
+      "total": 7536
+    },
+    "total": {
+      "evaluation": 1439,
+      "event": 460,
+      "timer": 5709,
+      "total": 7608
+    }
   },
   "resources": {
     "total": {
@@ -527,7 +570,7 @@ module.exports.testActionNetwork = [
     "evaluation": [
       {
         "duration": 1003,
-        "url": "http://localhost:3000/1.b8643a79.js",
+        "type": "evaluation",
         "timings": {
           "start": 51861,
           "end": 52864

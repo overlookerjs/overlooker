@@ -1,10 +1,12 @@
+const { getEventsTreeByThreads } = require('./events-tree.js');
 const { makeCoverageMap } = require('./events-coverage.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
 const { makeEventsRelative, findEventByName } = require('./events-helpers.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { map } = require('./../objects-utils');
 const {
-  getScriptsEvaluation,
+  prepareEvaluations,
+  getMeaningEvaluationEvents,
   makeScriptsEvaluationMap,
   getScriptsEvaluationStats
 } = require('./events-evaluation.js');
@@ -33,12 +35,15 @@ const getActionsStats = (actions, navigationStart, config) => map(
     const relativeEvents = makeEventsRelative(tracing, actionStart);
     const navigationStartDelta = navigationStart.ts - actionStart.ts;
 
-    const rawEvaluation = getScriptsEvaluation(relativeEvents);
-    const evaluationMap = makeScriptsEvaluationMap(rawEvaluation);
+    const mainEvents = getEventsTreeByThreads(makeEventsRelative(tracing, actionStart)).find(({ name }) => name === 'main').events;
+    const meaningfulEvaluations = getMeaningEvaluationEvents(mainEvents);
+    const extractEvaluationValues = prepareEvaluations(meaningfulEvaluations);
+
+    const evaluationMap = makeScriptsEvaluationMap(extractEvaluationValues.filter(({ url }) => url));
     const coverageMap = makeCoverageMap(coverage);
     const network = parseNetwork(relativeEvents, evaluationMap, coverageMap, internalTest); // ToDo: add coverage from page loading
 
-    const evaluationStats = getScriptsEvaluationStats(rawEvaluation, internalTest);
+    const evaluationStats = getScriptsEvaluationStats(extractEvaluationValues, internalTest);
     const resourcesStats = getResourcesStats(network);
     const coverageStats = getCoverageStats(network);
 

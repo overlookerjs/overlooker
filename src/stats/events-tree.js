@@ -76,33 +76,26 @@ const filterByNestedSequenceEvents = (eventsTree, [name, ...rest]) => eventsTree
 const filterByNestedEvent = (eventsTree, name) => eventsTree
   .filter(({ event, children }) => event.name === name || filterByNestedEvent(children, name).length);
 
+const getNestedEventsBySequence = (eventsTree, [name, ...rest], acc = []) => eventsTree
+  .reduce((acc, entry) => {
+    const { event, children } = entry;
+    if (event.name === name) {
+      if (rest.length !== 0) {
+        getNestedEventsBySequence(children, rest, acc);
+      } else {
+        acc.push(entry);
+      }
+    }
+
+    return acc;
+  }, acc);
+
 const getEventsTreeByThreads = (events) => getEventsByThreads(events)
   .map(({ name, events: threadEvents }) => ({ name, events: getEventsTree(threadEvents) }));
 
-const meaningEvaluationEventNames = Object.entries({
-  functionCall: ['FunctionCall'],
-  evaluateScript: ['EvaluateScript'],
-  parseHTML: ['ParseHTML'],
-  eventDispatch: ['EventDispatch', 'FunctionCall'],
-  timerFire: ['TimerFire', 'FunctionCall'],
-  fireIdleCallback: ['FireIdleCallback', 'FunctionCall'],
-  XHRReadyStateChange: ['ResourceDispatcher::OnRequestComplete', 'WebURLLoaderImpl::Context::OnCompletedRequest', 'XHRReadyStateChange', 'FunctionCall'],
-  startLoadResponseBody: ['URLLoaderClientImpl::OnStartLoadingResponseBody', 'XHRReadyStateChange', 'FunctionCall'],
-  animationFrame: ['PageAnimator::serviceScriptedAnimations', 'FireAnimationFrame', 'FunctionCall']
-});
-
-const getMeaningEvaluationEvents = (events) => {
-  const mainEvents = getEventsTreeByThreads(events).find(({ name }) => name === 'main').events;
-
-  return make(
-    meaningEvaluationEventNames
-      .map(([name, eventNames]) => [name, filterByNestedSequenceEvents(mainEvents, eventNames)])
-  );
-};
-
 module.exports = {
-  getMeaningEvaluationEvents,
   filterByNestedSequenceEvents,
   filterByNestedEvent,
-  getEventsTreeByThreads
+  getEventsTreeByThreads,
+  getNestedEventsBySequence
 };
