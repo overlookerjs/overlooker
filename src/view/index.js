@@ -79,7 +79,10 @@ const makeComparisonReadable = (comparison) => ({
   percent: makeProfileReadable(comparison.percent, true)
 });
 
-const flatStats = (stats) => map(raiseFields(stats, ['resources', 'coverage', 'evaluation']), (value) => typeof value === 'object' ? flat(value) : { value });
+const flatStats = (stats, rise = ['resources', 'coverage', 'evaluation']) => map(
+  rise ? raiseFields(stats, rise) : stats,
+  (value) => typeof value === 'object' ? flat(value) : { value }
+);
 
 const inverseTotal = (stats) => deepMap(stats.total, (obj, key) => map(obj, (value, fieldName) => ({
   total: stats[key],
@@ -92,22 +95,32 @@ const excludeNetwork = ({ network, actions, ...profile }) => ({
   actions: map(actions, ({ network, ...action }) => action)
 });
 
+const makeRequestStatsReadable = (requestStats) => {
+  const {
+      size,
+      transfer,
+      evaluation,
+      timings,
+      coverage
+  } = requestStats;
+
+  return {
+    size: typeof size === 'object' ? addMeaningToObj(size, 'kb') : addMeaning(size, null, 'kb'),
+    transfer: typeof transfer === 'object' ? addMeaningToObj(transfer, 'kb') : addMeaning(transfer, null, 'kb'),
+    evaluation: typeof evaluation === 'object' ? addMeaningToObj(evaluation, 's') : addMeaning(evaluation, null, 's'),
+    timings: addMeaningToObj(timings),
+    coverage: addMeaningToObj(coverage, { '*': 'kb', 'percent': '%' })
+  };
+};
+
 const makeRequestReadable = (request) => {
   const {
-    size,
-    transfer,
-    evaluationTime,
-    timings,
-    coverage,
+    stats,
     ...rest
   } = request;
 
   return {
-    size: addMeaning(size, 'kb'),
-    transfer: addMeaning(transfer, 'kb'),
-    evaluationTime: addMeaning(evaluationTime, 'kb'),
-    timings: addMeaningToObj(timings),
-    coverage: addMeaningToObj(coverage, { '*': 'kb', 'percent': '%' }),
+    stats: makeRequesStatsReadable(stats),
     ...rest
   };
 };
@@ -130,5 +143,6 @@ module.exports = {
   makeComparisonReadable,
   makeNetworkReadable,
   makeRequestReadable,
+  makeRequestStatsReadable,
   serializeProfiles
 };
