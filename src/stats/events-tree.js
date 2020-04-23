@@ -54,6 +54,23 @@ const getEventsByThreads = (events) => (
       events
     }))
     .filter(({ name }) => name !== 'unknown')
+    .reduce((acc, bunch) => {
+      // workaround for linux - tracing in linux has independent thread
+      // for rendering screenshots and he has the same identifier
+      // in thread_name event as a main thread
+      if (bunch.name === 'main' && acc.some((handledBunch) => handledBunch.name === bunch.name)) {
+        const bunchIndex = acc.findIndex((handledBunch) => handledBunch.name === bunch.name);
+
+        acc[bunchIndex] = {
+          name: 'main',
+          events: acc[bunchIndex].events.concat(bunch.events)
+        };
+      } else {
+        acc.push(bunch);
+      }
+
+      return acc;
+    }, [])
 );
 
 const getEventsTree = (events) => (
