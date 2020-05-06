@@ -3,13 +3,13 @@ const { parallelizeObject } = require('../threads.js');
 const browsers = require('./../browsers.js');
 
 const fetchPages = async ({
-                      config,
-                      percentCost,
-                      prepare = (data) => data,
-                      checkStatus = async () => true
-                    }) => {
+                            config,
+                            percentCost,
+                            prepare = (data) => data,
+                            checkStatus = async () => true
+                          }) => {
   const { count, logger, progress, pages } = config;
-  let isRunning = checkStatus();
+  let isStopped = false;
 
   const openedBrowsers = await browsers.open(config);
   const wrappedBrowsers = browsers.wrap(openedBrowsers);
@@ -19,9 +19,8 @@ const fetchPages = async ({
     [page.name]: Array(count).fill(async (stop, browser) => {
       const nowRunning = await checkStatus();
 
-      if (nowRunning !== isRunning && !nowRunning) {
-        isRunning = nowRunning;
-        await runner.stop();
+      if (!nowRunning && !isStopped) {
+        await stop();
         await logger(`fetching stopped`);
       }
 
@@ -51,11 +50,9 @@ const fetchPages = async ({
     })
   }), {});
 
-  const runner = parallelizeObject(functions, wrappedBrowsers, 5000, async (e) => {
+  const data = await parallelizeObject(functions, wrappedBrowsers, 5000, async (e) => {
     await logger(`error while fetching: ${e.stack}`);
   });
-
-  const data = await runner;
 
   await browsers.close(openedBrowsers);
 
