@@ -41,10 +41,11 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
 
   const userCentric = {
     speedIndex: await getSpeedIndex(tracing),
-    elementsTimings: prepareElementsTimings(elementsTimings, navigationStartDelta),
-    layersPaints: prepareLayersPaints(layersPaints, firstEvent),
     timeToInteractive
   };
+
+  const elementsTimingsStats = prepareElementsTimings(elementsTimings, navigationStartDelta);
+  const layersPaintsStats = prepareLayersPaints(layersPaints, firstEvent);
 
   const actionsStats = getActionsStats(actions, navigationStart, config);
 
@@ -53,6 +54,8 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
       timings,
       userCentric,
       custom,
+      elementsTimings: elementsTimingsStats,
+      layersPaints: layersPaintsStats,
       evaluation: evaluationStats,
       resources: resourcesStats,
       coverage: coverageStats,

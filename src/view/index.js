@@ -55,6 +55,8 @@ const makeStatsReadable = ({
                              timings,
                              userCentric,
                              custom,
+                             elementsTimings,
+                             layersPaints,
                              evaluation,
                              resources,
                              coverage
@@ -62,6 +64,8 @@ const makeStatsReadable = ({
   timings: addMeaningToObj(timings),
   userCentric: addMeaningToObj(userCentric),
   custom: addMeaningToObj(custom),
+  elementsTimings: addMeaningToObj(elementsTimings, { '*': 's', 'visiblePercent': '%' }),
+  layersPaints: addMeaningToObj(layersPaints),
   evaluation: addMeaningToObj(evaluation),
   resources: addMeaningToObj(resources, 'kb'),
   coverage: addMeaningToObj(coverage, { '*': 'kb', 'percent': '%' })

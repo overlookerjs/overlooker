@@ -1,5 +1,5 @@
 const { makeEventsRelative } = require('./events-helpers.js');
-const { map } = require('./../objects-utils.js');
+const { map, expandFlat } = require('./../objects-utils.js');
 const speedline = require('speedline/core');
 
 const getSpeedIndex = async (events) => {
@@ -31,20 +31,16 @@ const prepareLayersPaints = (layersPaints, firstEvent) => (
   )
 );
 
-const prepareElementsTimings = (elementsTimings, navigationStartDelta) => map(
+const prepareElementsTimings = (elementsTimings, navigationStartDelta) => expandFlat(
   elementsTimings
     .reduce((acc, et) => {
-      acc[et.name] = {
-        visiblePercent: et.view.visiblePercent,
-        timings: map(
-          et.timings,
-          (value, name) => name === 'duration' ? value * 1000 : value * 1000 + navigationStartDelta
-        )
-      };
+      acc[et.name] = map(
+        et.timings,
+        (value) => value * 1000 + navigationStartDelta
+      );
 
       return acc;
-    }, {}),
-  (value) => value
+    }, {})
 );
 
 module.exports = {
