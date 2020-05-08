@@ -30,14 +30,14 @@ describe('main integration tests', () => {
     server = listen();
   });
 
-  test('profile', async () => {
-    data1 = await profile(config);
-    data2 = await profile(config);
-  });
-
   test('impact analysis', async () => {
     const impact1 = await impactAnalysis(null, config);
     const impact2 = await impactAnalysis(impact1.descriptions, config);
+  });
+
+  test('profile', async () => {
+    data1 = await profile(config);
+    data2 = await profile(config);
   });
 
   describe('audits tests', () => {

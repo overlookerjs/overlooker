@@ -1,7 +1,7 @@
 const { prepareResult } = require('../preparing.js');
 const { fetchPages } = require('./core-fetcher.js');
 const { getAllStats } = require('../../stats');
-const { map } = require('../../objects-utils.js');
+const { map, filter } = require('../../objects-utils.js');
 
 const content = async (config, buildData) => {
   const { checkStatus, logger } = config;
