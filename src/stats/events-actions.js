@@ -50,16 +50,15 @@ const getActionsStats = (actions, navigationStart, config) => map(
     const timings = getActionsTimings(relativeEvents);
     const custom = getCustomMetrics(relativeEvents, customMetrics);
 
-    const userCentric = {
-      elementsTimings: prepareElementsTimings(elementsTimings, navigationStartDelta),
-      layersPaints: prepareLayersPaints(layersPaints, actionStart)
-    };
+    const elementsTimingsStats = prepareElementsTimings(elementsTimings, navigationStartDelta);
+    const layersPaintsStats = prepareLayersPaints(layersPaints, actionStart);
 
     return {
       stats: {
         timings,
         custom,
-        userCentric,
+        elementsTimings: elementsTimingsStats,
+        layersPaints: layersPaintsStats,
         evaluation: evaluationStats,
         resources: resourcesStats,
         coverage: coverageStats

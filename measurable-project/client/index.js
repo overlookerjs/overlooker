@@ -42,9 +42,17 @@ class App extends Component {
         <h2 elementtiming={'timing-header'}>
           Header
         </h2>
-        <button className={styles.button} onClick={() => this.handleClick()}>
+        <button className={styles.button} onClick={() => this.handleClick()} elementtiming={'button.std'}>
           test button
         </button>
+        <button className={styles.button} onClick={() => this.handleClick()} elementtiming={'button.with-span'}>
+          <span>
+          <span>test button</span>
+          </span>
+        </button>
+        <div elementtiming={'some-text'}>
+          some text
+        </div>
         <div className={styles.hero} id={'hero-layer'}>Hero content</div>
         {
           this.state.content
