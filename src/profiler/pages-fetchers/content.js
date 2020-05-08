@@ -37,7 +37,10 @@ const content = async (config, buildData) => {
     await logger(`page content received!`);
 
     return map(
-      preparedProfiles,
+      filter(
+        preparedProfiles,
+        (p, pageName) => profiles[pageName][0]
+      ),
       (profile, pageName) => ({
         profile,
         content: profiles[pageName][0].content
