@@ -50,7 +50,7 @@ const getTti = async (page, logger, firstEvent) => {
     })
   });
 
-  await page.addScriptTag({ path: path.resolve(__dirname, './tti-polyfill.js') });
+  await page.addScriptTag({ path: require.resolve('overlooker-tti-polyfill')});
 
   /* istanbul ignore next */
   const result = await page.evaluate(async ({ ttiPropName, firstEvent }) => {
