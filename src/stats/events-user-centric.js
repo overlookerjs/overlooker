@@ -44,7 +44,7 @@ const prepareElementsTimings = (elementsTimings, navigationStartDelta) => expand
 );
 
 const getCumulativeLayoutShift = (events) => {
-  let finalLayoutShift;
+  let finalLayoutShift = 0;
 
   for (let i = events.length - 1; i >= 0; i--) {
     const evt = events[i];
