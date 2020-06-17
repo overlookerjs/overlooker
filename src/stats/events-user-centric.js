@@ -43,8 +43,24 @@ const prepareElementsTimings = (elementsTimings, navigationStartDelta) => expand
     }, {})
 );
 
+const getCumulativeLayoutShift = (events) => {
+  let finalLayoutShift;
+
+  for (let i = events.length - 1; i >= 0; i--) {
+    const evt = events[i];
+
+    if (evt.name === 'LayoutShift' && evt.args && evt.args.data && evt.args.data.is_main_frame) {
+      finalLayoutShift = evt.args.data.cumulative_score;
+      break;
+    }
+  }
+
+    return finalLayoutShift;
+}
+
 module.exports = {
   getSpeedIndex,
   prepareLayersPaints,
-  prepareElementsTimings
+  prepareElementsTimings,
+  getCumulativeLayoutShift
 };

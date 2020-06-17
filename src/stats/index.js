@@ -2,7 +2,7 @@ const { getEventsTreeByThreads } = require('./events-tree.js');
 const { makeEventsRelative } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
-const { getSpeedIndex, prepareElementsTimings, prepareLayersPaints } = require('./events-user-centric.js');
+const { getSpeedIndex, prepareElementsTimings, prepareLayersPaints, getCumulativeLayoutShift } = require('./events-user-centric.js');
 const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
@@ -41,7 +41,8 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
 
   const userCentric = {
     speedIndex: await getSpeedIndex(tracing),
-    timeToInteractive
+    timeToInteractive,
+    cumulativeLayoutShift: getCumulativeLayoutShift(relativeEvents)
   };
 
   const elementsTimingsStats = prepareElementsTimings(elementsTimings, navigationStartDelta);

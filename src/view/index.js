@@ -20,6 +20,9 @@ const addMeaning = (value, key, meaning, digit) => {
       case '%':
         newValue = (value * 100).toFixed(2) + '%';
         break;
+      case 'score':
+        newValue = (value).toFixed(3);
+        break;
       case 's':
       default:
         if (value / 1000 > 1000) {
@@ -62,7 +65,7 @@ const makeStatsReadable = ({
                              coverage
                            }) => ({
   timings: addMeaningToObj(timings),
-  userCentric: addMeaningToObj(userCentric),
+  userCentric: addMeaningToObj(userCentric, {'cumulativeLayoutShift': 'score'}),
   custom: addMeaningToObj(custom),
   elementsTimings: addMeaningToObj(elementsTimings, { '*': 's', 'visiblePercent': '%' }),
   layersPaints: addMeaningToObj(layersPaints),
