@@ -1,9 +1,11 @@
 const { map } = require('./../objects-utils.js');
 
-const getLastEvent = (events, name) => {
+const getLastEvent = (events, name, condition = () => true) => {
   for (let index = events.length - 1; index--;) {
-    if (events[index] && events[index].name === name) {
-      return events[index];
+    const evt = events[index];
+
+    if (evt && evt.name === name && condition(evt, index, events) === true) {
+      return evt;
     }
   }
 };

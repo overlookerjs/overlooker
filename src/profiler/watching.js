@@ -32,7 +32,8 @@ const writeTracing = async (page) => {
       'blink.user_timing,rail',
       'devtools.timeline',
       'loading,rail,devtools.timeline',
-      'disabled-by-default-devtools.screenshot'
+      'disabled-by-default-devtools.screenshot',
+      'layout_shift.debug'
     ]
   });
 
