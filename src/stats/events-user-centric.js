@@ -1,4 +1,4 @@
-const { makeEventsRelative } = require('./events-helpers.js');
+const { makeEventsRelative, getLastEvent } = require('./events-helpers.js');
 const { map, expandFlat } = require('./../objects-utils.js');
 const speedline = require('speedline/core');
 
@@ -44,18 +44,9 @@ const prepareElementsTimings = (elementsTimings, navigationStartDelta) => expand
 );
 
 const getCumulativeLayoutShift = (events) => {
-  let finalLayoutShift = 0;
+  const lastEvent = getLastEvent(events, 'LayoutShift', evt => evt.args && evt.args.data && evt.args.data.is_main_frame)
 
-  for (let i = events.length - 1; i >= 0; i--) {
-    const evt = events[i];
-
-    if (evt.name === 'LayoutShift' && evt.args && evt.args.data && evt.args.data.is_main_frame) {
-      finalLayoutShift = evt.args.data.cumulative_score;
-      break;
-    }
-  }
-
-    return finalLayoutShift;
+  return lastEvent ? lastEvent.args.data.cumulative_score : 0;
 }
 
 module.exports = {
