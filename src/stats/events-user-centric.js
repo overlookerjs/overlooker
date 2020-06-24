@@ -1,6 +1,9 @@
 const { makeEventsRelative, getLastEvent } = require('./events-helpers.js');
 const { map, expandFlat } = require('./../objects-utils.js');
 const speedline = require('speedline/core');
+const { calcTBT } = require('total-blocking-time')
+
+const LONG_TASK_THRESHOLD = 50;
 
 const getSpeedIndex = async (events) => {
   try {
@@ -49,9 +52,27 @@ const getCumulativeLayoutShift = (events) => {
   return lastEvent ? lastEvent.args.data.cumulative_score : 0;
 }
 
+const getTotalBlockingTime = (topLevelEvents, tti, fcp) => {
+    const longTasks = topLevelEvents.reduce((memo, { event: curr }) => {
+        if(curr.dur === undefined){
+            return memo;
+        }
+        const duration = curr.dur / 1000;
+
+        if(duration >= LONG_TASK_THRESHOLD){
+            memo.push({ duration, startTime: curr.ts });
+        }
+
+        return memo;
+    }, []);
+
+    return calcTBT(tti, longTasks, fcp) * 1000;
+}
+
 module.exports = {
   getSpeedIndex,
   prepareLayersPaints,
   prepareElementsTimings,
-  getCumulativeLayoutShift
+  getCumulativeLayoutShift,
+  getTotalBlockingTime
 };

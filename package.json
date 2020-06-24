@@ -38,7 +38,8 @@
     "overlooker-element-timing": "^0.2.2",
     "overlooker-tti-polyfill": "^0.3.0",
     "puppeteer": "^2.1.1",
-    "speedline": "^1.4.2"
+    "speedline": "^1.4.2",
+    "total-blocking-time": "^1.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.3",
