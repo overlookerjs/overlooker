@@ -84,9 +84,26 @@ const getElementsTimings = async (page) => {
   }, globalOETName);
 };
 
+const waitForElementTiming = async (page, timingName) => {
+  return await page.evaluate(({ timingName, oetPropName }) => {
+    return new Promise((resolve, reject) => window[oetPropName].observe((entry) => {
+      const timeout = setTimeout(reject, 60000);
+
+      if (entry.name === timingName) {
+        clearTimeout(timeout);
+        resolve()
+      }
+    }, true))
+  }, {
+    timingName,
+    oetPropName: globalOETName
+  })
+};
+
 module.exports = {
   getPaintEventsBySelectors,
   injectElementTimingObserver,
   injectElementTimingHandler,
-  getElementsTimings
+  getElementsTimings,
+  waitForElementTiming
 };
