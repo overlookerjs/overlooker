@@ -21,7 +21,7 @@ const addMeaning = (value, key, meaning, digit) => {
         newValue = (value * 100).toFixed(2) + '%';
         break;
       case 'score':
-        newValue = (value).toFixed(3);
+        newValue = Number((value).toFixed(3));
         break;
       case 's':
       default:
@@ -65,7 +65,7 @@ const makeStatsReadable = ({
                              coverage
                            }) => ({
   timings: addMeaningToObj(timings),
-  userCentric: addMeaningToObj(userCentric, {'cumulativeLayoutShift': 'score'}),
+  userCentric: addMeaningToObj(userCentric, {'cumulativeLayoutShift': 'score', 'lighthouseScore': 'score'}),
   custom: addMeaningToObj(custom),
   elementsTimings: addMeaningToObj(elementsTimings, { '*': 's', 'visiblePercent': '%' }),
   layersPaints: addMeaningToObj(layersPaints),

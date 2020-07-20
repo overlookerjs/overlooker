@@ -1,7 +1,7 @@
 const { makeEventsRelative, getLastEvent } = require('./events-helpers.js');
 const { map, expandFlat } = require('./../objects-utils.js');
 const speedline = require('speedline/core');
-const { calcTBT } = require('total-blocking-time')
+const { calcTBT } = require('total-blocking-time');
 
 const LONG_TASK_THRESHOLD = 50;
 
