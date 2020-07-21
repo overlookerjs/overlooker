@@ -9,7 +9,7 @@ const {
   getCumulativeLayoutShift, 
   getTotalBlockingTime
 } = require('./events-user-centric.js');
-const { getLighthouseScore } = require ('./lighthouseScore');
+const { getLighthouseScore } = require ('./lighthouse-score');
 const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');

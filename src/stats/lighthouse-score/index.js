@@ -10,10 +10,10 @@ const getLighthouseScore = (values, platform) => {
     return {
       id,
       metricScoring,
-      value: values[ id ],
+      value: values[id],
       score: Math.round(quantileAtValue(metricScoring, values[id]) * 100),
     };
-  } );
+  });
 
   const auditRefs = metricsData.map(metric => {
     return {
@@ -24,7 +24,7 @@ const getLighthouseScore = (values, platform) => {
         score: metric.score / 100,
       },
     };
-  } );
+  });
 
   const score = arithmeticMean(auditRefs);
 
