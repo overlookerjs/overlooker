@@ -2,7 +2,14 @@ const { getEventsTreeByThreads } = require('./events-tree.js');
 const { makeEventsRelative } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
-const { getSpeedIndex, prepareElementsTimings, prepareLayersPaints, getCumulativeLayoutShift, getTotalBlockingTime } = require('./events-user-centric.js');
+const { 
+  getSpeedIndex, 
+  prepareElementsTimings, 
+  prepareLayersPaints, 
+  getCumulativeLayoutShift, 
+  getTotalBlockingTime
+} = require('./events-user-centric.js');
+const { getLighthouseScore } = require ('./lighthouse-score');
 const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
@@ -14,7 +21,7 @@ const {
 } = require('./events-evaluation.js');
 
 const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings, layersPaints }, config) => {
-  const { requests: { internalTest }, firstEvent: firstEventName, customMetrics } = config;
+  const { requests: { internalTest }, firstEvent: firstEventName, customMetrics, platform } = config;
 
   const firstEvent = getEventInMainFrame(tracing, firstEventName);
   const navigationStart = getEventInMainFrame(tracing, 'navigationStart');
@@ -38,12 +45,23 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
 
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
   const custom = getCustomMetrics(relativeEvents, customMetrics);
+  const speedIndex = await getSpeedIndex(tracing);
+  const totalBlockingTime = getTotalBlockingTime(mainEvents, timeToInteractive, timings.firstContentfulPaint);
+  const cumulativeLayoutShift = getCumulativeLayoutShift(relativeEvents);
 
   const userCentric = {
-    speedIndex: await getSpeedIndex(tracing),
+    speedIndex,
     timeToInteractive,
-    cumulativeLayoutShift: getCumulativeLayoutShift(relativeEvents),
-    totalBlockingTime: getTotalBlockingTime(mainEvents, timeToInteractive, timings.firstContentfulPaint)
+    cumulativeLayoutShift,
+    totalBlockingTime,
+    lighthouseScore: getLighthouseScore({
+      FCP: timings.firstContentfulPaint / 1000,
+      SI: speedIndex / 1000,
+      LCP: timings.largestContentfulPaint / 1000,
+      TTI: timeToInteractive / 1000,
+      TBT: totalBlockingTime / 1000,
+      CLS: cumulativeLayoutShift,  
+    }, platform)
   };
 
   const elementsTimingsStats = prepareElementsTimings(elementsTimings, navigationStartDelta);
