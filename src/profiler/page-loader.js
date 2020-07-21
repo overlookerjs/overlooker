@@ -4,7 +4,8 @@ const {
   injectElementTimingObserver,
   getElementsTimings,
   injectElementTimingHandler,
-  getPaintEventsBySelectors
+  getPaintEventsBySelectors,
+  waitForElementTiming
 } = require('./hero-elements.js');
 const { injectLongTasksObserver, getTti } = require('./tti.js');
 const { watch } = require('./watching.js');
@@ -128,7 +129,9 @@ const profileActions = async (page, client, config, pageConfig) => {
 
       /* istanbul ignore next */
       await page.evaluate((as) => window.performance.mark(as), ACTION_START);
-      await action(page, pages);
+      await action(page, pages, {
+        waitForElementTiming
+      });
       /* istanbul ignore next */
       await page.evaluate((ae) => window.performance.mark(ae), ACTION_END);
 

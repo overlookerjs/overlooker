@@ -152,7 +152,7 @@ const getByPath = (obj, path) => (Array.isArray(path) ? path : path.split('.'))
   .reduce((acc, key) => acc[key], obj);
 
 const makePath = (obj, path, value) => {
-  path.split('.')
+  (Array.isArray(path) ? path : path.split('.'))
     .reduce((acc, key, index, arr) => {
       if (index === arr.length - 1 && value !== undefined) {
         acc[key] = value;
