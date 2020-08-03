@@ -14,6 +14,7 @@ module.exports.stats = {
   },
   "userCentric": {
     "cumulativeLayoutShift": 0.09195102269292524,
+    "lighthouseScore": 99.60000000000001,
     "speedIndex": 230801.3599999994,
     "timeToInteractive": 207845.00000087428,
     "totalBlockingTime": 21208
