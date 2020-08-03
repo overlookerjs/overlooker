@@ -2,12 +2,13 @@ const { prepareResult } = require('../preparing.js');
 const { fetchPages } = require('./core-fetcher.js');
 const { getAllStats } = require('../../stats');
 
-const describePerformance = async (config, percentCost, buildData) => {
+const describePerformance = async (config, bandwidth, percentCost, buildData) => {
   const { checkStatus, logger } = config;
 
   try {
     const result = await fetchPages({
       config,
+      bandwidth,
       percentCost,
       checkStatus,
       prepare: (data) => getAllStats(data, config)

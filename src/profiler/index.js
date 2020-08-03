@@ -1,6 +1,8 @@
 const { prepareConfig } = require('./preparing.js');
 const { fetchBuildData } = require('./build-data.js');
 const { describePerformance, warming } = require('./pages-fetchers');
+const networkPresets = require('../network-presets.js');
+const Bandwidth = require('./cache.js');
 
 const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
@@ -13,11 +15,18 @@ const profile = async (config) => {
     return {};
   }
 
+  const {
+    downloadThroughput,
+    latency
+  } = networkPresets[config.throttling.network];
+
+  const bandwidth = config.proxy ? new Bandwidth(downloadThroughput, latency) : null;
+
   const buildData = await fetchBuildData(preparedConfig);
 
-  const warmingResult = await warming(preparedConfig, percentCost);
+  const warmingResult = await warming(preparedConfig, bandwidth, percentCost);
 
-  return await describePerformance(preparedConfig, percentCost, buildData);
+  return await describePerformance(preparedConfig, bandwidth, percentCost, buildData);
 };
 
 module.exports = {

@@ -9,8 +9,8 @@ const getContext = async (config) => {
       '--ignore-certificate-errors',
       '--ignore-urlfetcher-cert-requests'
     ]
-      .concat(config.browserArgs)
-      .concat(config.proxy && config.proxy.address ? `--proxy-server=${config.proxy.address}` : []),
+      .concat(config.browserArgs),
+      //.concat(config.proxy && config.proxy.address ? `--proxy-server=${config.proxy.address}` : []),
     ignoreHTTPSErrors: true,
     defaultViewport: viewports[config.platform],
     headless: !config.debug,

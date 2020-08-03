@@ -4,6 +4,7 @@ const browsers = require('./../browsers.js');
 
 const fetchPages = async ({
                             config,
+                            bandwidth,
                             percentCost,
                             prepare = (data) => data,
                             checkStatus = async () => true
@@ -32,7 +33,8 @@ const fetchPages = async ({
         const data = await loadPage(
           browser.context,
           config,
-          page
+          page,
+          bandwidth
         );
 
         const pageEndTime = Date.now();

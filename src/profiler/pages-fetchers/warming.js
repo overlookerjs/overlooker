@@ -1,7 +1,6 @@
 const { fetchPages } = require('./core-fetcher.js');
-const cache = require('../cache.js');
 
-const warming = async (config, percentCost) => {
+const warming = async (config, bandwidth, percentCost) => {
   const { checkStatus, logger, proxy } = config;
 
   if (proxy) {
@@ -11,21 +10,12 @@ const warming = async (config, percentCost) => {
       throttling: null
     };
 
-    cache.clear();
-
-    try {
-      await logger('restart proxy');
-      await proxy.restart();
-      await logger('proxy restarted');
-    } catch (e) {
-      await logger(`cannot restart proxy\n${e.stack}`);
-    }
-
     try {
       await logger('start cache warming');
 
       await fetchPages({
         config: warmingConfig,
+        bandwidth,
         percentCost,
         checkStatus
       });
