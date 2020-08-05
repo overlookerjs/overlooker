@@ -24,6 +24,7 @@ class CacheBandwidth {
   async reset() {
     this.queue = [];
     this.activeConnections = [];
+    this.prevTickTime = Date.now();
 
     clearTimeout(this.timeout);
     Object.values(this.latencyTimeouts).forEach((latencyTimeout) => clearTimeout(latencyTimeout));
@@ -47,7 +48,7 @@ class CacheBandwidth {
     return new Promise((resolve, reject) => {
       if (this.resources.has(name)) {
         const data = this.resources.get(name);
-        const size = data.body.length;
+        const size = Buffer.byteLength(data.body);
 
         const timeout = setTimeout(() => {
           delete this.latencyTimeouts[timeout];
@@ -79,8 +80,11 @@ class CacheBandwidth {
   async tick() {
     await this.checkUncompleted();
 
+    const now = Date.now();
+    const timeDelta = now - this.prevTickTime;
+
     if (this.activeConnections.length) {
-      const tickThroughput = (this.throughput / this.activeConnections.length) * (this.tickDuration / 1000);
+      const tickThroughput = (this.throughput / this.activeConnections.length) * (timeDelta / 1000);
 
       this.activeConnections = this.activeConnections
         .map(({ uncompleted, resolve }) => ({
@@ -89,6 +93,7 @@ class CacheBandwidth {
         }));
     }
 
+    this.prevTickTime = now;
     this.timeout = setTimeout(() => this.tick(), this.tickDuration);
   }
 }
