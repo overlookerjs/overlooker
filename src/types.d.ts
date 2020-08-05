@@ -330,6 +330,7 @@ declare module "overlooker" {
       address: string,
       restart: () => Promise<void>
     },
+    cache?: boolean,
     firstEvent?: string,
     count?: number,
     threads?: number,

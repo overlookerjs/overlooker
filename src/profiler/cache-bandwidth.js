@@ -5,53 +5,30 @@ const hash = (string) => crypto
   .update(string)
   .digest('hex');
 
-class Cache {
-  constructor() {
-    this.map = new Map();
-  }
-
-  get(key) {
-    const hashedKey = hash(key);
-
-    if (this.map.has(hashedKey)) {
-      return this.map.get(hashedKey);
-    } else {
-      return undefined;
-    }
-  }
-
-  has(key) {
-    const hashedKey = hash(key);
-
-    return this.map.has(hashedKey);
-  }
-
-  set(key, value) {
-    const hashedKey = hash(key);
-
-    this.map.set(hashedKey, value);
-  }
-
-  clear() {
-    this.map = new Map();
-  }
-}
-
-class Bandwidth {
-  constructor(throughput, latency, accuracy = 10) {
+class CacheBandwidth {
+  constructor(throughput, latency, tickDuration = 10) {
     this.throughput = throughput;
     this.latency = latency;
-    this.accuracy = accuracy;
+    this.tickDuration = tickDuration;
+    this.latencyTimeouts = {};
 
     this.clear();
   }
 
   async clear() {
-    this.queue = [];
-    this.activeConnections = [];
     this.resources = new Map();
 
+    this.reset();
+  }
+
+  async reset() {
+    this.queue = [];
+    this.activeConnections = [];
+
     clearTimeout(this.timeout);
+    Object.values(this.latencyTimeouts).forEach((latencyTimeout) => clearTimeout(latencyTimeout));
+
+    this.latencyTimeouts = {};
 
     await this.tick();
   }
@@ -72,17 +49,23 @@ class Bandwidth {
         const data = this.resources.get(name);
         const size = data.body.length;
 
-        setTimeout(() => this.activeConnections.push({
-          uncompleted: size,
-          resolve: () => resolve(data)
-        }), this.latency)
+        const timeout = setTimeout(() => {
+          delete this.latencyTimeouts[timeout];
+
+          this.activeConnections.push({
+            uncompleted: size,
+            resolve: () => resolve(data)
+          });
+        }, this.latency);
+
+        this.latencyTimeouts[timeout] = timeout;
       } else {
         reject(null);
       }
     });
   }
 
-  async doneUncompleted() {
+  async checkUncompleted() {
     await Promise.all(
       this.activeConnections
         .filter(({ uncompleted }) => uncompleted <= 0)
@@ -94,10 +77,10 @@ class Bandwidth {
   }
 
   async tick() {
-    await this.doneUncompleted();
+    await this.checkUncompleted();
 
     if (this.activeConnections.length) {
-      const tickThroughput = (this.throughput / this.activeConnections.length) * (this.accuracy / 1000);
+      const tickThroughput = (this.throughput / this.activeConnections.length) * (this.tickDuration / 1000);
 
       this.activeConnections = this.activeConnections
         .map(({ uncompleted, resolve }) => ({
@@ -106,8 +89,8 @@ class Bandwidth {
         }));
     }
 
-    this.timeout = setTimeout(() => this.tick(), this.accuracy);
+    this.timeout = setTimeout(() => this.tick(), this.tickDuration);
   }
 }
 
-module.exports = Bandwidth;
+module.exports = CacheBandwidth;

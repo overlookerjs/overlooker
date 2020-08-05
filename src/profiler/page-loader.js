@@ -12,7 +12,7 @@ const { ACTION_START, ACTION_END } = require('./../constants.js');
 const { make } = require('./../objects-utils.js');
 const { devices, viewports } = require('./viewports.js');
 
-const setupPageConfig = async (context, page, client, config, pageConfig, bandwidth) => {
+const setupPageConfig = async (context, page, client, config, pageConfig, cacheBandwidth) => {
   const { logger, throttling } = config;
 
   if (config.platform === 'mobile') {
@@ -54,12 +54,12 @@ const setupPageConfig = async (context, page, client, config, pageConfig, bandwi
       return;
     }
 
-    if (bandwidth) {
+    if (cacheBandwidth && config.cache) {
       const postData = interceptedRequest.postData();
       const key = url + postData;
 
-      if (bandwidth.has(key)) {
-        const { headers, ...cachedObject } = await bandwidth.get(key);
+      if (cacheBandwidth.has(key)) {
+        const { headers, ...cachedObject } = await cacheBandwidth.get(key);
 
         if (cachedObject) {
           await interceptedRequest.respond(cachedObject);
@@ -76,20 +76,20 @@ const setupPageConfig = async (context, page, client, config, pageConfig, bandwi
     }
   });
 
-  if (bandwidth && config.proxy) {
+  if (cacheBandwidth && config.cache) {
     page.on('requestfinished', async (interceptedRequest) => {
-      if (config.proxy) {
-        const resourceUrl = interceptedRequest.url();
-        const postData = interceptedRequest.postData();
-        const key = resourceUrl + postData;
+      const resourceUrl = interceptedRequest.url();
+      const postData = interceptedRequest.postData();
+      const key = resourceUrl + postData;
 
-        const cachedObject = bandwidth.has(key);
+      const cachedObject = cacheBandwidth.has(key);
 
-        if (!cachedObject) {
+      if (!cachedObject) {
+        try {
+          const response = interceptedRequest.response();
+
           try {
-            const response = interceptedRequest.response();
-
-            const body = await response.text();
+            const body = !interceptedRequest.redirectChain().length ? await response.buffer() : '';
             const headers = response.headers();
             const status = response.status();
 
@@ -100,10 +100,12 @@ const setupPageConfig = async (context, page, client, config, pageConfig, bandwi
               contentType: headers['content-type']
             };
 
-            bandwidth.set(key, data);
+            cacheBandwidth.set(key, data);
           } catch (e) {
-            await logger(e.stack);
+            debugger;
           }
+        } catch (e) {
+          await logger(e.stack);
         }
       }
     });
@@ -150,7 +152,7 @@ const profileActions = async (page, client, config, pageConfig) => {
   return res;
 };
 
-const loadPage = async (context, config, pageConfig, bandwidth) => {
+const loadPage = async (context, config, pageConfig, cacheBandwidth) => {
   const { url, layers } = pageConfig;
 
   const page = await context.newPage();
@@ -161,7 +163,7 @@ const loadPage = async (context, config, pageConfig, bandwidth) => {
     await client.send('Network.clearBrowserCache');
     await client.send('Network.clearBrowserCookies');
 
-    await setupPageConfig(context, page, client, config, pageConfig, bandwidth);
+    await setupPageConfig(context, page, client, config, pageConfig, cacheBandwidth);
 
     const getWatchingResult = await watch(page, client);
 
@@ -183,6 +185,10 @@ const loadPage = async (context, config, pageConfig, bandwidth) => {
     const actions = await profileActions(page, client, config, pageConfig);
 
     await page.close();
+
+    if (cacheBandwidth) {
+      await cacheBandwidth.reset();
+    }
 
     return {
       ...watchingResult,
