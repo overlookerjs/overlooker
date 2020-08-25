@@ -1,5 +1,8 @@
 const puppeteer = require('puppeteer');
-const {viewports} = require('./viewports.js');
+const path = require('path');
+const { viewports } = require('./viewports.js');
+const constants = require('./constants.js');
+
 
 const getContext = async (config) => {
   const browser = await puppeteer.launch({
@@ -7,10 +10,15 @@ const getContext = async (config) => {
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--ignore-certificate-errors',
-      '--ignore-urlfetcher-cert-requests'
+      '--ignore-urlfetcher-cert-requests',
+      `--user-data-dir=${path.resolve(__dirname, 'browser-cache')}`
     ]
+      .concat(config.cache ? [
+        `--host-resolver-rules="MAP *:80 127.0.0.1:${constants.HTTP_PORT},MAP *:443 127.0.0.1:${constants.HTTPS_PORT},EXCLUDE localhost"`,
+        '--ignore-certificate-errors-spki-list=PhrPvGIaAMmd29hj8BCZOq096yj7uMpRNHpn5PDxI6I='
+      ] : [])
       .concat(config.browserArgs)
-      .concat(config.proxy && config.proxy.address ? `--proxy-server=${config.proxy.address}` : []),
+      .concat(config.proxy ? `--proxy-server=${config.proxy}` : []),
     ignoreHTTPSErrors: true,
     defaultViewport: viewports[config.platform],
     headless: !config.debug,
