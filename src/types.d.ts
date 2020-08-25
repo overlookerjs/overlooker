@@ -326,14 +326,13 @@ declare module "overlooker" {
       network?: 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi'
     },
     cookies?: Cookies,
-    proxy?: {
-      address: string,
-      restart: () => Promise<void>
-    },
+    proxy?: string,
+    cache?: boolean,
     firstEvent?: string,
     count?: number,
     threads?: number,
     logger?: (message: string) => Promise<any>,
+    cacheLogger?: (message: string) => Promise<any>,
     progress?: (progress: number) => Promise<any>,
     checkStatus?: () => Promise<boolean>,
     platform?: 'mobile' | 'desktop',

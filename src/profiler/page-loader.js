@@ -56,63 +56,12 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
         return;
       }
 
-      if (config.proxy && interceptedRequest.method() === 'POST') {
-        const postData = interceptedRequest.postData();
-
-        const cachedObject = cache.get(url + postData);
-
-        if (cachedObject) {
-          setTimeout(async () => {
-            try {
-              await interceptedRequest.respond(cachedObject);
-            } catch (e) {
-              logger(e.stack);
-            }
-          }, 500);
-
-          return;
-        }
-      }
-
       try {
         await interceptedRequest.continue();
       } catch (e) {
         logger(e.stack);
       }
     });
-
-    if (config.proxy) {
-      page.on('requestfinished', async (interceptedRequest) => {
-        if (interceptedRequest.method() === 'POST') {
-          const resourceUrl = interceptedRequest.url();
-          const postData = interceptedRequest.postData();
-          const key = resourceUrl + postData;
-
-          const cachedObject = cache.has(key);
-
-          if (!cachedObject) {
-            try {
-              const response = interceptedRequest.response();
-
-              const body = await response.text();
-              const headers = response.headers();
-              const status = response.status();
-
-              const data = {
-                body,
-                headers,
-                status,
-                contentType: headers['content-type']
-              };
-
-              cache.set(key, data);
-            } catch (e) {
-              await logger(e.stack);
-            }
-          }
-        }
-      });
-    }
   }
 };
 

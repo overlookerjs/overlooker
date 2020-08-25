@@ -4,8 +4,9 @@ const { describePerformance, warming } = require('./pages-fetchers');
 
 const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
-  const { pages, logger, proxy, count } = preparedConfig;
-  const percentCost = 0.99 / (count * pages.length + (proxy ? pages.length : 0));
+  const { pages, logger, count, cache } = preparedConfig;
+  const percentCost = 0.99 / (count * pages.length + (cache ? pages.length : 0));
+  let resetCache;
 
   if (!pages.length) {
     await logger('Nothing to profile');
@@ -15,9 +16,17 @@ const profile = async (config) => {
 
   const buildData = await fetchBuildData(preparedConfig);
 
-  const warmingResult = await warming(preparedConfig, percentCost);
+  if (cache) {
+    resetCache = await warming(preparedConfig, percentCost);
+  }
 
-  return await describePerformance(preparedConfig, percentCost, buildData);
+  const result = await describePerformance(preparedConfig, percentCost, buildData);
+
+  if (cache && resetCache) {
+    await resetCache();
+  }
+
+  return result;
 };
 
 module.exports = {
