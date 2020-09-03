@@ -8,6 +8,7 @@ const content = async (config, buildData) => {
 
   const impactConfig = {
     ...config,
+    cache: false,
     count: 1,
     throttling: null
   };

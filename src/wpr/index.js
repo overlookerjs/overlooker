@@ -11,6 +11,12 @@ const wprPath = path.resolve(__dirname, 'platforms');
 
 const wprFile = '/tmp/archive.wprgo';
 
+const logTypes = {
+  WPR: 'wpr',
+  INFO: 'info',
+  ERROR: 'error'
+};
+
 /**
  * Build WPR instance
  *
@@ -18,7 +24,11 @@ const wprFile = '/tmp/archive.wprgo';
  * @param {number} [httpPort] - port for http cache
  * @param {number} [httpsPort] - port for https cache
  */
-const wpr = (logger = () => {}, httpPort = 8888, httpsPort = 8081) => {
+const wpr = (
+  logger = () => null,
+  httpPort = 8888,
+  httpsPort = 8081
+) => {
   let child;
 
   /**
@@ -33,17 +43,15 @@ const wpr = (logger = () => {}, httpPort = 8888, httpsPort = 8081) => {
       });
 
       // Show WPR output
-      child.stderr.on('data', async (data) => {
-        if (process.env.VERBOSE) {
-          await logger(`wpr: ${data}`.trim());
-        }
+      child.stderr.on('data', (data) => {
+        logger({ type: logTypes.WPR, message: `${data}`.trim() });
       });
 
       // Wait 30 second for wpr start
       await tcpPortUsed.waitUntilUsed(8888, 500, 30000);
-      await logger(`wpr started in ${operation} mode`);
+      await logger({ type: logTypes.INFO, message: `wpr started in ${operation} mode` });
     } catch (err) {
-      throw new Error(err);
+      await logger({ type: logTypes.ERROR, message: err });
     }
   };
 
@@ -53,32 +61,34 @@ const wpr = (logger = () => {}, httpPort = 8888, httpsPort = 8081) => {
   const stop = async () => {
     try {
       if (child !== undefined) {
-        await logger('Child exist - kill him');
+        await logger({ type: logTypes.INFO, message: 'wpr child exist - kill him' });
         child.kill('SIGINT');
       }
     } catch (err) {
-      throw new Error(err);
+      await logger({ type: logTypes.ERROR, message: err });
     }
 
     // Wait 30 second for wpr end
     try {
       await tcpPortUsed.waitUntilFree(8888, 500, 30000);
     } catch (err) {
-      await logger(err);
+      await logger({ type: logTypes.ERROR, message: err });
     }
 
-    await logger('wpr stopped');
+    await logger({ type: logTypes.INFO, message: 'wpr stopped' });
   };
 
   /**
    * delete wpr file
    */
-  const clean = async function () {
+  const clean = async function() {
+    await logger({ type: logTypes.INFO, message: `cleaning wpr archive` });
+
     try {
       await deleteFileAsync(wprFile);
-      await logger(`${wprFile} deleted`);
+      await logger({ type: logTypes.INFO, message: `${wprFile} deleted` });
     } catch (err) {
-      await logger(`${wprFile} not exist`);
+      await logger({ type: logTypes.INFO, message: `${wprFile} not exist` });
     }
   };
 

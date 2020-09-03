@@ -50,9 +50,17 @@ const fetchPages = async ({
     })
   }), {});
 
-  const data = await parallelizeObject(functions, wrappedBrowsers, 5000, async (e) => {
-    await logger(`error while fetching: ${e.stack}`);
-  });
+  let data = null;
+
+  try {
+    const { promise } = parallelizeObject(functions, wrappedBrowsers, async (e) => {
+      await logger(`error while fetching: ${e.stack}`);
+    });
+
+    data = await promise;
+  } catch (e) {
+    await logger(e.stack);
+  }
 
   await browsers.close(openedBrowsers);
 

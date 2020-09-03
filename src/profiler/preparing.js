@@ -39,7 +39,7 @@ const prepareConfig = ({
   threads: 1,
   platform: 'desktop',
   browserArgs: [],
-  firstEvent: 'responseEnd',
+  firstEvent: 'responseStart',
   buildData: {},
   throttling: {
     network: 'Good3G',
