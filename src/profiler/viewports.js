@@ -1,6 +1,6 @@
-const devices = require('puppeteer/DeviceDescriptors');
+const puppeteer = require('puppeteer');
 
-const pixel2 = devices['Pixel 2'];
+const pixel2 = puppeteer.devices['Pixel 2'];
 
 module.exports = {
   devices: {

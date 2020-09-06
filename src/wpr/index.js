@@ -48,7 +48,7 @@ const wpr = (
       });
 
       // Wait 30 second for wpr start
-      await tcpPortUsed.waitUntilUsed(8888, 500, 30000);
+      await tcpPortUsed.waitUntilUsed(httpPort, 500, 30000);
       await logger({ type: logTypes.INFO, message: `wpr started in ${operation} mode` });
     } catch (err) {
       await logger({ type: logTypes.ERROR, message: err });
@@ -70,7 +70,7 @@ const wpr = (
 
     // Wait 30 second for wpr end
     try {
-      await tcpPortUsed.waitUntilFree(8888, 500, 30000);
+      await tcpPortUsed.waitUntilFree(httpPort, 500, 30000);
     } catch (err) {
       await logger({ type: logTypes.ERROR, message: err });
     }

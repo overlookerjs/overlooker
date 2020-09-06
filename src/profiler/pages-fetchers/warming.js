@@ -3,12 +3,12 @@ const wpr = require('./../../wpr');
 const constants = require('./../constants.js');
 
 const warming = async (config, percentCost) => {
-  const { checkStatus, logger, cacheLogger } = config;
+  const { checkStatus, logger, cacheLogger, threads } = config;
 
-  const wprInstance = wpr(cacheLogger, constants.HTTP_PORT, constants.HTTPS_PORT);
+  const mainWprInstance = wpr(cacheLogger, constants.HTTP_PORT, constants.HTTPS_PORT);
 
-  await wprInstance.clean();
-  await wprInstance.start('record');
+  await mainWprInstance.clean();
+  await mainWprInstance.start('record');
 
   await logger(`wpr in record mode`);
 
@@ -18,19 +18,39 @@ const warming = async (config, percentCost) => {
     throttling: null
   };
 
+  let wrpInstances = [];
+
   try {
     await logger('start cache warming');
 
     await fetchPages({
       config: warmingConfig,
       percentCost,
-      checkStatus
+      checkStatus,
+      onePort: true
     });
 
     await logger(`warming done!`);
 
-    await wprInstance.stop();
-    await wprInstance.start('replay');
+    await mainWprInstance.stop();
+
+    let httpPort = constants.HTTP_PORT;
+    let httpsPort = constants.HTTPS_PORT;
+
+    wrpInstances = await Promise.all(Array(threads)
+      .fill(null)
+      .map(async () => {
+        httpPort = httpPort + 1;
+        httpsPort = httpsPort + 1;
+
+        const wprInstanceByPort = wpr(cacheLogger, httpPort, httpsPort);
+
+        await logger(`create wpr on 80:${httpPort}, 443:${httpsPort} ports`);
+
+        await wprInstanceByPort.start('replay');
+
+        return wprInstanceByPort;
+      }));
 
     await logger(`wpr in replay mode`);
   } catch (e) {
@@ -38,8 +58,11 @@ const warming = async (config, percentCost) => {
   }
 
   return async () => {
-    await wprInstance.stop();
-    await wprInstance.clean();
+    await Promise.all(wrpInstances.map(async (wrpInstance) => {
+      await wrpInstance.stop();
+    }));
+
+    await mainWprInstance.clean();
   }
 };
 

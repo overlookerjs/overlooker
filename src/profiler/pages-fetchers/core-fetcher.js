@@ -6,12 +6,13 @@ const fetchPages = async ({
                             config,
                             percentCost,
                             prepare = (data) => data,
-                            checkStatus = async () => true
+                            checkStatus = async () => true,
+                            onePort
                           }) => {
   const { count, logger, progress, pages } = config;
   let isStopped = false;
 
-  const openedBrowsers = await browsers.open(config);
+  const openedBrowsers = await browsers.open(config, onePort);
   const wrappedBrowsers = browsers.wrap(openedBrowsers);
 
   const functions = pages.reduce((acc, page) => ({

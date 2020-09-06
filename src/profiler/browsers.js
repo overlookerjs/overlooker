@@ -3,18 +3,19 @@ const path = require('path');
 const { viewports } = require('./viewports.js');
 const constants = require('./constants.js');
 
+const getContext = async (config, index, httpPort, httpsPort) => {
+  const usrDir = path.resolve(__dirname, `browser-cache/instance-${index}`);
 
-const getContext = async (config) => {
   const browser = await puppeteer.launch({
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--ignore-certificate-errors',
       '--ignore-urlfetcher-cert-requests',
-      `--user-data-dir=${path.resolve(__dirname, 'browser-cache')}`
+      `--user-data-dir=${usrDir}`
     ]
       .concat(config.cache ? [
-        `--host-resolver-rules="MAP *:80 127.0.0.1:${constants.HTTP_PORT},MAP *:443 127.0.0.1:${constants.HTTPS_PORT},EXCLUDE localhost"`,
+        `--host-resolver-rules="MAP *:80 127.0.0.1:${httpPort},MAP *:443 127.0.0.1:${httpsPort},EXCLUDE localhost"`,
         '--ignore-certificate-errors-spki-list=PhrPvGIaAMmd29hj8BCZOq096yj7uMpRNHpn5PDxI6I='
       ] : [])
       .concat(config.browserArgs)
@@ -36,13 +37,23 @@ const getContext = async (config) => {
   };
 };
 
-const open = async (config) => {
+const open = async (config, onePort) => {
   const { threads, logger } = config;
+
+  let httpPort = constants.HTTP_PORT;
+  let httpsPort = constants.HTTPS_PORT;
 
   try {
     await logger(`opening browsers`);
 
-    const browsers = await Promise.all(Array(threads).fill(null).map(() => getContext(config)));
+    const browsers = await Promise.all(Array(threads).fill(null).map(async (n, index) => {
+      if (!onePort) {
+        httpPort = httpPort + 1;
+        httpsPort = httpsPort + 1;
+      }
+
+      return await getContext(config, index, httpPort, httpsPort);
+    }));
 
     await logger('browsers are open');
 
