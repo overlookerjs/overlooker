@@ -14,7 +14,7 @@ const warming = async (config, percentCost) => {
 
   const warmingConfig = {
     ...config,
-    count: 1,
+    count: 2,
     throttling: null,
     threads: 1
   };
