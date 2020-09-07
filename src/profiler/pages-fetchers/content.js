@@ -48,7 +48,7 @@ const content = async (config, buildData) => {
       })
     );
   } catch (e) {
-    await logger(`cannot analyse impact!\n${e.stack}`);
+    await logger(`cannot collect content!\n${e.stack}`);
 
     return null;
   }

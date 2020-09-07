@@ -17,21 +17,27 @@ const impactAnalysis = async (previousDescriptions, config, elementsFilter) => {
 
   await logger('start impact analysis');
 
-  const buildData = await fetchBuildData(preparedConfig);
+  try {
+    const buildData = await fetchBuildData(preparedConfig);
 
-  const profiles = await content(preparedConfig, buildData);
+    const profiles = await content(preparedConfig, buildData);
 
-  const descriptions = describePages(profiles, preparedConfig, elementsFilter);
+    const descriptions = describePages(profiles, preparedConfig, elementsFilter);
 
-  const difference = previousDescriptions && compareDescriptions(previousDescriptions, descriptions);
+    const difference = previousDescriptions && compareDescriptions(previousDescriptions, descriptions);
 
-  await logger(`impact analysis done!`);
+    await logger(`impact analysis done!`);
 
-  return {
-    difference,
-    descriptions,
-    pages: difference ? getImpactedPages(difference) : pages.map(({ name }) => name)
-  };
+    return {
+      difference,
+      descriptions,
+      pages: difference ? getImpactedPages(difference) : pages.map(({ name }) => name)
+    };
+  } catch (e) {
+    await logger(`cannot collect impact data: ${e.stack}`);
+
+    return null;
+  }
 };
 
 module.exports = {

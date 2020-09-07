@@ -19,6 +19,8 @@ const describePerformance = async (config, percentCost, buildData) => {
   } catch (e) {
     await logger(`cannot fetch pages!\n${e.stack}`);
   }
+
+  return null;
 };
 
 module.exports = describePerformance;
