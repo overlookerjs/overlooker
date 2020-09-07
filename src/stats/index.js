@@ -23,7 +23,7 @@ const {
 const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings, layersPaints }, config) => {
   const { requests: { internalTest }, firstEvent: firstEventName, customMetrics, platform } = config;
 
-  const firstEvent = getEventInMainFrame(tracing, firstEventName);
+  const firstEvent = getEventInMainFrame(tracing, firstEventName) || getEventInMainFrame(tracing, 'responseEnd');
   const navigationStart = getEventInMainFrame(tracing, 'navigationStart');
   const navigationStartDelta = navigationStart.ts - firstEvent.ts;
 
