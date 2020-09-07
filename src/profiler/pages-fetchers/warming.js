@@ -15,7 +15,8 @@ const warming = async (config, percentCost) => {
   const warmingConfig = {
     ...config,
     count: 1,
-    throttling: null
+    throttling: null,
+    threads: 1
   };
 
   let wrpInstances = [];

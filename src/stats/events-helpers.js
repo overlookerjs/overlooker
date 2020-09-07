@@ -1,4 +1,4 @@
-const { map } = require('./../objects-utils.js');
+const { map, filter } = require('./../objects-utils.js');
 
 const getLastEvent = (events, name, condition = () => true) => {
   for (let index = events.length - 1; index--;) {
@@ -17,7 +17,7 @@ const getEventsTimestamps = (events, names) => filterEventsByName(events, names)
     return acc;
   }, {});
 
-const getTimestamps = (eventsMap) => map(eventsMap, ({ ts }) => ts);
+const getTimestamps = (eventsMap) => map(filter(eventsMap, (event) => event), ({ ts }) => ts);
 
 const makeEventsRelative = (events, relativeEvent) => events.map((event) => ({
   ...event,
