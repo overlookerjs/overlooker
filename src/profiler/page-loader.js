@@ -11,6 +11,7 @@ const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
 const { make } = require('./../objects-utils.js');
 const { devices, viewports } = require('./viewports.js');
+const { RequestsTracker } = require('./requests-tracker.js');
 
 const setupPageConfig = async (context, page, client, config, pageConfig) => {
   const { logger, throttling } = config;
@@ -122,7 +123,18 @@ const loadPage = async (context, config, pageConfig) => {
     await injectLongTasksObserver(page);
     await injectElementTimingObserver(page);
 
-    await page.goto(url, { timeout: 60000, waitUntil: ["load", "networkidle2"] });
+    const tracker = new RequestsTracker();
+    tracker.init(page);
+
+    await page.goto(url, { timeout: 60000, waitUntil: ['load', 'networkidle2'] }).catch((e) => {
+      const { failed, inflight } = tracker.getRequests();
+
+      tracker.dispose(page);
+
+      throw new Error(`${e.message}\n\nInflight requests:\n${inflight.join('\n')}\n\nFailed requests:\n${failed.join('\n')}`);
+    });
+
+    tracker.dispose(page);
 
     const watchingResult = await getWatchingResult();
     const timeToInteractive = await getTti(page, config.logger, config.firstEvent);
