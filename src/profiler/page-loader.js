@@ -1,5 +1,4 @@
 const networkPresets = require('../network-presets.js');
-const cache = require('./cache.js');
 const {
   injectElementTimingObserver,
   getElementsTimings,

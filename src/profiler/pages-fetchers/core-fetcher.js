@@ -43,7 +43,7 @@ const fetchPages = async ({
 
         return await prepare(data);
       } catch (error) {
-        await logger(`fetch failed: ${error.stack}`);
+        await logger(`fetch failed: ${page.url} ${error.stack}`);
         await logger(`try to retry: ${page.url}`);
 
         throw error;

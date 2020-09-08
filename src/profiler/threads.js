@@ -49,6 +49,8 @@ const parallelizeArray = (functionsArray, threads, onError, restartTime = 5000, 
 
         if (completedCount === functionsArray.length) {
           resolve(completed);
+        } else if (isStopped) {
+          resolve();
         }
       } catch (e) {
         reject(e);

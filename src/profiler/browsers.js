@@ -12,7 +12,8 @@ const getContext = async (config, index, httpPort, httpsPort) => {
       '--disable-setuid-sandbox',
       '--ignore-certificate-errors',
       '--ignore-urlfetcher-cert-requests',
-      `--user-data-dir=${usrDir}`
+      `--user-data-dir=${usrDir}`,
+      '--no-zygote'
     ]
       .concat(config.cache ? [
         `--host-resolver-rules="MAP *:80 127.0.0.1:${httpPort},MAP *:443 127.0.0.1:${httpsPort},EXCLUDE localhost"`,
