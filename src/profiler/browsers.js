@@ -5,6 +5,8 @@ const constants = require('./constants.js');
 
 const getContext = async (config, index, httpPort, httpsPort) => {
   const usrDir = path.resolve(__dirname, `browser-cache/instance-${index}`);
+  const isProxyCache = config.cache && config.cache.type === 'proxy' && config.proxy.host;
+  const isWprCache = config.cache && config.cache.type === 'wpr';
 
   const browser = await puppeteer.launch({
     args: [
@@ -15,12 +17,12 @@ const getContext = async (config, index, httpPort, httpsPort) => {
       `--user-data-dir=${usrDir}`,
       '--no-zygote'
     ]
-      .concat(config.cache ? [
+      .concat(isWprCache ? [
         `--host-resolver-rules="MAP *:80 127.0.0.1:${httpPort},MAP *:443 127.0.0.1:${httpsPort},EXCLUDE localhost"`,
         '--ignore-certificate-errors-spki-list=PhrPvGIaAMmd29hj8BCZOq096yj7uMpRNHpn5PDxI6I='
       ] : [])
-      .concat(config.browserArgs)
-      .concat(config.proxy ? `--proxy-server=${config.proxy}` : []),
+      .concat(isProxyCache ? `--proxy-server=${config.cache.host}` : [])
+      .concat(config.browserArgs),
     ignoreHTTPSErrors: true,
     defaultViewport: viewports[config.platform],
     headless: !config.debug,

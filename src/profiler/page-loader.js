@@ -12,6 +12,7 @@ const { ACTION_START, ACTION_END } = require('./../constants.js');
 const { make } = require('./../objects-utils.js');
 const { devices, viewports } = require('./viewports.js');
 const { RequestsTracker } = require('./requests-tracker.js');
+const cache = require('./cache.js');
 
 const setupPageConfig = async (context, page, client, config, pageConfig) => {
   const { logger, throttling } = config;
@@ -42,24 +43,75 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
     }
   }
 
-  if (config.requests) {
-    page.on('request', async (interceptedRequest) => {
-      const url = interceptedRequest.url();
+  const isProxyCache = config.cache && config.cache.type === 'proxy';
 
-      if (config.requests.ignore && config.requests.ignore(url)) {
-        try {
-          await interceptedRequest.abort();
-        } catch (e) {
-          logger(e.stack);
-        }
+  page.on('request', async (interceptedRequest) => {
+    const url = interceptedRequest.url();
+
+    if (config.requests && config.requests.ignore && config.requests.ignore(url)) {
+      try {
+        await interceptedRequest.abort();
+      } catch (e) {
+        logger(e.stack);
+      }
+
+      return;
+    }
+
+    if (isProxyCache && interceptedRequest.method() === 'POST') {
+      const postData = interceptedRequest.postData();
+
+      const cachedObject = cache.get(url + postData);
+
+      if (cachedObject) {
+        setTimeout(async () => {
+          try {
+            await interceptedRequest.respond(cachedObject);
+          } catch (e) {
+            logger(e.stack);
+          }
+        }, 500);
 
         return;
       }
+    }
 
-      try {
-        await interceptedRequest.continue();
-      } catch (e) {
-        logger(e.stack);
+    try {
+      await interceptedRequest.continue();
+    } catch (e) {
+      logger(e.stack);
+    }
+  });
+
+  if (isProxyCache) {
+    page.on('requestfinished', async (interceptedRequest) => {
+      if (interceptedRequest.method() === 'POST') {
+        const resourceUrl = interceptedRequest.url();
+        const postData = interceptedRequest.postData();
+        const key = resourceUrl + postData;
+
+        const cachedObject = cache.has(key);
+
+        if (!cachedObject) {
+          try {
+            const response = interceptedRequest.response();
+
+            const body = await response.text();
+            const headers = response.headers();
+            const status = response.status();
+
+            const data = {
+              body,
+              headers,
+              status,
+              contentType: headers['content-type']
+            };
+
+            cache.set(key, data);
+          } catch (e) {
+            await logger(e.stack);
+          }
+        }
       }
     });
   }
