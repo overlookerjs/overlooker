@@ -69,7 +69,7 @@ const warmingWpr = async (config, percentCost) => {
 };
 
 const warmingProxy = async (config, percentCost) => {
-  const { checkStatus, logger, cache: {restart} } = config;
+  const { checkStatus, logger, cache: { restart } } = config;
 
   const warmingConfig = {
     ...config,

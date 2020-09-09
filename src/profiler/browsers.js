@@ -5,7 +5,7 @@ const constants = require('./constants.js');
 
 const getContext = async (config, index, httpPort, httpsPort) => {
   const usrDir = path.resolve(__dirname, `browser-cache/instance-${index}`);
-  const isProxyCache = config.cache && config.cache.type === 'proxy' && config.proxy.host;
+  const isProxyCache = config.cache && config.cache.type === 'proxy' && config.cache.host;
   const isWprCache = config.cache && config.cache.type === 'wpr';
 
   const browser = await puppeteer.launch({
