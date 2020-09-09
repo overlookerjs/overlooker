@@ -38,7 +38,7 @@ const wpr = (
    */
   const start = async (operation = 'replay') => {
     try {
-      child = spawn(`${wprPath}/${platform}/wpr`, [operation, `--http_port=${httpPort}`, `--https_port=${httpsPort}`, wprFile], {
+      child = spawn(`${wprPath}/wpr`, [operation, `--http_port=${httpPort}`, `--https_port=${httpsPort}`, wprFile], {
         cwd: wprPath
       });
 
