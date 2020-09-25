@@ -96,14 +96,16 @@ const parallelizeObject = (functionsObject, threads, restartTime, retryAttempts,
   return {
     stop,
     promise: promise
-      .then((completed) => completed
-        .reduce((acc, result, globalIndex) => {
-          const { key, index } = map[globalIndex];
+      .then((completed) => completed ? (
+        completed
+          .reduce((acc, result, globalIndex) => {
+            const { key, index } = map[globalIndex];
 
-          acc[key][index] = result;
+            acc[key][index] = result;
 
-          return acc;
-        }, objectPlaceholder))
+            return acc;
+          }, objectPlaceholder)
+      ) : null)
   }
 };
 

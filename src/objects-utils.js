@@ -149,7 +149,7 @@ const raiseFields = (obj, symbols) => Object.entries(obj)
   }, {});
 
 const getByPath = (obj, path) => (Array.isArray(path) ? path : path.split('.'))
-  .reduce((acc, key) => acc[key], obj);
+  .reduce((acc, key) => acc && acc[key] ? acc[key] : null, obj);
 
 const makePath = (obj, path, value) => {
   (Array.isArray(path) ? path : path.split('.'))
