@@ -1,7 +1,10 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const path = require('path');
 const { viewports } = require('./viewports.js');
 const constants = require('./constants.js');
+
+puppeteer.use(StealthPlugin());
 
 const getContext = async (config, index, httpPort, httpsPort) => {
   const usrDir = path.resolve(__dirname, `browser-cache/instance-${index}`);

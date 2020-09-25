@@ -1,5 +1,5 @@
 const { flat } = require('./../utils.js');
-const { make } = require('./../objects-utils.js');
+const { make, toArray } = require('./../objects-utils.js');
 
 const statuses = {
   WARNING: 'warning',
@@ -11,61 +11,86 @@ const statuses = {
 };
 
 const checkValue = (value, threshold) => {
-  if (value > threshold) {
-    return statuses.WORSENING;
-  } else if (value > threshold / 2) {
-    return statuses.PARTIAL_WORSENING;
-  } else if (value < -threshold) {
-    return statuses.IMPROVEMENT;
-  } else if (value < -threshold / 2) {
-    return statuses.PARTIAL_IMPROVEMENT;
+  if (threshold > 0) {
+    if (value > threshold) {
+      return statuses.WORSENING;
+    } else if (value > threshold / 2) {
+      return statuses.PARTIAL_WORSENING;
+    } else if (value < -threshold) {
+      return statuses.IMPROVEMENT;
+    } else if (value < -threshold / 2) {
+      return statuses.PARTIAL_IMPROVEMENT;
+    } else {
+      return statuses.WITHOUT_CHANGES;
+    }
   } else {
-    return statuses.WITHOUT_CHANGES;
+    if (value < threshold) {
+      return statuses.WORSENING;
+    } else if (value < threshold / 2) {
+      return statuses.PARTIAL_WORSENING;
+    } else if (value > -threshold) {
+      return statuses.IMPROVEMENT;
+    } else if (value > -threshold / 2) {
+      return statuses.PARTIAL_IMPROVEMENT;
+    } else {
+      return statuses.WITHOUT_CHANGES;
+    }
   }
 };
 
-const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
 
-const check = (comparison, thresholds) => Object.entries(thresholds)
-  .map(([path, threshold]) => {
-    const splitPath = path.split('.');
-    let value = comparison;
+const makeRegExpFromThreshold = (thresholdPath) => {
+  const splitPath = thresholdPath.split('.');
+  const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
 
-    for (let index = 0; index < splitPath.length; index++) {
-      const key = splitPath[index];
-      if (bunchRegExp.test(key)) {
-        const entries = key.match(bunchRegExp)[1].split(/[\n\s]*,[\n\s]*/);
+  return new RegExp('^' +
+    splitPath
+      .map((key) => {
+        if (key === '*') {
+          return '[^.]*?';
+        } else if (key === '**') {
+          return '.*?';
+        } else if (bunchRegExp.test(key)) {
+          return '(' + key
+              .match(bunchRegExp)[1]
+              .split(/[\n\s]*,[\n\s]*/)
+              .join('|')
+            + ')'
+        } else {
+          return key;
+        }
+      })
+      .join('\\.')
+    + '$'
+  )
+};
 
-        return check(
-          comparison,
-          entries.map((entry) => {
-            const replacedPath = splitPath.slice();
-            replacedPath.splice(index, 1, entry);
+const check = (comparison, thresholds) => {
+  const comparisonsArray = toArray(comparison);
 
-            return [replacedPath, threshold];
-          })
-        );
-      } else {
-        value = value[key];
-      }
-    }
+  return flat(Object.entries(thresholds)
+    .map(([thresholdPath, threshold]) => {
+      const regExp = makeRegExpFromThreshold(thresholdPath);
+      const matchedPaths = comparisonsArray.filter(([path]) => regExp.test(path));
 
-    return {
-      path,
-      splitPath,
-      threshold,
-      value,
-      difference: value - threshold,
-      status: checkValue(value, threshold)
-    };
-  });
+      return matchedPaths.map(([comparisonPath, value]) => ({
+        path: comparisonPath,
+        splitPath: comparisonPath.split('.'),
+        threshold,
+        value,
+        difference: value - threshold,
+        status: checkValue(value, threshold)
+      }));
+    })
+    .filter(Boolean));
+};
 
 const checkPages = (comparisons, thresholdsByPage) => {
   const results = make(
     Object.entries(comparisons)
       .map(([page, comparison]) => [
         page,
-        flat(check(comparison, thresholdsByPage[page] || thresholdsByPage['default'] || {}))
+        check(comparison, thresholdsByPage[page] || thresholdsByPage['default'] || {})
           .filter(Boolean)
       ])
       .map(([page, results]) => [page, {
