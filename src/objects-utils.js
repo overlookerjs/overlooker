@@ -151,6 +151,39 @@ const raiseFields = (obj, symbols) => Object.entries(obj)
 const getByPath = (obj, path) => (Array.isArray(path) ? path : path.split('.'))
   .reduce((acc, key) => acc && acc[key] ? acc[key] : null, obj);
 
+const pathPatternToRegExp = (thresholdPath) => {
+  const splitPath = thresholdPath.split('.');
+  const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
+
+  return new RegExp('^' +
+    splitPath
+      .map((key) => {
+        if (key === '*') {
+          return '[^.]*?';
+        } else if (key === '**') {
+          return '.*?';
+        } else if (bunchRegExp.test(key)) {
+          return '(' + key
+              .match(bunchRegExp)[1]
+              .split(/[\n\s]*,[\n\s]*/)
+              .join('|')
+            + ')'
+        } else {
+          return key;
+        }
+      })
+      .join('\\.')
+    + '$'
+  )
+};
+
+const getByPathPattern = (obj, pattern) => {
+  const comparisonsArray = Array.isArray(obj) ? obj : toArray(obj);
+  const regExp = pathPatternToRegExp(pattern);
+
+  return comparisonsArray.filter(([path]) => regExp.test(path));
+};
+
 const makePath = (obj, path, value) => {
   (Array.isArray(path) ? path : path.split('.'))
     .reduce((acc, key, index, arr) => {
@@ -192,6 +225,8 @@ module.exports = {
   raiseFields,
   addPrefix,
   getByPath,
+  pathPatternToRegExp,
+  getByPathPattern,
   toArray,
   expandFlat,
   makePath,

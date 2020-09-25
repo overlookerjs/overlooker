@@ -1,5 +1,5 @@
 const { flat } = require('./../utils.js');
-const { make, toArray } = require('./../objects-utils.js');
+const { make, toArray, pathPatternToRegExp } = require('./../objects-utils.js');
 
 const statuses = {
   WARNING: 'warning',
@@ -38,39 +38,12 @@ const checkValue = (value, threshold) => {
   }
 };
 
-
-const makeRegExpFromThreshold = (thresholdPath) => {
-  const splitPath = thresholdPath.split('.');
-  const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
-
-  return new RegExp('^' +
-    splitPath
-      .map((key) => {
-        if (key === '*') {
-          return '[^.]*?';
-        } else if (key === '**') {
-          return '.*?';
-        } else if (bunchRegExp.test(key)) {
-          return '(' + key
-              .match(bunchRegExp)[1]
-              .split(/[\n\s]*,[\n\s]*/)
-              .join('|')
-            + ')'
-        } else {
-          return key;
-        }
-      })
-      .join('\\.')
-    + '$'
-  )
-};
-
 const check = (comparison, thresholds) => {
   const comparisonsArray = toArray(comparison);
 
   return flat(Object.entries(thresholds)
     .map(([thresholdPath, threshold]) => {
-      const regExp = makeRegExpFromThreshold(thresholdPath);
+      const regExp = pathPatternToRegExp(thresholdPath);
       const matchedPaths = comparisonsArray.filter(([path]) => regExp.test(path));
 
       return matchedPaths.map(([comparisonPath, value]) => ({
