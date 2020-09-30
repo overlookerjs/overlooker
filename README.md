@@ -25,7 +25,7 @@ This code should link your favorite database and profiling process with several 
 You can raise a separate server for profiling or organize an API for sending requests
 for profiling.
 
-### Configuration ([types](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L321))
+### Configuration [(types)](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L321)
 First, let's figure out how to start profiling.
 ```js
 const config = {
@@ -79,7 +79,7 @@ const config = {
 };
 ```
 
-Most of the parameters are optional and the minimum config can be as follows:
+Most of the parameters are optional and the brief config can be as follows:
 ```js
 const config = {
   host: 'https://example.com',
@@ -114,7 +114,7 @@ performance.mark('some-metric');
 
 These metrics will be collected during profiling and presented in the resulting json.
 
-### Profiling ([types](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L2))
+### Profiling [(types)](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L2)
 Profiling can be organized in a simple way.
 ```js
   const { profile } = require('overlooker');
@@ -129,7 +129,7 @@ Profiling can be organized in a simple way.
 As a result, you will receive data about the performance of your pages in json format.
 I recommend saving the data to your favorite database or directly to the file system (do not forget about rotation) with the identifier of the measured revision.
 
-### Impact Analysis ([types](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L415))
+### Impact Analysis [(types)](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L415)
 To reduce the cost of profiling and speed it up, I recommend using the impact analyzer on the page.
 To use it, you need the [previous impact analysis data](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L406).
 ```js
@@ -150,7 +150,7 @@ As a result of executing this code, you will get a configuration with pages that
 Impact analysis data is best saved in a database too.
 
 
-### Comparison ([types](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L224))
+### Comparison [(types)](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L224)
 After profiling is over, you can use it to compare against a profile with an earlier revision.
 or the revision profile from where your branch you are testing was forked from.
 ```js
@@ -165,7 +165,7 @@ As a result of the comparison, you will get the full difference for all metrics,
 requests, modules in chunks (if you used bundle-internals-plugin) and this data can already be used for analysis
 how much the performance has changed from some edits.
 
-### Comparison checking ([types](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L283))
+### Comparison checking [(types)](https://github.com/overlookerjs/overlooker/blob/master/src/types.d.ts#L283)
 There is also a separate method to check the comparison results. But in the beginning it is worth considering the formation of threshholds.
 For them are used special patterns. That will allow you to set up the deviation limits that you need.
 Example of thresholds:
