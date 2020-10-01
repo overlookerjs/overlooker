@@ -23,7 +23,7 @@ that will limit the degradation of performance on your project and help you trac
   * [Profiling](#profiling-types)
   * [Impact Analysis](#impact-analysis-types)
   * [Comparison](#comparison-types)
-  * [Comparison checking](#comparison-checking-types)
+  * [Analyzing the comparison results](#analyzing-the-comparison-results-types)
 * [Tool for getting build data](#tool-for-getting-build-data)
   
 ## Installation
