@@ -14,7 +14,7 @@ analyze the content of resources on your pages, and much more..
 In addition, you can use the received data to compare them with previous profiles, 
 while receiving a report on what has changed on your pages.
 
-As a tool for performance tests, there is an opportunity to set threshholds 
+As a tool for performance tests, there is an opportunity to set thresholds 
 that will limit the degradation of performance on your project and help you track what exactly led to them.
 
 * [Installation](#installation)
