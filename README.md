@@ -183,10 +183,11 @@ Example of thresholds:
 const thresholds = {
   default: { // default thresholds (will be used for all pages)
     'percent.stats.userCentric.timeToInteractive.median': 0.05, // path for value in comparison object and limit for deviation
-    'percent.stats.elementsTimings.**.median': 0.05
+    'percent.stats.elementsTimings.**.median': 0.05 // path with ** covers all nested paths up to keys after this point
   },
   main: { // threshold for one page, which name is 'main' in profile configuration
-    'percent.stats.custom.timings.some-timing.median': 0.1
+    'percent.stats.custom.timings.*.median': 0.1, // path with * symbol covers all keys on this level
+    'percent.stats.custom.userCentric.{timeToInteractive, speedIndex}.median': 0.1 // path with {} symbol covers all included keys on this level
   }
 }
 ```

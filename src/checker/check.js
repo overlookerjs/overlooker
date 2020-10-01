@@ -41,7 +41,7 @@ const checkValue = (value, threshold) => {
 const check = (comparison, thresholds) => {
   const comparisonsArray = toArray(comparison);
 
-  return flat(Object.entries(thresholds)
+  return flat(Object.entries(thresholds) // ToDo: it should be more simple
     .map(([thresholdPath, threshold]) => {
       const regExp = pathPatternToRegExp(thresholdPath);
       const matchedPaths = comparisonsArray.filter(([path]) => regExp.test(path));
