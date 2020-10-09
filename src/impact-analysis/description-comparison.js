@@ -21,7 +21,7 @@ const getDifference = (previousDescription, currentDescription) => {
       .filter(({ hash }) => sameElements
         .some((element) => element.hash === hash)
       )
-      .filter(({ hash }, index) => sameElements[index].hash !== hash);
+      .filter(({ hash }, index) => !sameElements[index] || sameElements[index].hash !== hash);
 
     const difference = {
       same: sameElements,

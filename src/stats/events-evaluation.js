@@ -92,7 +92,7 @@ const castEventToPayload = (name, events) => {
     case 'fireIdleCallback':
       return events
         .map(({ event, children }) => extractPayloadFromEvent(
-          'timer',
+          'timer', // ToDo: should be more understandable
           event,
           children.find(({ event: { name } }) => name === 'FunctionCall')
         ));
