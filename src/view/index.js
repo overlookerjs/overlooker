@@ -1,4 +1,4 @@
-const { deepMap, flat, map, raiseFields, toArray } = require('./../objects-utils.js');
+const { deepMap, flat, map, raiseFields, toArray } = require('../objects-utils.js');
 
 const truncateAggregation = (data, aggregateName, mapper = (value) => value) => (
   data.hasOwnProperty(aggregateName) ? (
@@ -127,7 +127,7 @@ const makeRequestReadable = (request) => {
   } = request;
 
   return {
-    stats: makeRequesStatsReadable(stats),
+    stats: makeRequestStatsReadable(stats),
     ...rest
   };
 };

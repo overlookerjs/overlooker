@@ -32,7 +32,7 @@ module.exports = {
     name: 'category',
     url: '/'
   }],
-  count: 5,
+  count: 1,
   throttling: {
     cpu: 1,
     network: 'WiFi'

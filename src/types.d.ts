@@ -327,7 +327,7 @@ declare module "overlooker" {
     },
     cookies?: Cookies,
     cache?: {
-      type: 'wpr',
+      type: 'wpr' | 'mitmdump',
       logger?: (message: string) => Promise<any>
     } | {
       type: 'proxy',
