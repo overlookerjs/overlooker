@@ -24,6 +24,7 @@ class RequestsTracker {
   }
 
   onFailed(request) {
+    this.requests.delete(request);
     this.fails.add(request);
   }
 

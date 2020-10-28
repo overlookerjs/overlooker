@@ -17,6 +17,12 @@ const thresholds = {
 
 jest.setTimeout(150000);
 
+const hasProfile = (profile) => {
+  expect(profile).toBeTruthy();
+  expect(profile.main).toBeTruthy();
+  expect(profile.category).toBeTruthy();
+};
+
 describe('main integration tests', () => {
   let server;
   let data1;
@@ -38,6 +44,21 @@ describe('main integration tests', () => {
   test('profile', async () => {
     data1 = await profile(config);
     data2 = await profile(config);
+
+    hasProfile(data1);
+    hasProfile(data2);
+  });
+
+  test('cache wpr', async () => {
+    const cacheData = await profile({ ...config, count: 1, cache: { type: 'wpr' } });
+
+   hasProfile(cacheData);
+  });
+
+  test('cache mitmdump', async () => {
+    const cacheData = await profile({ ...config, count: 1, cache: { type: 'mitmdump' } });
+
+    hasProfile(cacheData);
   });
 
   describe('audits tests', () => {

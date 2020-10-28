@@ -1,70 +1,78 @@
+const fs = require('fs');
 const { fetchPages } = require('./core-fetcher.js');
-const wpr = require('./../../wpr');
+const { cacheProxy } = require('../../cache-proxy');
+const { resolveExternalResource } = require('./../../utils.js');
 const constants = require('./../constants.js');
 const cache = require('../cache.js');
 
-const warmingWpr = async (config, percentCost) => {
-  const { checkStatus, logger, cacheLogger, threads } = config;
+const warmingCacheProxy = async (config, percentCost) => {
+  const { checkStatus, logger, threads, cache: { type, data, logger: cacheLogger } } = config;
+  const isMitmdump = type === 'mitmdump';
+  const mainCacheProxyInstance = cacheProxy(type, cacheLogger, constants.HTTP_PORT, isMitmdump ? constants.HTTP_PORT : constants.HTTPS_PORT);
 
-  const mainWprInstance = wpr(cacheLogger, constants.HTTP_PORT, constants.HTTPS_PORT);
-
-  await mainWprInstance.clean();
-  await mainWprInstance.start('record');
-
-  await logger(`wpr in record mode`);
-
-  const warmingConfig = {
-    ...config,
-    count: 2,
-    throttling: null,
-    threads: 1
-  };
-
-  let wrpInstances = [];
+  let cacheProxyInstances = [];
 
   try {
-    await logger('start cache warming');
+    if (!data) {
+      const warmingConfig = {
+        ...config,
+        count: 2,
+        throttling: null,
+        threads: 1
+      };
 
-    await fetchPages({
-      config: warmingConfig,
-      percentCost,
-      checkStatus,
-      onePort: true
-    });
+      await logger('start cache warming');
 
-    await logger(`warming done!`);
+      await mainCacheProxyInstance.clean();
+      await mainCacheProxyInstance.start('record');
 
-    await mainWprInstance.stop();
+      await logger(`cache proxy in record mode`);
+
+      await fetchPages({
+        config: warmingConfig,
+        percentCost,
+        checkStatus,
+        onePort: true
+      });
+
+      await mainCacheProxyInstance.stop();
+
+      await logger(`warming done!`);
+    } else {
+      const resolvedData = await resolveExternalResource(data);
+
+      fs.writeFileSync(mainCacheProxyInstance.getCacheFile(), resolvedData);
+    }
 
     let httpPort = constants.HTTP_PORT;
-    let httpsPort = constants.HTTPS_PORT;
+    let httpsPort = isMitmdump ? constants.HTTP_PORT : constants.HTTPS_PORT;
 
-    wrpInstances = await Promise.all(Array(threads)
+    cacheProxyInstances = await Promise.all(Array(threads)
       .fill(null)
       .map(async () => {
         httpPort = httpPort + 1;
         httpsPort = httpsPort + 1;
 
-        const wprInstanceByPort = wpr(cacheLogger, httpPort, httpsPort);
+        const cacheProxyInstanceByPort = cacheProxy(type, cacheLogger, httpPort, httpsPort);
 
-        await logger(`create wpr on 80:${httpPort}, 443:${httpsPort} ports`);
+        await logger(`create cache proxy on 80:${httpPort}, 443:${httpsPort} ports`);
 
-        await wprInstanceByPort.start('replay');
+        await cacheProxyInstanceByPort.start('replay');
 
-        return wprInstanceByPort;
+        return cacheProxyInstanceByPort;
       }));
 
-    await logger(`wpr in replay mode`);
+    await logger(`cache proxy in replay mode`);
   } catch (e) {
     await logger(`cannot warm pages!\n${e.stack}`);
   }
 
   return async () => {
-    await Promise.all(wrpInstances.map(async (wrpInstance) => {
-      await wrpInstance.stop();
+    await Promise.all(cacheProxyInstances.map(async (cacheProxyInstance) => {
+      await cacheProxyInstance.stop();
     }));
 
-    await mainWprInstance.clean();
+    await mainCacheProxyInstance.clean();
   }
 };
 
@@ -107,7 +115,8 @@ const warmingProxy = async (config, percentCost) => {
 const warming = async (config, percentCost) => {
   switch (config.cache.type) {
     case 'wpr':
-      return await warmingWpr(config, percentCost);
+    case 'mitmdump':
+      return await warmingCacheProxy(config, percentCost);
     case 'proxy':
       return await warmingProxy(config, percentCost);
     default:

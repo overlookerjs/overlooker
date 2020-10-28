@@ -6,10 +6,11 @@ const constants = require('./constants.js');
 
 puppeteer.use(StealthPlugin());
 
-const getContext = async (config, index, httpPort, httpsPort) => {
+const getContext = async (config, index, httpPort, httpsPort = httpPort) => {
   const usrDir = path.resolve(__dirname, `browser-cache/instance-${index}`);
   const isProxyCache = config.cache && config.cache.type === 'proxy' && config.cache.host;
   const isWprCache = config.cache && config.cache.type === 'wpr';
+  const isMitmdump = config.cache && config.cache.type === 'mitmdump';
 
   const browser = await puppeteer.launch({
     args: [
@@ -25,6 +26,7 @@ const getContext = async (config, index, httpPort, httpsPort) => {
         '--ignore-certificate-errors-spki-list=PhrPvGIaAMmd29hj8BCZOq096yj7uMpRNHpn5PDxI6I='
       ] : [])
       .concat(isProxyCache ? `--proxy-server=${config.cache.host}` : [])
+      .concat(isMitmdump ? `--proxy-server=http://localhost:${httpPort}` : [])
       .concat(config.browserArgs),
     ignoreHTTPSErrors: true,
     defaultViewport: viewports[config.platform],
