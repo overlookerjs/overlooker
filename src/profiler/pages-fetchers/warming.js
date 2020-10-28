@@ -1,16 +1,16 @@
 const fs = require('fs');
 const { fetchPages } = require('./core-fetcher.js');
-const { cacheProxy, cacheFile } = require('../../cache-proxy');
+const { cacheProxy } = require('../../cache-proxy');
 const { resolveExternalResource } = require('./../../utils.js');
 const constants = require('./../constants.js');
 const cache = require('../cache.js');
 
 const warmingCacheProxy = async (config, percentCost) => {
-  const { checkStatus, logger, cacheLogger, threads, cache: { type, data } } = config;
+  const { checkStatus, logger, threads, cache: { type, data, logger: cacheLogger } } = config;
   const isMitmdump = type === 'mitmdump';
+  const mainCacheProxyInstance = cacheProxy(type, cacheLogger, constants.HTTP_PORT, isMitmdump ? constants.HTTP_PORT : constants.HTTPS_PORT);
 
   let cacheProxyInstances = [];
-  let mainCacheProxyInstance;
 
   try {
     if (!data) {
@@ -22,8 +22,6 @@ const warmingCacheProxy = async (config, percentCost) => {
       };
 
       await logger('start cache warming');
-
-      mainCacheProxyInstance = cacheProxy(type, cacheLogger, constants.HTTP_PORT, isMitmdump ? constants.HTTP_PORT : constants.HTTPS_PORT);
 
       await mainCacheProxyInstance.clean();
       await mainCacheProxyInstance.start('record');
@@ -43,7 +41,7 @@ const warmingCacheProxy = async (config, percentCost) => {
     } else {
       const resolvedData = await resolveExternalResource(data);
 
-      fs.writeFileSync(cacheFile, resolvedData);
+      fs.writeFileSync(mainCacheProxyInstance.getCacheFile(), resolvedData);
     }
 
     let httpPort = constants.HTTP_PORT;
@@ -74,9 +72,7 @@ const warmingCacheProxy = async (config, percentCost) => {
       await cacheProxyInstance.stop();
     }));
 
-    if (mainCacheProxyInstance) {
-      await mainCacheProxyInstance.clean();
-    }
+    await mainCacheProxyInstance.clean();
   }
 };
 

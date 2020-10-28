@@ -1,16 +1,14 @@
 const path = require('path');
 const os = require('os');
 const { spawn } = require('child_process');
-const { promisify } = require('util');
 const tcpPortUsed = require('tcp-port-used');
 const fs = require('fs');
-const deleteFileAsync = promisify(fs.unlink);
 
 const platform = os.platform();
 const wprPath = path.resolve(__dirname, 'wpr');
 const mitmdumpPath = path.resolve(__dirname, 'mitmdump');
 
-const cacheFile = path.resolve(__dirname, 'pages_cache');
+const cacheFile = 'pages_cache.pca';
 
 const logTypes = {
   STD: 'std',
@@ -32,6 +30,7 @@ const cacheProxy = (
   httpPort = 8888,
   httpsPort = 8081
 ) => {
+  const cachePath = path.resolve(type === 'mitmdump' ? mitmdumpPath : wprPath, 'pages_cache.pca');
   let child;
 
   /**
@@ -55,10 +54,12 @@ const cacheProxy = (
         case 'mitmdump':
           child = spawn(`${mitmdumpPath}/${platform}/mitmdump`, [
             `-p ${httpPort}`,
-            operation === 'record' ? (
-              `-w ${cacheFile} -k`
-            ) : (
-              `--server-replay ${cacheFile} --server-replay-nopop`
+            ...(
+              operation === 'record' ? (
+                [`-w`, `${cacheFile}`, '-k']
+              ) : (
+                [`--server-replay`, `${cacheFile}`, `--server-replay-nopop`,]
+              )
             )
           ], {
             cwd: mitmdumpPath
@@ -67,13 +68,16 @@ const cacheProxy = (
       }
 
       // Show WPR output
-      child.stderr.on('data', (data) => {
+      child.stdout.on('data', (data) => {
         logger({ type: logTypes.STD, message: `${data}`.trim() });
+      });
+      child.stderr.on('data', (data) => {
+        logger({ type: logTypes.ERROR, message: `${data}`.trim() });
       });
 
       // Wait 30 second for wpr start
       await tcpPortUsed.waitUntilUsed(httpPort, 500, 30000);
-      await logger({ type: logTypes.INFO, message: `wpr started in ${operation} mode` });
+      await logger({ type: logTypes.INFO, message: `cache proxy started in ${operation} mode` });
     } catch (err) {
       await logger({ type: logTypes.ERROR, message: err });
     }
@@ -86,7 +90,7 @@ const cacheProxy = (
     try {
       if (child !== undefined) {
         await logger({ type: logTypes.INFO, message: 'cache proxy child exist - kill him' });
-        child.kill('SIGINT');
+        child.kill();
       }
     } catch (err) {
       await logger({ type: logTypes.ERROR, message: err });
@@ -109,10 +113,10 @@ const cacheProxy = (
     await logger({ type: logTypes.INFO, message: `cleaning cache archive` });
 
     try {
-      await deleteFileAsync(cacheFile);
-      await logger({ type: logTypes.INFO, message: `${cacheFile} deleted` });
+      fs.unlinkSync(cachePath);
+      await logger({ type: logTypes.INFO, message: `${cachePath} deleted` });
     } catch (err) {
-      await logger({ type: logTypes.INFO, message: `${cacheFile} not exist` });
+      await logger({ type: logTypes.INFO, message: `${cachePath} not exist` });
     }
   };
 
@@ -122,14 +126,19 @@ const cacheProxy = (
    * @return {String}
    */
   const getCacheFile = () => {
-    return cacheFile;
+    return cachePath;
+  };
+
+  const setCacheFile = (data) => {
+    fs.writeFileSync(cachePath, data);
   };
 
   return {
     start,
     stop,
     clean,
-    getCacheFile
+    getCacheFile,
+    setCacheFile
   };
 };
 
