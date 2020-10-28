@@ -31,8 +31,7 @@ const getContext = async (config, index, httpPort, httpsPort = httpPort) => {
     ignoreHTTPSErrors: true,
     defaultViewport: viewports[config.platform],
     headless: !config.debug,
-    handleSIGINT: config.gracefulShutdown,
-    devtools: true
+    handleSIGINT: config.gracefulShutdown
   });
 
   const context = await browser.createIncognitoBrowserContext();
