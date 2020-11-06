@@ -19,7 +19,8 @@ const getContext = async (config, index, httpPort, httpsPort = httpPort) => {
       '--ignore-certificate-errors',
       '--ignore-urlfetcher-cert-requests',
       `--user-data-dir=${usrDir}`,
-      '--no-zygote'
+      '--no-zygote',
+      '--disable-dev-shm-usage'
     ]
       .concat(isWprCache ? [
         `--host-resolver-rules="MAP *:80 127.0.0.1:${httpPort},MAP *:443 127.0.0.1:${httpsPort},EXCLUDE localhost"`,
