@@ -332,7 +332,10 @@ declare module "overlooker" {
     } | {
       type: 'proxy',
       host: string,
-      restart?: () => Promise<any>
+      start?: () => Promise<any>,
+      stop?: () => Promise<any>,
+      postDataHandler?: (url: string, postData: string) => string,
+      responseDataHandler?: (url: string, postData: string, response: string) => string
     },
     firstEvent?: string,
     count?: number,

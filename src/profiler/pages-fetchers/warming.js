@@ -77,7 +77,7 @@ const warmingCacheProxy = async (config, percentCost) => {
 };
 
 const warmingProxy = async (config, percentCost) => {
-  const { checkStatus, logger, cache: { restart } } = config;
+  const { checkStatus, logger, cache: { start, stop } } = config;
 
   const warmingConfig = {
     ...config,
@@ -87,13 +87,13 @@ const warmingProxy = async (config, percentCost) => {
 
   cache.clear();
 
-  if (restart && typeof restart === 'function') {
+  if (start && typeof start === 'function') {
     try {
-      await logger('restart proxy');
-      await restart();
-      await logger('proxy restarted');
+      await logger('start proxy');
+      await start();
+      await logger('proxy started');
     } catch (e) {
-      await logger(`cannot restart proxy\n${e.stack}`);
+      await logger(`cannot start proxy\n${e.stack}`);
     }
   }
 
@@ -109,6 +109,18 @@ const warmingProxy = async (config, percentCost) => {
     await logger(`warming done!`);
   } catch (e) {
     await logger(`cannot warm pages!\n${e.stack}`);
+  }
+
+  return async () => {
+    if (stop && typeof stop === 'function') {
+      try {
+        await logger('stop proxy');
+        await stop();
+        await logger('proxy stopped');
+      } catch (e) {
+        await logger(`cannot stop proxy\n${e.stack}`);
+      }
+    }
   }
 };
 

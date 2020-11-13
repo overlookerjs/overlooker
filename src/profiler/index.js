@@ -6,7 +6,7 @@ const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
   const { pages, logger, count, cache } = preparedConfig;
   const percentCost = 0.99 / (count * pages.length + (cache ? pages.length : 0));
-  let resetCache;
+  let stopCache;
 
   if (!pages.length) {
     await logger('Nothing to profile');
@@ -17,13 +17,13 @@ const profile = async (config) => {
   const buildData = await fetchBuildData(preparedConfig);
 
   if (cache) {
-    resetCache = await warming(preparedConfig, percentCost);
+    stopCache = await warming(preparedConfig, percentCost);
   }
 
   const result = await describePerformance(preparedConfig, percentCost, buildData);
 
-  if (cache && resetCache) {
-    await resetCache();
+  if (cache && stopCache) {
+      await stopCache();
   }
 
   return result;

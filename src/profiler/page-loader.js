@@ -44,6 +44,16 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 
   const isProxyCache = config.cache && config.cache.type === 'proxy';
+  const postDataHandler = isProxyCache && config.cache.postDataHandler ? (
+    config.cache.postDataHandler
+  ) : (
+    (url, postData) => postData
+  )
+  const responseDataHandler = isProxyCache && config.cache.responseDataHandler ? (
+    config.cache.responseDataHandler
+  ) : (
+    (url, postData, response) => response
+  )
 
   page.on('request', async (interceptedRequest) => {
     const url = interceptedRequest.url();
@@ -59,14 +69,19 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
     }
 
     if (isProxyCache && interceptedRequest.method() === 'POST') {
-      const postData = interceptedRequest.postData();
-
+      const rawPostData = interceptedRequest.postData();
+      const postData = postDataHandler(url, rawPostData);
       const cachedObject = cache.get(url + postData);
 
       if (cachedObject) {
+        const preparedBody = responseDataHandler(url, rawPostData, cachedObject.body);
+
         setTimeout(async () => {
           try {
-            await interceptedRequest.respond(cachedObject);
+            await interceptedRequest.respond({
+              ...cachedObject,
+              body: preparedBody
+            });
           } catch (e) {
             logger(e.stack);
           }
@@ -86,9 +101,9 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   if (isProxyCache) {
     page.on('requestfinished', async (interceptedRequest) => {
       if (interceptedRequest.method() === 'POST') {
-        const resourceUrl = interceptedRequest.url();
-        const postData = interceptedRequest.postData();
-        const key = resourceUrl + postData;
+        const url = interceptedRequest.url();
+        const postData = postDataHandler(url, interceptedRequest.postData());
+        const key = url + postData;
 
         const cachedObject = cache.has(key);
 
