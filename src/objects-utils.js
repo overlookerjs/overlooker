@@ -112,7 +112,7 @@ const deepMap = (obj, mapper, initialPath = []) => map(obj, (innerObj, key) =>
   ));
 
 const toArray = (obj, skipSymbols = [], parent = '', acc = []) => (
-  Object.entries(obj)
+  Object.entries(obj || {})
     .reduce((acc, [key, value]) => {
       const complexKey = parent ? parent + '.' + key : key;
 
