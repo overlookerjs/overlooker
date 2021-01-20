@@ -2,14 +2,14 @@ const { getEventsTreeByThreads } = require('./events-tree.js');
 const { makeEventsRelative } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
-const { 
-  getSpeedIndex, 
-  prepareElementsTimings, 
-  prepareLayersPaints, 
-  getCumulativeLayoutShift, 
+const {
+  getSpeedIndex,
+  prepareElementsTimings,
+  prepareLayersPaints,
+  getCumulativeLayoutShift,
   getTotalBlockingTime
 } = require('./events-user-centric.js');
-const { getLighthouseScore } = require ('./lighthouse-score');
+const { getLighthouseScore } = require('./lighthouse-score');
 const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
@@ -19,8 +19,17 @@ const {
   getMeaningEvaluationEvents,
   prepareEvaluations
 } = require('./events-evaluation.js');
+const { getScreenshotsByMetrics } = require('./events-screenshots.js');
+const { flat } = require('./../objects-utils.js');
 
-const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings, layersPaints }, config) => {
+const getAllStats = async ({
+                             tracing,
+                             coverage,
+                             actions,
+                             timeToInteractive,
+                             elementsTimings,
+                             layersPaints
+                           }, config) => {
   const { requests: { internalTest }, firstEvent: firstEventName, customMetrics, platform } = config;
 
   const firstEvent = getEventInMainFrame(tracing, firstEventName) || getEventInMainFrame(tracing, 'responseEnd');
@@ -60,7 +69,7 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
       LCP: timings.largestContentfulPaint / 1000,
       TTI: timeToInteractive / 1000,
       TBT: totalBlockingTime / 1000,
-      CLS: cumulativeLayoutShift,  
+      CLS: cumulativeLayoutShift,
     }, platform)
   };
 
@@ -68,6 +77,17 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
   const layersPaintsStats = prepareLayersPaints(layersPaints, firstEvent);
 
   const actionsStats = getActionsStats(actions, navigationStart, config);
+
+  const flattedTimestamps = Object.entries(flat({
+    timings,
+    userCentric: {
+      timeToInteractive
+    },
+    elementsTimings: elementsTimingsStats,
+    layersPaints: layersPaintsStats
+  })).map(([name, value]) => ({ name, value }));
+
+  const screenshots = getScreenshotsByMetrics(relativeEvents, flattedTimestamps);
 
   return {
     stats: {
@@ -82,6 +102,7 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
     },
     network,
     coverage,
+    screenshots,
     actions: actionsStats
   }
 };
