@@ -16,7 +16,7 @@ const aggregateProfiles = (profiles,
     screenshots: [
       ...summary.screenshots,
       {
-        data: profile.screenshots,
+        series: profile.screenshots,
         weight: profile.stats.userCentric.lighthouseScore
       }
     ]

@@ -69,7 +69,7 @@ const deepCompare = (comparator, obj1 = {}, obj2 = {}) => map(
   )
 );
 
-const asyncMap = async (obj, map) => {
+const asyncMap = async (obj = {}, map) => {
   const results = await Promise.all(
     Object.entries(obj).map(async ([key, value]) => [key, await map(value, key)])
   );
@@ -208,6 +208,7 @@ const expandFlat = (obj) => Object.entries(obj)
 
 module.exports = {
   map,
+  asyncMap,
   reduce,
   divide,
   summ,
