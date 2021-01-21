@@ -20,7 +20,28 @@ declare module "overlooker" {
   export type PageData = {
     actions: ProfileActions,
     stats: ProfileStats,
-    network: ProfileNetwork
+    network: ProfileNetwork,
+    screenshots: ProfileScreenshots
+  };
+
+  export type ProfileScreenshots = {
+    max: ProfileScreenshotsSection,
+    min: ProfileScreenshotsSection,
+    q1: ProfileScreenshotsSection,
+    q3: ProfileScreenshotsSection,
+    percentile98: ProfileScreenshotsSection,
+    percentile02: ProfileScreenshotsSection,
+    median: ProfileScreenshotsSection,
+    mean: ProfileScreenshotsSection,
+  };
+
+  export type ProfileScreenshotsSection = {
+    weight: number,
+    series: Array<{
+      snapshot: string,
+      timestamp: number,
+      events: Array<{ value: number, name: string }>
+    }>
   };
 
   export type ProfileActions = {
