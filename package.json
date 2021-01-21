@@ -30,7 +30,7 @@
   "types": "src/types.d.ts",
   "homepage": "https://github.com/overlookerjs/overlooker#readme",
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.3",
     "jsdom": "^16.2.0",
     "jstat": "^1.9.2",
