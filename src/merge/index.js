@@ -13,7 +13,7 @@ const merge = (data, pages, mergeStrategyName = 'mean') => (
   aggregateProfiles(
     Object.entries(data)
       .filter(([pageName]) => !pages || pages.includes(pageName))
-      .map(([, pageData]) => pageData),
+      .map(([, pageData]) => ({ ...pageData, screenshots: null })),
     null,
     null,
     getAggregateMerger(strategies[mergeStrategyName])
