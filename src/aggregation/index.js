@@ -13,13 +13,14 @@ const aggregateProfiles = (profiles,
     stats: deepConcat(profile.stats, summary.stats),
     network: concatNetworks(profile.network, summary.network, mergeRequests),
     actions: concatActions(profile.actions, summary.actions, mergeRequests),
-    screenshots: [
+    screenshots: profile.screenshots ? [
       ...summary.screenshots,
       {
-        series: profile.screenshots,
-        weight: profile.stats.userCentric.lighthouseScore
+        ...profile.screenshots,
+        weight: profile.stats.userCentric.lighthouseScore,
+        weightType: 'lighthouseScore'
       }
-    ]
+    ] : null
   }), {
     stats: {},
     network: {},
@@ -31,7 +32,7 @@ const aggregateProfiles = (profiles,
     stats: aggregation(stats),
     network: expandNetwork(aggregateNetwork(aggregation, network), buildData),
     actions: aggregateActions(actions, buildData, mergeRequests, aggregation),
-    screenshots: aggregateScreenshots(screenshots)
+    screenshots: screenshots ? aggregateScreenshots(screenshots) : null
   };
 };
 
