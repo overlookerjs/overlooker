@@ -1,4 +1,4 @@
-const { getEventsTreeByThreads } = require('./events-tree.js');
+const { getEventsGroups, getEventsTree } = require('./events-tree.js');
 const { makeCoverageMap } = require('./events-coverage.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
 const { makeEventsRelative, findEventByName } = require('./events-helpers.js');
@@ -35,8 +35,11 @@ const getActionsStats = (actions, navigationStart, config) => map(
     const relativeEvents = makeEventsRelative(tracing, actionStart);
     const navigationStartDelta = navigationStart.ts - actionStart.ts;
 
-    const mainEvents = getEventsTreeByThreads(makeEventsRelative(tracing, actionStart)).find(({ name }) => name === 'main').events;
-    const meaningfulEvaluations = getMeaningEvaluationEvents(mainEvents);
+    const eventsGroups = getEventsGroups(relativeEvents);
+    const mainEvents = eventsGroups.find(({ name }) => name === 'Main').events;
+    const mainEventsTree = getEventsTree(mainEvents);
+
+    const meaningfulEvaluations = getMeaningEvaluationEvents(mainEventsTree);
     const extractEvaluationValues = prepareEvaluations(meaningfulEvaluations);
 
     const evaluationMap = makeScriptsEvaluationMap(extractEvaluationValues.filter(({ url }) => url));

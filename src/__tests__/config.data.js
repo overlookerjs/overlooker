@@ -40,5 +40,6 @@ module.exports = {
   logger: (msg) => console.log(msg),
   buildData: {
     url: '/build.json',
-  }
+  },
+  tracing: 'zip'
 };

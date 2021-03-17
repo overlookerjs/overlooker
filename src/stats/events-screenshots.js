@@ -8,19 +8,21 @@ const getScreenshotsByMetrics = (events, timestamps) => {
       screenshot: screenshots.find(({ ts }) => value >= ts)
     }));
 
-  const filteredScreenshots = timingsWithScreenshots.reduce((acc, { value, name, screenshot }) => {
-    if (!acc[screenshot.ts]) {
-      acc[screenshot.ts] = {
-        snapshot: screenshot.args.snapshot,
-        timestamp: screenshot.ts,
-        events: [{ value, name }]
-      };
-    } else {
-      acc[screenshot.ts].events.push({ value, name });
-    }
+  const filteredScreenshots = timingsWithScreenshots
+    .filter(({ screenshot }) => screenshot)
+    .reduce((acc, { value, name, screenshot }) => {
+      if (!acc[screenshot.ts]) {
+        acc[screenshot.ts] = {
+          snapshot: screenshot.args.snapshot,
+          timestamp: screenshot.ts,
+          events: [{ value, name }]
+        };
+      } else {
+        acc[screenshot.ts].events.push({ value, name });
+      }
 
-    return acc;
-  }, {});
+      return acc;
+    }, {});
 
   return Object.values(filteredScreenshots)
     .reduce((acc, { snapshot, timestamp, events }) => {

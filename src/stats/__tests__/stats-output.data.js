@@ -1,216 +1,216 @@
 module.exports.stats = {
-  "timings": {
-    "firstPaint": 44208,
-    "firstContentfulPaint": 44208,
-    "firstImagePaint": 44208,
-    "largestContentfulPaint": 127700,
-    "domInteractive": 198696,
-    "domContentLoadedEventStart": 198716,
-    "domContentLoadedEventEnd": 207181,
-    "domComplete": 207982,
-    "loadEventStart": 208007,
-    "loadEventEnd": 208017,
-    "firstMeaningfulPaint": 307757
+  "coverage": {
+    "external": {
+      "css": {
+        "absolute": {
+          "total": 0,
+          "unused": 0,
+          "used": 0
+        },
+        "percent": {
+          "unused": 0,
+          "used": 0
+        }
+      },
+      "js": {
+        "absolute": {
+          "total": 0,
+          "unused": 0,
+          "used": 0
+        },
+        "percent": {
+          "unused": 0,
+          "used": 0
+        }
+      }
+    },
+    "internal": {
+      "css": {
+        "absolute": {
+          "total": 0,
+          "unused": 0,
+          "used": 0
+        },
+        "percent": {
+          "unused": 0,
+          "used": 0
+        }
+      },
+      "js": {
+        "absolute": {
+          "total": 226738,
+          "unused": 145779,
+          "used": 80959
+        },
+        "percent": {
+          "unused": 0.6429403099612769,
+          "used": 0.3570596900387231
+        }
+      }
+    },
+    "total": {
+      "css": {
+        "absolute": {
+          "total": 0,
+          "unused": 0,
+          "used": 0
+        },
+        "percent": {
+          "unused": 0,
+          "used": 0
+        }
+      },
+      "js": {
+        "absolute": {
+          "total": 226738,
+          "unused": 145779,
+          "used": 80959
+        },
+        "percent": {
+          "unused": 0.6429403099612769,
+          "used": 0.3570596900387231
+        }
+      }
+    }
   },
-  "userCentric": {
-    "cumulativeLayoutShift": 0.09195102269292524,
-    "lighthouseScore": 99.60000000000001,
-    "speedIndex": 230801.3599999994,
-    "timeToInteractive": 207845.00000087428,
-    "totalBlockingTime": 21208
-  },
-  "layersPaints": {
-    "main": {
-      "firstPaint": 296554,
-      "lastPaint": 296554
+  "custom": {
+    "durations": {
+      "render": 10876
+    },
+    "timings": {
+      "react": {
+        "mounted": 227938
+      }
     }
   },
   "elementsTimings": {},
-  "custom": {
-    "timings": {
-      "react": {
-        "mounted": 206843
-      }
-    },
-    "durations": {
-      "render": 8336
-    }
-  },
   "evaluation": {
     "external": {
-      "evaluation": 1500,
-      "total": 1500
+      "EvaluateScript": 38.995,
+      "total": 38.995
     },
     "internal": {
-      "evaluation": 71208,
-      "parseHTML": 9961,
-      "total": 81169
+      "EvaluateScript": 50.434,
+      "ParseHTML": 1.8629999999999967,
+      "total": 52.297
     },
     "total": {
-      "evaluation": 72708,
-      "parseHTML": 9961,
-      "total": 82669
+      "EvaluateScript": 89.429,
+      "ParseHTML": 1.8629999999999967,
+      "total": 91.292
+    }
+  },
+  "layersPaints": {
+    "main": {
+      "firstPaint": -1381477557757,
+      "lastPaint": -1381477557757
     }
   },
   "resources": {
-    "total": {
-      "total": {
-        "size": 419929,
-        "transfer": 420301
-      },
-      "js": {
-        "size": 226778,
-        "transfer": 226920
-      },
+    "external": {
       "css": {
         "size": 0,
         "transfer": 0
-      },
-      "images": {
-        "size": 192890,
-        "transfer": 193019
       },
       "fonts": {
         "size": 0,
         "transfer": 0
       },
       "html": {
-        "size": 261,
-        "transfer": 362
+        "size": 0,
+        "transfer": 0
+      },
+      "images": {
+        "size": 0,
+        "transfer": 0
+      },
+      "js": {
+        "size": 0,
+        "transfer": 0
+      },
+      "total": {
+        "size": 0,
+        "transfer": 0
       }
     },
     "internal": {
-      "total": {
-        "size": 419929,
-        "transfer": 420301
-      },
-      "js": {
-        "size": 226778,
-        "transfer": 226920
-      },
       "css": {
+        "size": 216,
+        "transfer": 364
+      },
+      "fonts": {
         "size": 0,
         "transfer": 0
+      },
+      "html": {
+        "size": 335,
+        "transfer": 459
       },
       "images": {
         "size": 192890,
-        "transfer": 193019
-      },
-      "fonts": {
-        "size": 0,
-        "transfer": 0
-      },
-      "html": {
-        "size": 261,
-        "transfer": 362
-      }
-    },
-    "external": {
-      "total": {
-        "size": 0,
-        "transfer": 0
+        "transfer": 193042
       },
       "js": {
-        "size": 0,
-        "transfer": 0
+        "size": 226123,
+        "transfer": 226288
       },
+      "total": {
+        "size": 419564,
+        "transfer": 420153
+      }
+    },
+    "total": {
       "css": {
-        "size": 0,
-        "transfer": 0
-      },
-      "images": {
-        "size": 0,
-        "transfer": 0
+        "size": 216,
+        "transfer": 364
       },
       "fonts": {
         "size": 0,
         "transfer": 0
       },
       "html": {
-        "size": 0,
-        "transfer": 0
+        "size": 335,
+        "transfer": 459
+      },
+      "images": {
+        "size": 192890,
+        "transfer": 193042
+      },
+      "js": {
+        "size": 226123,
+        "transfer": 226288
+      },
+      "total": {
+        "size": 419564,
+        "transfer": 420153
       }
     }
   },
-  "coverage": {
-    "total": {
-      "js": {
-        "absolute": {
-          "total": 226738,
-          "unused": 145779,
-          "used": 80959
-        },
-        "percent": {
-          "used": 0.3570596900387231,
-          "unused": 0.6429403099612769
-        }
-      },
-      "css": {
-        "absolute": {
-          "total": 0,
-          "unused": 0,
-          "used": 0
-        },
-        "percent": {
-          "used": 0,
-          "unused": 0
-        }
-      }
-    },
-    "internal": {
-      "js": {
-        "absolute": {
-          "total": 226738,
-          "unused": 145779,
-          "used": 80959
-        },
-        "percent": {
-          "used": 0.3570596900387231,
-          "unused": 0.6429403099612769
-        }
-      },
-      "css": {
-        "absolute": {
-          "total": 0,
-          "unused": 0,
-          "used": 0
-        },
-        "percent": {
-          "used": 0,
-          "unused": 0
-        }
-      }
-    },
-    "external": {
-      "js": {
-        "absolute": {
-          "total": 0,
-          "unused": 0,
-          "used": 0
-        },
-        "percent": {
-          "used": 0,
-          "unused": 0
-        }
-      },
-      "css": {
-        "absolute": {
-          "total": 0,
-          "unused": 0,
-          "used": 0
-        },
-        "percent": {
-          "used": 0,
-          "unused": 0
-        }
-      }
-    }
+  "timings": {
+    "domComplete": 228783,
+    "domContentLoadedEventEnd": 228487,
+    "domContentLoadedEventStart": 217445,
+    "domInteractive": 217410,
+    "firstContentfulPaint": 86268,
+    "firstImagePaint": 86268,
+    "firstMeaningfulPaint": 246702,
+    "firstPaint": 86268,
+    "largestContentfulPaint": 166262,
+    "loadEventEnd": 228817,
+    "loadEventStart": 228805
+  },
+  "userCentric": {
+    "cumulativeLayoutShift": 0,
+    "lighthouseScore": 100,
+    "speedIndex": 206549.50013160706,
+    "timeToInteractive": 207845.00000087428,
+    "totalBlockingTime": 20611.000000000004
   }
 };
 
 module.exports.coverage = [
   {
-    "url": "http://localhost:3000/main.0ebfa121.js",
+    "url": "http://localhost:3000/main.0dd46d15.js",
     "absolute": {
       "total": 226738,
       "unused": 145779,
@@ -225,75 +225,96 @@ module.exports.coverage = [
 
 module.exports.network = [
   {
-    "url": "http://localhost:3000/",
-    "stats": {
-      "size": 261,
-      "transfer": 362,
-      "evaluation": 9961,
-      "timings": {
-        "start": 2881,
-        "response": 2911,
-        "firstByte": 8846,
-        "finish": 9173,
-        "total": 6292
-      }
-    },
     "evaluation": [
       {
-        "duration": 1010,
+        "duration": 1.136,
         "timings": {
-          "end": 10668,
-          "start": 9658
+          "end": 51436,
+          "start": 50300
         },
-        "type": "parseHTML"
+        "type": "ParseHTML"
       },
       {
-        "duration": 8951,
+        "duration": 0.7269999999999968,
         "timings": {
-          "end": 207614,
-          "start": 198663
+          "end": 218092,
+          "start": 217365
         },
-        "type": "parseHTML"
+        "type": "ParseHTML"
       }
     ],
-    "internal": true,
-    "type": "text/html",
     "extension": "html",
+    "internal": true,
+    "method": "GET",
+    "stats": {
+      "evaluation": 1.8629999999999967,
+      "size": 335,
+      "timings": {
+        "finish": 49978,
+        "firstByte": 49651,
+        "response": 3229,
+        "start": 3196,
+        "total": 46782
+      },
+      "transfer": 459
+    },
     "status": 200,
-    "method": "GET"
+    "type": "text/html",
+    "url": "http://localhost:3000/"
   },
   {
-    "url": "http://localhost:3000/ccae0a22976b2ce9ab1d31b8d7eb3e57.png",
+    "extension": "css",
+    "internal": true,
+    "method": "GET",
+    "stats": {
+      "size": 216,
+      "timings": {
+        "finish": 55898,
+        "firstByte": 55642,
+        "response": 55533,
+        "start": 50545,
+        "total": 5353
+      },
+      "transfer": 364
+    },
+    "status": 200,
+    "type": "text/css",
+    "url": "http://localhost:3000/main.css"
+  },
+  {
+    "extension": "png",
+    "internal": true,
+    "method": "GET",
     "stats": {
       "size": 192890,
-      "transfer": 193019,
       "timings": {
-        "start": 9922,
-        "response": 15181,
-        "firstByte": 15624,
-        "finish": 114200,
-        "total": 104278
-      }
+        "finish": 155251,
+        "firstByte": 65591,
+        "response": 65488,
+        "start": 50759,
+        "total": 104492
+      },
+      "transfer": 193042
     },
-    "internal": true,
-    "type": "image/png",
-    "extension": "png",
     "status": 200,
-    "method": "GET"
+    "type": "image/png",
+    "url": "http://localhost:3000/ccae0a22976b2ce9ab1d31b8d7eb3e57.png"
   },
   {
-    "url": "http://localhost:3000/main.0ebfa121.js",
+    "evaluation": [
+      {
+        "duration": 50.434,
+        "timings": {
+          "end": 217317.99999999997,
+          "start": 166884
+        },
+        "type": "EvaluateScript"
+      }
+    ],
+    "extension": "js",
+    "internal": true,
+    "method": "GET",
     "stats": {
-      "size": 226778,
-      "transfer": 226920,
-      "evaluation": 71208,
-      "timings": {
-        "start": 10179,
-        "response": 24622,
-        "firstByte": 24747,
-        "finish": 124377,
-        "total": 114198
-      },
       "coverage": {
         "absolute": {
           "total": 226738,
@@ -301,261 +322,263 @@ module.exports.network = [
           "used": 80959
         },
         "percent": {
-          "used": 0.3570596900387231,
-          "unused": 0.6429403099612769
+          "unused": 0.6429403099612769,
+          "used": 0.3570596900387231
         }
-      }
+      },
+      "evaluation": 50.434,
+      "size": 226123,
+      "timings": {
+        "finish": 164812,
+        "firstByte": 65936,
+        "response": 65846,
+        "start": 50927,
+        "total": 113885
+      },
+      "transfer": 226288
     },
-    "evaluation": [
-      {
-        "duration": 71208,
-        "type": "evaluation",
-        "timings": {
-          "start": 127408,
-          "end": 198616
-        }
-      }
-    ],
-    "internal": true,
-    "type": "application/javascript",
-    "extension": "js",
     "status": 200,
-    "method": "GET"
+    "type": "application/javascript",
+    "url": "http://localhost:3000/main.0dd46d15.js"
   }
 ];
 
 module.exports.testActionStats = {
-  "timings": {
-    "start": 0,
-    "end": 575309
-  },
-  "custom": {
-    "timings": {
-      "main-button": {
-        "click": 48706
+  "coverage": {
+    "external": {
+      "css": {
+        "absolute": {
+          "total": 0,
+          "unused": 0,
+          "used": 0
+        },
+        "percent": {
+          "unused": 0,
+          "used": 0
+        }
+      },
+      "js": {
+        "absolute": {
+          "total": 0,
+          "unused": 0,
+          "used": 0
+        },
+        "percent": {
+          "unused": 0,
+          "used": 0
+        }
       }
     },
+    "internal": {
+      "css": {
+        "absolute": {
+          "total": 0,
+          "unused": 0,
+          "used": 0
+        },
+        "percent": {
+          "unused": 0,
+          "used": 0
+        }
+      },
+      "js": {
+        "absolute": {
+          "total": 1606,
+          "unused": 606,
+          "used": 1000
+        },
+        "percent": {
+          "unused": 0.37733499377334995,
+          "used": 0.6226650062266501
+        }
+      }
+    },
+    "total": {
+      "css": {
+        "absolute": {
+          "total": 0,
+          "unused": 0,
+          "used": 0
+        },
+        "percent": {
+          "unused": 0,
+          "used": 0
+        }
+      },
+      "js": {
+        "absolute": {
+          "total": 1606,
+          "unused": 606,
+          "used": 1000
+        },
+        "percent": {
+          "unused": 0.37733499377334995,
+          "used": 0.6226650062266501
+        }
+      }
+    }
+  },
+  "custom": {
     "durations": {
       "handle": {
-        "click": 535928
+        "click": 521310
       },
-      "image-loading": 520625
+      "image-loading": 520143
+    },
+    "timings": {
+      "main-button": {
+        "click": 37283
+      }
     }
   },
   "elementsTimings": {},
-  "layersPaints": {
-    "main-action": {
-      "firstPaint": 4000,
-      "lastPaint": 4000
-    }
-  },
   "evaluation": {
     "external": {
-      "evaluation": 72,
-      "total": 72
+      "total": 0
     },
     "internal": {
-      "evaluation": 1367,
-      "event": 460,
-      "timer": 5709,
-      "total": 7536
+      "total": 0
     },
     "total": {
-      "evaluation": 1439,
-      "event": 460,
-      "timer": 5709,
-      "total": 7608
+      "total": 0
+    }
+  },
+  "layersPaints": {
+    "main-action": {
+      "firstPaint": -1381477895630,
+      "lastPaint": -1381477895630
     }
   },
   "resources": {
-    "total": {
-      "total": {
-        "size": 9289,
-        "transfer": 9295
-      },
-      "js": {
-        "size": 1606,
-        "transfer": 1746
-      },
+    "external": {
       "css": {
         "size": 0,
         "transfer": 0
-      },
-      "images": {
-        "size": 7422,
-        "transfer": 7549
       },
       "fonts": {
         "size": 0,
         "transfer": 0
       },
       "html": {
-        "size": 261,
+        "size": 0,
+        "transfer": 0
+      },
+      "images": {
+        "size": 0,
+        "transfer": 0
+      },
+      "js": {
+        "size": 0,
+        "transfer": 0
+      },
+      "total": {
+        "size": 0,
         "transfer": 0
       }
     },
     "internal": {
-      "total": {
-        "size": 9289,
-        "transfer": 9295
-      },
-      "js": {
-        "size": 1606,
-        "transfer": 1746
-      },
       "css": {
+        "size": 216,
+        "transfer": 364
+      },
+      "fonts": {
         "size": 0,
+        "transfer": 0
+      },
+      "html": {
+        "size": 335,
         "transfer": 0
       },
       "images": {
         "size": 7422,
-        "transfer": 7549
+        "transfer": 7572
+      },
+      "js": {
+        "size": 1606,
+        "transfer": 1769
+      },
+      "total": {
+        "size": 9579,
+        "transfer": 9705
+      }
+    },
+    "total": {
+      "css": {
+        "size": 216,
+        "transfer": 364
       },
       "fonts": {
         "size": 0,
         "transfer": 0
       },
       "html": {
-        "size": 261,
-        "transfer": 0
-      }
-    },
-    "external": {
-      "total": {
-        "size": 0,
-        "transfer": 0
-      },
-      "js": {
-        "size": 0,
-        "transfer": 0
-      },
-      "css": {
-        "size": 0,
+        "size": 335,
         "transfer": 0
       },
       "images": {
-        "size": 0,
-        "transfer": 0
+        "size": 7422,
+        "transfer": 7572
       },
-      "fonts": {
-        "size": 0,
-        "transfer": 0
+      "js": {
+        "size": 1606,
+        "transfer": 1769
       },
-      "html": {
-        "size": 0,
-        "transfer": 0
+      "total": {
+        "size": 9579,
+        "transfer": 9705
       }
     }
   },
-  "coverage": {
-    "total": {
-      "js": {
-        "absolute": {
-          "total": 1606,
-          "unused": 606,
-          "used": 1000
-        },
-        "percent": {
-          "used": 0.6226650062266501,
-          "unused": 0.37733499377334995
-        }
-      },
-      "css": {
-        "absolute": {
-          "total": 0,
-          "unused": 0,
-          "used": 0
-        },
-        "percent": {
-          "used": 0,
-          "unused": 0
-        }
-      }
-    },
-    "internal": {
-      "js": {
-        "absolute": {
-          "total": 1606,
-          "unused": 606,
-          "used": 1000
-        },
-        "percent": {
-          "used": 0.6226650062266501,
-          "unused": 0.37733499377334995
-        }
-      },
-      "css": {
-        "absolute": {
-          "total": 0,
-          "unused": 0,
-          "used": 0
-        },
-        "percent": {
-          "used": 0,
-          "unused": 0
-        }
-      }
-    },
-    "external": {
-      "js": {
-        "absolute": {
-          "total": 0,
-          "unused": 0,
-          "used": 0
-        },
-        "percent": {
-          "used": 0,
-          "unused": 0
-        }
-      },
-      "css": {
-        "absolute": {
-          "total": 0,
-          "unused": 0,
-          "used": 0
-        },
-        "percent": {
-          "used": 0,
-          "unused": 0
-        }
-      }
-    }
+  "timings": {
+    "end": 562426,
+    "start": 0
   }
 };
 
 module.exports.testActionNetwork = [
   {
-    "url": "http://localhost:3000/",
-    "stats": {
-      "size": 261,
-      "transfer": 0,
-      "timings": {
-        "start": -10929,
-        "response": -7163,
-        "firstByte": -7050,
-        "finish": -6683,
-        "total": 4246
-      }
-    },
-    "internal": true,
-    "type": "text/html",
     "extension": "html",
+    "internal": true,
+    "method": "GET",
+    "stats": {
+      "size": 335,
+      "timings": {
+        "finish": -28396,
+        "firstByte": -28531,
+        "response": -28830,
+        "start": -31556,
+        "total": 3160
+      },
+      "transfer": 0
+    },
     "status": 200,
-    "method": "GET"
+    "type": "text/html",
+    "url": "http://localhost:3000/"
   },
   {
-    "url": "http://localhost:3000/1.b8643a79.js",
+    "extension": "css",
+    "internal": true,
+    "method": "GET",
     "stats": {
-      "size": 1606,
-      "transfer": 1746,
-      "evaluation": 1003,
+      "size": 216,
       "timings": {
-        "start": 22327,
-        "response": 51163,
-        "firstByte": 51379,
-        "finish": 51734,
-        "total": 29407
+        "finish": -25769,
+        "firstByte": -26101,
+        "response": -26348,
+        "start": -31250,
+        "total": 5481
       },
+      "transfer": 364
+    },
+    "status": 200,
+    "type": "text/css",
+    "url": "http://localhost:3000/main.css"
+  },
+  {
+    "extension": "js",
+    "internal": true,
+    "method": "GET",
+    "stats": {
       "coverage": {
         "absolute": {
           "total": 1606,
@@ -563,51 +586,48 @@ module.exports.testActionNetwork = [
           "used": 1000
         },
         "percent": {
-          "used": 0.6226650062266501,
-          "unused": 0.37733499377334995
+          "unused": 0.37733499377334995,
+          "used": 0.6226650062266501
         }
-      }
+      },
+      "size": 1606,
+      "timings": {
+        "finish": 37619,
+        "firstByte": 36853,
+        "response": 36654,
+        "start": 24536,
+        "total": 13083
+      },
+      "transfer": 1769
     },
-    "evaluation": [
-      {
-        "duration": 1003,
-        "type": "evaluation",
-        "timings": {
-          "start": 51861,
-          "end": 52864
-        }
-      }
-    ],
-    "internal": true,
-    "type": "application/javascript",
-    "extension": "js",
     "status": 200,
-    "method": "GET"
+    "type": "application/javascript",
+    "url": "http://localhost:3000/1.1d86ad80.js"
   },
   {
-    "url": "http://localhost:3000/eac2c5c08102bd20a0d2b6c8615d4b1f.png",
+    "extension": "png",
+    "internal": true,
+    "method": "GET",
     "stats": {
       "size": 7422,
-      "transfer": 7549,
       "timings": {
-        "start": 557907,
-        "response": 564498,
-        "firstByte": 564630,
-        "finish": 565646,
-        "total": 7739
-      }
+        "finish": 554556,
+        "firstByte": 553249,
+        "response": 552060,
+        "start": 545165,
+        "total": 9391
+      },
+      "transfer": 7572
     },
-    "internal": true,
-    "type": "image/png",
-    "extension": "png",
     "status": 200,
-    "method": "GET"
+    "type": "image/png",
+    "url": "http://localhost:3000/eac2c5c08102bd20a0d2b6c8615d4b1f.png"
   }
 ];
 
 module.exports.testActionCoverage = [
   {
-    "url": "http://localhost:3000/main.0ebfa121.js",
+    "url": "http://localhost:3000/main.0dd46d15.js",
     "absolute": {
       "total": 226738,
       "unused": 171899,
@@ -619,7 +639,7 @@ module.exports.testActionCoverage = [
     }
   },
   {
-    "url": "http://localhost:3000/1.b8643a79.js",
+    "url": "http://localhost:3000/1.1d86ad80.js",
     "absolute": {
       "total": 1606,
       "unused": 606,

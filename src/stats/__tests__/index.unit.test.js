@@ -16,7 +16,8 @@ describe('Stats unit tests', () => {
       network: expect.any(Array),
       coverage: expect.any(Array),
       screenshots: expect.any(Object),
-      actions: expect.any(Object)
+      actions: expect.any(Object),
+      tracing: expect.any(Buffer)
     });
 
     expect(result.stats).toEqual(output.stats);

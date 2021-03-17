@@ -32,8 +32,20 @@ const objAggregation = (obj) => map(obj, aggregate);
 
 const objDeepAggregation = (obj) => deepMapUntilArray(obj, aggregate);
 
+const concatWithWeight = (weightType) => (weight, data, target) => {
+  return data ? [
+    ...target,
+    {
+      ...data,
+      weight,
+      weightType
+    }
+  ] : null
+}
+
 module.exports = {
   objAggregation,
   objDeepAggregation,
-  aggregate
+  aggregate,
+  concatWithWeight
 };

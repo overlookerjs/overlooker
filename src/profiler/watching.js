@@ -28,12 +28,25 @@ const writeTracing = async (page) => {
   await page.tracing.start({
     categories: [
       '-*',
+      'blink.console',
       'blink.user_timing',
       'blink.user_timing,rail',
       'devtools.timeline',
-      'loading,rail,devtools.timeline',
+      'devtools.timeline,rail',
+      "disabled-by-default-cpu_profiler",
+      "disabled-by-default-cpu_profiler.debug",
       'disabled-by-default-devtools.screenshot',
-      'layout_shift.debug'
+      'disabled-by-default-devtools.timeline',
+      'disabled-by-default-devtools.timeline.frame',
+      'disabled-by-default-devtools.timeline.stack',
+      'disabled-by-default-v8.compile',
+      'disabled-by-default-v8.cpu_profile',
+      'disabled-by-default-v8.cpu_profiler',
+      'disabled-by-default-v8.cpu_profiler.hires',
+      'latencyInfo',
+      'layout_shift.debug',
+      'v8,devtools.timeline',
+      'v8.execute'
     ]
   });
 
@@ -67,8 +80,8 @@ const writeCoverage = async (page) => {
 const watch = async (page) => {
   await page.setRequestInterception(false);
 
-  const getTracing = await writeTracing(page);
   const getCoverage = await writeCoverage(page);
+  const getTracing = await writeTracing(page);
 
   await page.setRequestInterception(true);
 

@@ -1,4 +1,4 @@
-const { getEventsTreeByThreads } = require('./events-tree.js');
+const { getEventsGroups, getEventsTree } = require('./events-tree.js');
 const { makeEventsRelative } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
@@ -21,6 +21,7 @@ const {
 } = require('./events-evaluation.js');
 const { getScreenshotsByMetrics } = require('./events-screenshots.js');
 const { flat } = require('./../objects-utils.js');
+const { getBriefTracing, processTracingTree } = require('./events-brief-tracing.js');
 
 const getAllStats = async ({
                              tracing,
@@ -39,8 +40,12 @@ const getAllStats = async ({
   const mainFrame = firstEvent.args.frame;
   const relativeEvents = makeEventsRelative(tracing, firstEvent);
 
-  const mainEvents = getEventsTreeByThreads(makeEventsRelative(tracing, firstEvent)).find(({ name }) => name === 'main').events;
-  const meaningfulEvaluations = getMeaningEvaluationEvents(mainEvents);
+  const eventsGroups = getEventsGroups(relativeEvents);
+  const mainEvents = eventsGroups.find(({ name }) => name === 'Main').events;
+  const otherEvents = eventsGroups.find(({ name }) => name === 'Other').events;
+  const mainEventsTree = processTracingTree(getEventsTree(mainEvents));
+
+  const meaningfulEvaluations = getMeaningEvaluationEvents(mainEventsTree);
   const extractEvaluationValues = prepareEvaluations(meaningfulEvaluations);
 
   const evaluationMap = makeScriptsEvaluationMap(extractEvaluationValues.filter(({ url }) => url));
@@ -55,7 +60,7 @@ const getAllStats = async ({
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
   const custom = getCustomMetrics(relativeEvents, customMetrics);
   const speedIndex = await getSpeedIndex(tracing);
-  const totalBlockingTime = getTotalBlockingTime(mainEvents, timeToInteractive, timings.firstContentfulPaint);
+  const totalBlockingTime = getTotalBlockingTime(mainEventsTree, timeToInteractive, timings.firstContentfulPaint);
   const cumulativeLayoutShift = getCumulativeLayoutShift(relativeEvents);
 
   const userCentric = {
@@ -88,6 +93,7 @@ const getAllStats = async ({
   })).map(([name, value]) => ({ name, value }));
 
   const screenshots = getScreenshotsByMetrics(relativeEvents, flattedTimestamps);
+  const briefTracing = await getBriefTracing(mainEvents, otherEvents, firstEvent, config);
 
   return {
     stats: {
@@ -103,6 +109,7 @@ const getAllStats = async ({
     network,
     coverage,
     screenshots,
+    tracing: briefTracing,
     actions: actionsStats
   }
 };
