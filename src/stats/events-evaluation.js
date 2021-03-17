@@ -67,8 +67,8 @@ const extractPayloadFromEvent = (type, event, eventWithUrl = event) => ({
   duration: event.duration,
   url: (eventWithUrl.data ? eventWithUrl.data.url : '') || '',
   timings: {
-    start: event.start,
-    end: event.start + event.duration
+    start: event.start * 1000,
+    end: (event.start + event.duration) * 1000
   }
 });
 

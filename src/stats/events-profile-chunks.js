@@ -827,7 +827,7 @@ class TimelineJSProfileProcessor {
       }
     }
 
-    const startTime = events.find(({name}) => name === 'RunTask').startTime; // first runTask
+    const startTime = events.find(({ name }) => name === 'RunTask').startTime; // first runTask
 
     this.forEachEvent(events, onStartEvent, onEndEvent, onInstantEvent, startTime);
 
@@ -1244,36 +1244,45 @@ const EXCLUDED_CATEGORIES = [
 ];
 
 function getExpandedMainThreadEventsTree(mainEvents, otherEvents, firstEvent) {
-  const profileEventsInMainProcess = otherEvents.filter(({ name }) => name === 'ProfileChunk');
   const profileStartEvent = mainEvents.find(({ name }) => name === 'Profile');
-  const preparedEvents = prepareEvent([profileStartEvent, ...profileEventsInMainProcess].map((event) => ({
-    ...event,
-    startTime: (event.ts + firstEvent.ts) / 1000
-  })));
-  const cpuProfileDataModel = new CPUProfileDataModel(preparedEvents);
 
-  const jsSampleEvents = TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(cpuProfileDataModel);
+  if (profileStartEvent) {
+    const profileEventsInMainProcess = otherEvents.filter(({ name }) => name === 'ProfileChunk');
 
-  const jsFrameEvents = TimelineJSProfileProcessor.generateJSFrameEvents([...jsSampleEvents, ...mainEvents.map((event) => ({
-    ...event,
-    startTime: (event.ts + firstEvent.ts) / 1000,
-    endTime: event.dur ? (event.ts + firstEvent.ts) / 1000 + event.dur / 1000 : undefined,
-    duration: event.dur ? event.dur / 1000 : undefined
-  }))].sort((a, b) => a.startTime - b.startTime));
+    const preparedEvents = prepareEvent([profileStartEvent, ...profileEventsInMainProcess].map((event) => ({
+      ...event,
+      startTime: (event.ts + firstEvent.ts) / 1000
+    })));
+    const cpuProfileDataModel = new CPUProfileDataModel(preparedEvents);
 
-  const clearedMainThreadEvents = filterCategories(mainEvents, EXCLUDED_CATEGORIES);
+    const jsSampleEvents = TimelineJSProfileProcessor.generateTracingEventsFromCpuProfile(cpuProfileDataModel);
 
-  const expandedMainThreadEvents = jsFrameEvents.map((event) => ({
-    ...event,
-    ts: +((event.startTime - firstEvent.ts / 1000) * 1000).toFixed(3),
-    dur: +((event.endTime - event.startTime) * 1000).toFixed(3),
-    name: 'JSFrame',
-    args: event.args.data.callFrame
-  })).concat(clearedMainThreadEvents).sort((a, b) => a.ts - b.ts);
+    const jsFrameEvents = TimelineJSProfileProcessor.generateJSFrameEvents([
+      ...jsSampleEvents,
+      ...mainEvents.map((event) => ({
+        ...event,
+        startTime: (event.ts + firstEvent.ts) / 1000,
+        endTime: event.dur ? (event.ts + firstEvent.ts) / 1000 + event.dur / 1000 : undefined,
+        duration: event.dur ? event.dur / 1000 : undefined
+      }))
+    ].sort((a, b) => a.startTime - b.startTime));
 
-  const expandedMainThreadEventsTree = getEventsTree(expandedMainThreadEvents);
+    const clearedMainThreadEvents = filterCategories(mainEvents, EXCLUDED_CATEGORIES);
 
-  return expandedMainThreadEventsTree;
+    const expandedMainThreadEvents = jsFrameEvents.map((event) => ({
+      ...event,
+      ts: +((event.startTime - firstEvent.ts / 1000) * 1000).toFixed(3),
+      dur: +((event.endTime - event.startTime) * 1000).toFixed(3),
+      name: 'JSFrame',
+      args: event.args.data.callFrame
+    })).concat(clearedMainThreadEvents).sort((a, b) => a.ts - b.ts);
+
+    const expandedMainThreadEventsTree = getEventsTree(expandedMainThreadEvents);
+
+    return expandedMainThreadEventsTree;
+  }
+
+  return [];
 }
 
 module.exports = {

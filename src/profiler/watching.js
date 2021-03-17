@@ -80,8 +80,8 @@ const writeCoverage = async (page) => {
 const watch = async (page) => {
   await page.setRequestInterception(false);
 
-  const getTracing = await writeTracing(page);
   const getCoverage = await writeCoverage(page);
+  const getTracing = await writeTracing(page);
 
   await page.setRequestInterception(true);
 
