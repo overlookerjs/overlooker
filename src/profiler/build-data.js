@@ -10,52 +10,60 @@ const instance = axios.create({
 
 const fetchBuildData = async (config) => {
   const {
-    buildData: {
-      url: buildDataUrl,
-      getter
-    },
+    buildData,
     pages: [{ url }],
     logger,
     progress,
     host
   } = config;
-  let complete = 0;
-  const axiosConfig = {
-    onUploadProgress: async (progressEvent) => {
-      const oldComplete = complete;
 
-      complete = Math.round((progressEvent.loaded / progressEvent.total) / 100);
+  if (buildData) {
+    const {
+      url: buildDataUrl,
+      getter
+    } = buildData;
+    let complete = 0;
+    const axiosConfig = {
+      onUploadProgress: async (progressEvent) => {
+        const oldComplete = complete;
 
-      await progress(complete - oldComplete);
+        complete = Math.round((progressEvent.loaded / progressEvent.total) / 100);
+
+        await progress(complete - oldComplete);
+      }
+    };
+
+    await logger('request build data');
+
+    try {
+      let data;
+
+      if (getter) {
+        data = await getter(url);
+      } else if (buildDataUrl) {
+        const response = await (
+          isRelativeUrl(buildDataUrl) ? (
+            instance.get((host || getHost(url)) + buildDataUrl, axiosConfig)
+          ) : (
+            instance.get(buildDataUrl, axiosConfig)
+          )
+        );
+
+        data = response.data;
+      }
+
+      await progress(0.01);
+
+      await logger('build data received');
+
+      return data;
+    } catch (e) {
+      await logger(`cannot receive build data\n${e.stack}`);
+
+      return null;
     }
-  };
-
-  await logger('request build data');
-
-  try {
-    let data;
-
-    if (getter) {
-      data = await getter(url);
-    } else if (buildDataUrl) {
-      const response = await (
-        isRelativeUrl(buildDataUrl) ? (
-          instance.get((host || getHost(url)) + buildDataUrl, axiosConfig)
-        ) : (
-          instance.get(buildDataUrl, axiosConfig)
-        )
-      );
-
-      data = response.data;
-    }
-
-    await progress(0.01);
-
-    await logger('build data received');
-
-    return data;
-  } catch (e) {
-    await logger(`cannot receive build data\n${e.stack}`);
+  } else {
+    await logger(`Build data not found`);
 
     return null;
   }

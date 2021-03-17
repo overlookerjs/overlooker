@@ -182,6 +182,7 @@ const loadPage = async (context, config, pageConfig) => {
 
     await client.send('Network.clearBrowserCache');
     await client.send('Network.clearBrowserCookies');
+    await client.send('Profiler.enable');
 
     await setupPageConfig(context, page, client, config, pageConfig);
 

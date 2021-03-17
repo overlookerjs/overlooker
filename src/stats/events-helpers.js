@@ -30,6 +30,8 @@ const filterEventsByName = (events, names) => events.filter(({ name }) => names.
 
 const filterByFrame = (events, frame) => events.filter(({ args }) => args && args.frame === frame);
 
+const filterCategories = (events, excludedCategories) => events.filter(({ cat }) => !excludedCategories.includes(cat));
+
 module.exports = {
   getEventsTimestamps,
   findEventByName,
@@ -37,5 +39,6 @@ module.exports = {
   filterByFrame,
   makeEventsRelative,
   getLastEvent,
-  getTimestamps
+  getTimestamps,
+  filterCategories
 };

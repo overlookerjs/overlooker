@@ -1,59 +1,40 @@
-const { make } = require('../objects-utils.js');
-
-const insertToNested = (eventLeaf, insertedEvent) => {
-  const { event, children } = eventLeaf;
-
-  if (event.ts <= insertedEvent.ts && insertedEvent.ts <= event.ts + event.dur && (!insertedEvent.dur || event.dur >= insertedEvent.dur)) {
-    const insertedToChildren = children.some((child) => insertToNested(child, insertedEvent));
-
-    if (!insertedToChildren) {
-      children.push({
-        event: insertedEvent,
-        children: []
-      });
-    }
-
-    return true;
-  }
-
-  return false;
-};
-
 const castThreadName = (threadEvent) => {
   const name = threadEvent && threadEvent.args.name;
 
+  if (!name) {
+    return 'Other';
+  }
+
   switch (name) {
     case 'CrRendererMain':
+      return 'Main';
     case 'CrBrowserMain':
-      return 'main';
-    case 'ThreadPoolForegroundWorker':
-      return 'worker';
-    case 'Compositor':
-      return 'compositor';
-    case 'NetworkService':
-      return 'networkService';
+      return 'BrowserMain';
     default:
-      return 'unknown';
+      return name;
   }
 };
 
-const getEventsByThreads = (events) => (
+const getEventsGroups = (events) => (
   Object.values(
-    events.reduce((acc, event) => {
-      if (!acc[event.tid]) {
-        acc[event.tid] = [];
-      }
+    events
+      .filter(({ tid }) => tid)
+      .reduce((acc, event) => {
+        const key = `${event.tid}-${event.pid}`;
 
-      acc[event.tid].push(event);
+        if (!acc[key]) {
+          acc[key] = [];
+        }
 
-      return acc;
-    }, {})
+        acc[key].push(event);
+
+        return acc;
+      }, {})
   )
     .map((events) => ({
       name: castThreadName(events.find(({ name }) => name === 'thread_name')),
       events
     }))
-    .filter(({ name }) => name !== 'unknown')
     .reduce((acc, bunch) => {
       // workaround for linux - tracing in linux has independent thread
       // for rendering screenshots and he has the same identifier
@@ -73,22 +54,59 @@ const getEventsByThreads = (events) => (
     }, [])
 );
 
-const getEventsTree = (events) => (
-  events
-    .reduce((acc, event) => {
-      if (!acc.some((ev) => insertToNested(ev, event))) {
-        acc.push({
-          event,
-          children: []
-        });
-      }
+const insertToNested = (eventLeaf, insertedEvent) => {
+  const { event, children } = eventLeaf;
 
-      return acc;
-    }, [])
-);
+  if (event.ts <= insertedEvent.ts && insertedEvent.ts < event.ts + event.dur && (!insertedEvent.dur || event.dur >= insertedEvent.dur)) {
+    const insertedToChildren = children.some((child) => insertToNested(child, insertedEvent));
+
+    if (!insertedToChildren) {
+      children.push({
+        event: insertedEvent,
+        children: []
+      });
+    }
+
+    return true;
+  }
+
+  return false;
+};
+
+const getEventsTree = (events) => {
+  let root = {
+    event: {
+      name: 'root',
+      ts: -Infinity,
+      dur: Infinity
+    },
+    children: [],
+    parent: null
+  };
+
+  let currentParentEvent = root;
+
+  for (let event of events.filter(({ dur }) => dur)) {
+    while (currentParentEvent.event.ts > event.ts || event.ts >= currentParentEvent.event.ts + currentParentEvent.event.dur) {
+      currentParentEvent = currentParentEvent.parent;
+    }
+
+    const nestedEvent = {
+      parent: currentParentEvent,
+      children: [],
+      event
+    }
+
+    currentParentEvent.children.push(nestedEvent);
+
+    currentParentEvent = nestedEvent;
+  }
+
+  return root.children;
+}
 
 const filterByNestedSequenceEvents = (eventsTree, [name, ...rest]) => eventsTree
-  .filter(({ event, children }) => event.name === name && (!rest.length || filterByNestedSequenceEvents(children, rest).length));
+  .filter((event) => event.name === name && (!rest.length || filterByNestedSequenceEvents(event.children, rest).length));
 
 const filterByNestedEvent = (eventsTree, name) => eventsTree
   .filter(({ event, children }) => event.name === name || filterByNestedEvent(children, name).length);
@@ -107,12 +125,25 @@ const getNestedEventsBySequence = (eventsTree, [name, ...rest], acc = []) => eve
     return acc;
   }, acc);
 
-const getEventsTreeByThreads = (events) => getEventsByThreads(events)
-  .map(({ name, events: threadEvents }) => ({ name, events: getEventsTree(threadEvents) }));
+const getEventsTreeByGroups = (events) => getEventsGroups(events)
+  .map(({ name, events: threadEvents }) => ({
+    name,
+    events: getEventsTree(threadEvents)
+  }));
+
+const sliceEventsTreeLevel = (events) => events.reduce((acc, { children }) => children ? acc.concat(children) : acc, []);
+
+const sliceEventsTreeEvent = (events, eventName) => events.reduce((acc, event) => (
+  event.name === eventName ? acc.concat(event.children) : acc.concat(event), []
+));
 
 module.exports = {
   filterByNestedSequenceEvents,
   filterByNestedEvent,
-  getEventsTreeByThreads,
-  getNestedEventsBySequence
+  getEventsTreeByGroups,
+  getNestedEventsBySequence,
+  getEventsTree,
+  getEventsGroups,
+  sliceEventsTreeLevel,
+  sliceEventsTreeEvent
 };
