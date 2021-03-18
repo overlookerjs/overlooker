@@ -109,7 +109,10 @@ const getAllStats = async ({
     network,
     coverage,
     screenshots,
-    tracing: briefTracing,
+    tracing: {
+      data: briefTracing,
+      marks: flattedTimestamps
+    },
     actions: actionsStats
   }
 };
