@@ -88,7 +88,7 @@ const processTracingTree = (events) => map(
     data: node.event.args,
     start: node.event.ts / 1000,
     duration: node.event.dur / 1000,
-    type: getEventType(node.event),
+    type: node.event.name,
     name: getEventName(node.event),
     children: node.children,
   })
@@ -98,15 +98,6 @@ const getEventName = (event) => {
   switch (event.name) {
     case 'JSFrame':
       return event.args.functionName || '(anonymous)';
-    default:
-      return event.name;
-  }
-}
-
-const getEventType = (event) => {
-  switch (event.name) {
-    case 'JSFrame':
-      return 'JSFrame:' + event.args.scriptId;
     default:
       return event.name;
   }
@@ -150,10 +141,10 @@ const getBriefTracing = async (mainEvents, otherEvents, firstEvent, config) => {
     const briefTracing = processTracingTree(expandedMainThreadEventsTree);
 
     switch (tracing) {
-      case 'json':
-        return briefTracing;
       case 'zip':
         return await gzipBriefTracing(briefTracing);
+      default:
+        return briefTracing;
     }
   }
 
@@ -162,5 +153,9 @@ const getBriefTracing = async (mainEvents, otherEvents, firstEvent, config) => {
 
 module.exports = {
   getBriefTracing,
-  processTracingTree
+  processTracingTree,
+  walk,
+  filter,
+  map,
+  change
 };
