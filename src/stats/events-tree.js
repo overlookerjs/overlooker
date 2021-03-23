@@ -92,7 +92,6 @@ const getEventsTree = (events) => {
     while (
       event.ts < currentParentEvent.event.ts // event starts early
       || event.ts >= round(currentParentEvent.event.ts + currentParentEvent.event.dur) // event starts lately
-      || round(event.dur + event.ts) > round(currentParentEvent.event.ts + currentParentEvent.event.dur) // event ended lately
       ) {
       currentParentEvent = currentParentEvent.parent;
     }
