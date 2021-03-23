@@ -73,7 +73,7 @@ const insertToNested = (eventLeaf, insertedEvent) => {
   return false;
 };
 
-const round = (number) => Math.round(number * 100000) / 100000
+const round = (number) => Math.round(number * 1000) / 1000
 
 const getEventsTree = (events) => {
   let root = {
@@ -90,8 +90,8 @@ const getEventsTree = (events) => {
 
   for (let event of events.filter(({ dur }) => dur)) {
     while (
-      event.ts < currentParentEvent.event.ts // event starts early
-      || event.ts >= round(currentParentEvent.event.ts + currentParentEvent.event.dur) // event starts lately
+      round(event.ts) < round(currentParentEvent.event.ts) // event starts early
+      || round(event.ts) >= round(currentParentEvent.event.ts + currentParentEvent.event.dur) // event starts lately
       ) {
       currentParentEvent = currentParentEvent.parent;
     }
