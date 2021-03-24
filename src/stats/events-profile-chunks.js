@@ -1245,6 +1245,7 @@ const EXCLUDED_CATEGORIES = [
 
 function getExpandedMainThreadEventsTree(mainEvents, otherEvents, firstEvent) {
   const profileStartEvent = mainEvents.find(({ name }) => name === 'Profile');
+  const clearedMainThreadEvents = filterCategories(mainEvents, EXCLUDED_CATEGORIES);
 
   if (profileStartEvent) {
     const profileEventsInMainProcess = otherEvents.filter(({ name }) => name === 'ProfileChunk');
@@ -1267,22 +1268,24 @@ function getExpandedMainThreadEventsTree(mainEvents, otherEvents, firstEvent) {
       }))
     ].sort((a, b) => a.startTime - b.startTime));
 
-    const clearedMainThreadEvents = filterCategories(mainEvents, EXCLUDED_CATEGORIES);
-
-    const expandedMainThreadEvents = jsFrameEvents.map((event) => ({
-      ...event,
-      ts: +((event.startTime - firstEvent.ts / 1000) * 1000).toFixed(3),
-      dur: +((event.endTime - event.startTime) * 1000).toFixed(3),
-      name: 'JSFrame',
-      args: event.args.data.callFrame
-    })).concat(clearedMainThreadEvents).sort((a, b) => a.ts - b.ts);
+    const expandedMainThreadEvents = jsFrameEvents
+      .map((event) => ({
+        ...event,
+        ts: Math.round((event.startTime - firstEvent.ts / 1000) * 1000),
+        dur: Math.round((event.endTime - event.startTime) * 1000),
+        name: 'JSFrame',
+        args: event.args.data.callFrame
+      }))
+      .filter(({ dur }) => dur)
+      .concat(clearedMainThreadEvents)
+      .sort((a, b) => a.ts - b.ts);
 
     const expandedMainThreadEventsTree = getEventsTree(expandedMainThreadEvents);
 
     return expandedMainThreadEventsTree;
   }
 
-  return [];
+  return clearedMainThreadEvents || [];
 }
 
 module.exports = {
