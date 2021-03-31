@@ -11,14 +11,14 @@ describe('Stats unit tests', () => {
   test('Check getAllStats', async () => {
     const result = await getAllStats(input, preparedConfig);
 
-    expect(result).toEqual({
+    expect(result).toEqual(expect.objectContaining({
       stats: expect.any(Object),
       network: expect.any(Array),
       coverage: expect.any(Array),
       screenshots: expect.any(Object),
-      actions: expect.any(Object),
-      tracing: expect.any(Buffer)
-    });
+      tracing: expect.any(Object),
+      actions: expect.any(Object)
+    }));
 
     expect(result.stats).toEqual(output.stats);
 
