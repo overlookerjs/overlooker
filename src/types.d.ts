@@ -21,28 +21,74 @@ declare module "overlooker" {
     actions: ProfileActions,
     stats: ProfileStats,
     network: ProfileNetwork,
-    screenshots: ProfileScreenshots
+    screenshots: ProfileScreenshots,
+    tracing: {
+      type: 'zip',
+      data: ProfileTracingsZip
+    } | {
+      type: 'json',
+      data: ProfileTracingsJson
+    }
   };
 
-  export type ProfileScreenshots = {
-    max: ProfileScreenshotsSection,
-    min: ProfileScreenshotsSection,
-    q1: ProfileScreenshotsSection,
-    q3: ProfileScreenshotsSection,
-    percentile98: ProfileScreenshotsSection,
-    percentile02: ProfileScreenshotsSection,
-    median: ProfileScreenshotsSection,
-    mean: ProfileScreenshotsSection,
+  export type AggregationSlices<T> = {
+    max: T,
+    min: T,
+    q1: T,
+    q3: T,
+    percentile98: T,
+    percentile02: T,
+    median: T,
+    mean: T,
   };
+
+  export type ProfileScreenshots = WeightedAggregation<ProfileScreenshotsSection>
 
   export type ProfileScreenshotsSection = {
     weight: number,
-    series: Array<{
-      snapshot: string,
+    weightType: string,
+    snapshots: Array<{
       timestamp: number,
-      events: Array<{ value: number, name: string }>
+      snapshot: string
+    }>,
+    events: Array<{
+      name: string,
+      value: number
     }>
+  }
+
+  export type FlameChartNode = {
+    name: string,
+    start: number,
+    duration: number,
+    type?: string,
+    color?: string,
+    children?: FlameChartList
   };
+
+  export type FlameChartList = Array<FlameChartNode>;
+
+  export type ProfileTracingsJson = WeightedAggregation<{
+    weight: number,
+    weightType: string,
+    data: FlameChartList
+    marks: Array<{
+      name: string,
+      value: number
+    }>
+  }>;
+
+  export type ProfileTracingsZip = WeightedAggregation<{
+    weight: number,
+    weightType: string,
+    data: Buffer
+    marks: Array<{
+      name: string,
+      value: number
+    }>
+  }>;
+
+  export type WeightedAggregation<T extends { weight: number, weightType: string}> = AggregationSlices<T>;
 
   export type ProfileActions = {
     [actionName: string]: ProfileAction
