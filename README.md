@@ -213,3 +213,6 @@ const result = check(profileDataFeature, budget);
 
 ## Tool for getting build data
 [Bundle Internals Plugin](https://github.com/smelukov/bundle-internals)
+
+## Tool for view trace events
+[flame-chart-js](https://github.com/pyatyispyatil/flame-chart-js)
