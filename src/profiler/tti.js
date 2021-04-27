@@ -18,9 +18,13 @@ const runTTIObserver = (name) => {
   globalTTI.o.observe({ entryTypes: ['longtask'] });
 };
 
-const injectLongTasksObserver = async (page) => {
+const injectLongTasksObserver = async (page, isPlaywright) => {
   /* istanbul ignore next */
-  await page.evaluateOnNewDocument(runTTIObserver, globalTTIName);
+  await (isPlaywright ? (
+    page.addInitScript(runTTIObserver, globalTTIName)
+  ) : (
+    page.evaluateOnNewDocument(runTTIObserver, globalTTIName)
+  ));
 };
 
 const getTti = async (page, logger, firstEvent) => {
@@ -63,7 +67,7 @@ const getTti = async (page, logger, firstEvent) => {
 
     const res = await new Promise(async (resolve) => {
         setTimeout(() => {
-            resolve(errRes);       
+            resolve(errRes);
         }, 60000)
 
         const ttiRes = await window.ttiPolyfill.getFirstConsistentlyInteractive({ ttiPropName });
