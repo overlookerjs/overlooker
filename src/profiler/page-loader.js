@@ -146,7 +146,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 };
 
-const profileActions = async (page, client, config, pageConfig) => {
+const profileActions = async (context, page, client, config, pageConfig) => {
   const res = {};
   const { logger } = config;
   const pages = make(config.pages.map(({ name, url }) => [name, url]));
@@ -155,7 +155,7 @@ const profileActions = async (page, client, config, pageConfig) => {
     for (const { name, action, layers } of pageConfig.actions) {
       await logger(`action "${name}" started`);
 
-      const getWatchingResult = await watch(page);
+      const getWatchingResult = await watch(context, page, config.isPlaywright);
 
       /* istanbul ignore next */
       await page.evaluate((as) => window.performance.mark(as), ACTION_START);
@@ -230,7 +230,7 @@ const loadPage = async (context, config, pageConfig) => {
     await injectElementTimingHandler(page);
     const elementsTimings = await getElementsTimings(page, config.isPlaywright);
 
-    const actions = await profileActions(page, client, config, pageConfig);
+    const actions = await profileActions(context, page, client, config, pageConfig);
 
     await page.close();
 
