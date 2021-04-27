@@ -20,6 +20,7 @@ const prepareConfig = ({
                          host,
                          pages,
                          customMetrics = {},
+                         headlessBrowser,
                          ...rest
                        }) => ({
   requests: {
@@ -61,6 +62,7 @@ const prepareConfig = ({
       url: urlJoin(host, page.url)
     })) : pages
   }),
+  isPlaywright: Boolean(headlessBrowser && headlessBrowser === 'playwright'),
   ...rest
 });
 

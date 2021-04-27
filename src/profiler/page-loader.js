@@ -14,13 +14,89 @@ const { devices, viewports } = require('./viewports.js');
 const { RequestsTracker } = require('./requests-tracker.js');
 const cache = require('./cache.js');
 
-const setupPageConfig = async (context, page, client, config, pageConfig) => {
-  const { logger, throttling } = config;
+const interceptFinishedRequest = async (postDataHandler, logger, interceptedRequest) => {
+  if (interceptedRequest.method() === 'POST') {
+    const url = interceptedRequest.url();
+    const postData = postDataHandler(url, interceptedRequest.postData());
+    const key = url + postData;
 
-  if (config.platform === 'mobile') {
-    await page.emulate(devices.mobile);
-  } else {
-    await page.setViewport(viewports.desktop);
+    const cachedObject = cache.has(key);
+
+    if (!cachedObject) {
+      try {
+        const response = interceptedRequest.response();
+
+        const body = await response.text();
+        const headers = response.headers();
+        const status = response.status();
+
+        const data = {
+          body,
+          headers,
+          status,
+          contentType: headers['content-type']
+        };
+
+        cache.set(key, data);
+      } catch (e) {
+        await logger(e.stack);
+      }
+    }
+  }
+}
+
+const interceptRequest = async (config, isProxyCache, responseDataHandler, postDataHandler, logger, interceptedRequest, route) => {
+  const url = interceptedRequest.url();
+
+  if (config.requests && config.requests.ignore && config.requests.ignore(url)) {
+    try {
+      await (route || interceptedRequest).abort();
+    } catch (e) {
+      logger(e.stack);
+    }
+
+    return;
+  }
+
+  if (isProxyCache && interceptedRequest.method() === 'POST') {
+    const rawPostData = interceptedRequest.postData();
+    const postData = postDataHandler(url, rawPostData);
+    const cachedObject = cache.get(url + postData);
+
+    if (cachedObject) {
+      const preparedBody = responseDataHandler(url, rawPostData, cachedObject.body);
+
+      setTimeout(async () => {
+        try {
+          await (route && route.fulfill || interceptedRequest.respond)({
+            ...cachedObject,
+            body: preparedBody
+          });
+        } catch (e) {
+          logger(e.stack);
+        }
+      }, 500);
+
+      return;
+    }
+  }
+
+  try {
+    await (route || interceptedRequest).continue();
+  } catch (e) {
+    logger(e.stack);
+  }
+}
+
+const setupPageConfig = async (context, page, client, config, pageConfig) => {
+  const { logger, throttling, isPlaywright } = config;
+
+  if (!isPlaywright) {
+    if (config.platform === 'mobile') {
+      await page.emulate(devices.mobile);
+    } else {
+      await page.setViewport(viewports.desktop);
+    }
   }
 
   if (throttling) {
@@ -55,80 +131,18 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
     (url, postData, response) => response
   )
 
-  page.on('request', async (interceptedRequest) => {
-    const url = interceptedRequest.url();
-
-    if (config.requests && config.requests.ignore && config.requests.ignore(url)) {
-      try {
-        await interceptedRequest.abort();
-      } catch (e) {
-        logger(e.stack);
-      }
-
-      return;
-    }
-
-    if (isProxyCache && interceptedRequest.method() === 'POST') {
-      const rawPostData = interceptedRequest.postData();
-      const postData = postDataHandler(url, rawPostData);
-      const cachedObject = cache.get(url + postData);
-
-      if (cachedObject) {
-        const preparedBody = responseDataHandler(url, rawPostData, cachedObject.body);
-
-        setTimeout(async () => {
-          try {
-            await interceptedRequest.respond({
-              ...cachedObject,
-              body: preparedBody
-            });
-          } catch (e) {
-            logger(e.stack);
-          }
-        }, 500);
-
-        return;
-      }
-    }
-
-    try {
-      await interceptedRequest.continue();
-    } catch (e) {
-      logger(e.stack);
-    }
-  });
+  if (config.isPlaywright) {
+    page.route(/.*/, (route, request) => interceptRequest(config, isProxyCache, responseDataHandler, postDataHandler, logger, request, route));
+  } else {
+    page.on('request', (request) => interceptRequest(config, isProxyCache, responseDataHandler, postDataHandler, logger, request));
+  }
 
   if (isProxyCache) {
-    page.on('requestfinished', async (interceptedRequest) => {
-      if (interceptedRequest.method() === 'POST') {
-        const url = interceptedRequest.url();
-        const postData = postDataHandler(url, interceptedRequest.postData());
-        const key = url + postData;
-
-        const cachedObject = cache.has(key);
-
-        if (!cachedObject) {
-          try {
-            const response = interceptedRequest.response();
-
-            const body = await response.text();
-            const headers = response.headers();
-            const status = response.status();
-
-            const data = {
-              body,
-              headers,
-              status,
-              contentType: headers['content-type']
-            };
-
-            cache.set(key, data);
-          } catch (e) {
-            await logger(e.stack);
-          }
-        }
-      }
-    });
+    if (config.isPlaywright) {
+      page.on('requestfinished', (route, request) => interceptFinishedRequest(postDataHandler, logger, request));
+    } else {
+      page.on('requestfinished', (request) => interceptFinishedRequest(postDataHandler, logger, request));
+    }
   }
 };
 
@@ -176,9 +190,10 @@ const loadPage = async (context, config, pageConfig) => {
   const { url, layers } = pageConfig;
 
   const page = await context.newPage();
+  let getWatchingResult;
 
   try {
-    const client = await page.target().createCDPSession();
+    const client = config.isPlaywright ? await page.context().newCDPSession(page) : await page.target().createCDPSession();
 
     await client.send('Network.clearBrowserCache');
     await client.send('Network.clearBrowserCookies');
@@ -186,15 +201,15 @@ const loadPage = async (context, config, pageConfig) => {
 
     await setupPageConfig(context, page, client, config, pageConfig);
 
-    const getWatchingResult = await watch(page, client);
+    getWatchingResult = await watch(context, page, config.isPlaywright);
 
-    await injectLongTasksObserver(page);
-    await injectElementTimingObserver(page);
+    await injectLongTasksObserver(page, config.isPlaywright);
+    await injectElementTimingObserver(page, config.isPlaywright);
 
     const tracker = new RequestsTracker();
     tracker.init(page);
 
-    await page.goto(url, { timeout: 60000, waitUntil: ['load', 'networkidle2'] }).catch((e) => {
+    await page.goto(url, { timeout: 60000, waitUntil: 'load' }).catch((e) => {
       const { failed, inflight } = tracker.getRequests();
 
       tracker.dispose(page);
@@ -205,6 +220,7 @@ const loadPage = async (context, config, pageConfig) => {
     tracker.dispose(page);
 
     const watchingResult = await getWatchingResult();
+    getWatchingResult = null;
     const timeToInteractive = await getTti(page, config.logger, config.firstEvent);
 
     const content = await page.content();
@@ -212,7 +228,7 @@ const loadPage = async (context, config, pageConfig) => {
     const layersPaints = await getPaintEventsBySelectors(client, watchingResult.tracing, layers);
 
     await injectElementTimingHandler(page);
-    const elementsTimings = await getElementsTimings(page);
+    const elementsTimings = await getElementsTimings(page, config.isPlaywright);
 
     const actions = await profileActions(page, client, config, pageConfig);
 
@@ -227,6 +243,10 @@ const loadPage = async (context, config, pageConfig) => {
       elementsTimings
     };
   } catch (error) {
+    if (getWatchingResult) {
+      await getWatchingResult();
+    }
+
     await page.close();
 
     throw error;
