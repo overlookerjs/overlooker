@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { chromium: playwright } = require('playwright');
 const path = require('path');
-const { viewports } = require('./viewports.js');
+const { viewports, userAgents } = require('./viewports.js');
 const constants = require('./constants.js');
 
 puppeteer.use(StealthPlugin());
@@ -74,6 +74,7 @@ const getContextPlaywright = async (config, index, proxyArgs) => {
   const context = await browser.newContext({
     ignoreHTTPSErrors: true,
     isMobile: isMobile,
+    userAgent: userAgents[config.platform],
     viewport: viewports[isMobile ? 'mobile' : 'desktop']
   });
 
