@@ -36,7 +36,7 @@ const concatWithWeight = (weightType) => (weight, data, target) => {
   return data ? [
     ...target,
     {
-      ...data,
+      data,
       weight,
       weightType
     }

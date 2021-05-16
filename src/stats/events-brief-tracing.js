@@ -123,8 +123,8 @@ const mergeTrees = (target, tree) => {
   return target;
 };
 
-const gzipBriefTracing = async (tracing) => {
-  return new Promise((resolve, reject) => zlib.gzip(Buffer.from(JSON.stringify(tracing)), {}, (error, result) => {
+const gzip = async (data) => {
+  return new Promise((resolve, reject) => zlib.gzip(Buffer.from(JSON.stringify(data)), {}, (error, result) => {
     if (error) {
       reject(error);
     } else {
@@ -133,29 +133,74 @@ const gzipBriefTracing = async (tracing) => {
   }));
 }
 
-const getBriefTracing = async (mainEvents, otherEvents, firstEvent, config) => {
-  const { tracing } = config;
+const getBriefTracing = async (mainEvents, otherEvents, firstEvent) => {
+  const expandedMainThreadEventsTree = getExpandedMainThreadEventsTree(mainEvents, otherEvents, firstEvent);
 
-  if (tracing) {
-    const expandedMainThreadEventsTree = getExpandedMainThreadEventsTree(mainEvents, otherEvents, firstEvent);
-    const briefTracing = processTracingTree(expandedMainThreadEventsTree);
-
-    switch (tracing) {
-      case 'zip':
-        return await gzipBriefTracing(briefTracing);
-      default:
-        return briefTracing;
-    }
-  }
-
-  return null;
+  return processTracingTree(expandedMainThreadEventsTree);
 }
+
+
+const getIntervals = (firstColor, secondColor) => [
+  {
+    name: 'waiting',
+    color: firstColor,
+    type: 'block',
+    start: 'requestStart',
+    end: 'responseStart'
+  },
+  {
+    name: 'downloading',
+    color: secondColor,
+    type: 'block',
+    start: 'responseStart',
+    end: 'responseEnd'
+  }
+];
+
+const castTypeToIntervalsType = (type) => {
+  switch(type) {
+    case 'text/html':
+      return 'html';
+    case 'text/css':
+      return 'css';
+    case 'application/javascript':
+      return 'js';
+    case 'image/jpeg':
+    case 'image/webp':
+    case 'image/svg+xml':
+    case 'image/png':
+      return 'img';
+    default:
+      return 'other';
+  }
+}
+
+const getWaterfall = (network) => ({
+  items: network.map(({ url, type, stats: { timings } }) => ({
+    name: url,
+    intervals: castTypeToIntervalsType(type),
+    timing: {
+      requestStart: timings.start / 1000,
+      responseStart: timings.response / 1000,
+      responseEnd: timings.finish / 1000
+    }
+  })),
+  intervals: {
+    html: getIntervals('rgb(226, 236, 249)', 'rgb(110, 161, 226)'),
+    img: getIntervals('rgb(227, 240, 224)', 'rgb(116, 178, 102)'),
+    js: getIntervals('rgb(252, 243, 221)', 'rgb(239, 196, 87)'),
+    css: getIntervals('rgb(235, 229, 250)', 'rgb(155, 127, 230)'),
+    other: getIntervals('rgb(240, 240, 240)', 'rgb(179, 179, 179)')
+  }
+});
 
 module.exports = {
   getBriefTracing,
+  getWaterfall,
   processTracingTree,
   walk,
   filter,
   map,
+  gzip,
   change
 };

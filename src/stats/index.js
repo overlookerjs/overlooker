@@ -1,5 +1,5 @@
 const { getEventsGroups, getEventsTree } = require('./events-tree.js');
-const { makeEventsRelative } = require('./events-helpers.js');
+const { makeEventsRelative, castMarkName } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
 const {
@@ -21,7 +21,7 @@ const {
 } = require('./events-evaluation.js');
 const { getScreenshotsByMetrics } = require('./events-screenshots.js');
 const { flat } = require('./../objects-utils.js');
-const { getBriefTracing, processTracingTree } = require('./events-brief-tracing.js');
+const { getBriefTracing, getWaterfall, processTracingTree, gzip } = require('./events-brief-tracing.js');
 
 const getAllStats = async ({
                              tracing,
@@ -90,10 +90,46 @@ const getAllStats = async ({
     },
     elementsTimings: elementsTimingsStats,
     layersPaints: layersPaintsStats
-  })).map(([name, value]) => ({ name, value }));
+  }))
 
-  const screenshots = getScreenshotsByMetrics(relativeEvents, flattedTimestamps);
-  const briefTracing = await getBriefTracing(mainEvents, otherEvents, firstEvent, config);
+  const screenshots = getScreenshotsByMetrics(
+    relativeEvents,
+    flattedTimestamps.map(([name, value]) => ({ name, value }))
+  );
+
+  let flameChartData;
+
+  if (config.tracing) {
+    const data = await getBriefTracing(mainEvents, otherEvents, firstEvent);
+
+    const waterfall = getWaterfall(network);
+
+    const marks = flattedTimestamps
+      .map(([fullName, timestamp]) => {
+        const markInfo = castMarkName(fullName);
+
+        if (markInfo) {
+          return {
+            fullName,
+            timestamp: timestamp / 1000,
+            ...markInfo
+          }
+        } else {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    flameChartData = {
+      data,
+      waterfall,
+      marks
+    };
+
+    if (config.tracing === 'gzip') {
+      flameChartData = await gzip(flameChartData);
+    }
+  }
 
   return {
     stats: {
@@ -109,10 +145,7 @@ const getAllStats = async ({
     network,
     coverage,
     screenshots,
-    tracing: {
-      data: briefTracing,
-      marks: flattedTimestamps
-    },
+    tracing: flameChartData,
     actions: actionsStats
   }
 };

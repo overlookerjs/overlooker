@@ -71,21 +71,27 @@ declare module "overlooker" {
   export type ProfileTracingsJson = WeightedAggregation<{
     weight: number,
     weightType: string,
-    data: FlameChartList
-    marks: Array<{
-      name: string,
-      value: number
-    }>
+    data: {
+      data: FlameChartList,
+      waterfall: Array<{
+        name: string,
+        timing: {
+          requestStart: number,
+          responseStart: number,
+          responseEnd: number,
+        }
+      }>,
+      marks: Array<{
+        name: string,
+        timestamps: number
+      }>
+    }
   }>;
 
   export type ProfileTracingsZip = WeightedAggregation<{
     weight: number,
     weightType: string,
-    data: Buffer
-    marks: Array<{
-      name: string,
-      value: number
-    }>
+    data: Buffer,
   }>;
 
   export type WeightedAggregation<T extends { weight: number, weightType: string}> = AggregationSlices<T>;
