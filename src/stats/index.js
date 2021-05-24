@@ -1,15 +1,15 @@
-const { getEventsTreeByThreads } = require('./events-tree.js');
-const { makeEventsRelative } = require('./events-helpers.js');
+const { getEventsGroups, getEventsTree } = require('./events-tree.js');
+const { makeEventsRelative, castMarkName } = require('./events-helpers.js');
 const { getEventInMainFrame, getMainEventsTimestamps } = require('./events-main.js');
 const { parseNetwork, getResourcesStats, getCoverageStats } = require('./events-network.js');
-const { 
-  getSpeedIndex, 
-  prepareElementsTimings, 
-  prepareLayersPaints, 
-  getCumulativeLayoutShift, 
+const {
+  getSpeedIndex,
+  prepareElementsTimings,
+  prepareLayersPaints,
+  getCumulativeLayoutShift,
   getTotalBlockingTime
 } = require('./events-user-centric.js');
-const { getLighthouseScore } = require ('./lighthouse-score');
+const { getLighthouseScore } = require('./lighthouse-score');
 const { getActionsStats } = require('./events-actions.js');
 const { getCustomMetrics } = require('./events-custom.js');
 const { makeCoverageMap } = require('./events-coverage.js');
@@ -19,19 +19,33 @@ const {
   getMeaningEvaluationEvents,
   prepareEvaluations
 } = require('./events-evaluation.js');
+const { getScreenshotsByMetrics } = require('./events-screenshots.js');
+const { flat } = require('./../objects-utils.js');
+const { getBriefTracing, getWaterfall, processTracingTree, gzip } = require('./events-brief-tracing.js');
 
-const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elementsTimings, layersPaints }, config) => {
+const getAllStats = async ({
+                             tracing,
+                             coverage,
+                             actions,
+                             timeToInteractive,
+                             elementsTimings,
+                             layersPaints
+                           }, config) => {
   const { requests: { internalTest }, firstEvent: firstEventName, customMetrics, platform } = config;
 
-  const firstEvent = getEventInMainFrame(tracing, firstEventName);
+  const firstEvent = getEventInMainFrame(tracing, firstEventName) || getEventInMainFrame(tracing, 'responseEnd');
   const navigationStart = getEventInMainFrame(tracing, 'navigationStart');
   const navigationStartDelta = navigationStart.ts - firstEvent.ts;
 
   const mainFrame = firstEvent.args.frame;
   const relativeEvents = makeEventsRelative(tracing, firstEvent);
 
-  const mainEvents = getEventsTreeByThreads(makeEventsRelative(tracing, firstEvent)).find(({ name }) => name === 'main').events;
-  const meaningfulEvaluations = getMeaningEvaluationEvents(mainEvents);
+  const eventsGroups = getEventsGroups(relativeEvents);
+  const mainEvents = eventsGroups.find(({ name }) => name === 'Main').events;
+  const otherEvents = eventsGroups.find(({ name }) => name === 'Other').events;
+  const mainEventsTree = processTracingTree(getEventsTree(mainEvents));
+
+  const meaningfulEvaluations = getMeaningEvaluationEvents(mainEventsTree);
   const extractEvaluationValues = prepareEvaluations(meaningfulEvaluations);
 
   const evaluationMap = makeScriptsEvaluationMap(extractEvaluationValues.filter(({ url }) => url));
@@ -46,7 +60,7 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
   const timings = getMainEventsTimestamps(relativeEvents, mainFrame);
   const custom = getCustomMetrics(relativeEvents, customMetrics);
   const speedIndex = await getSpeedIndex(tracing);
-  const totalBlockingTime = getTotalBlockingTime(mainEvents, timeToInteractive, timings.firstContentfulPaint);
+  const totalBlockingTime = getTotalBlockingTime(mainEventsTree, timeToInteractive, timings.firstContentfulPaint);
   const cumulativeLayoutShift = getCumulativeLayoutShift(relativeEvents);
 
   const userCentric = {
@@ -60,7 +74,7 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
       LCP: timings.largestContentfulPaint / 1000,
       TTI: timeToInteractive / 1000,
       TBT: totalBlockingTime / 1000,
-      CLS: cumulativeLayoutShift,  
+      CLS: cumulativeLayoutShift,
     }, platform)
   };
 
@@ -68,6 +82,54 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
   const layersPaintsStats = prepareLayersPaints(layersPaints, firstEvent);
 
   const actionsStats = getActionsStats(actions, navigationStart, config);
+
+  const flattedTimestamps = Object.entries(flat({
+    timings,
+    userCentric: {
+      timeToInteractive
+    },
+    elementsTimings: elementsTimingsStats,
+    layersPaints: layersPaintsStats
+  }))
+
+  const screenshots = getScreenshotsByMetrics(
+    relativeEvents,
+    flattedTimestamps.map(([name, value]) => ({ name, value }))
+  );
+
+  let flameChartData;
+
+  if (config.tracing) {
+    const data = await getBriefTracing(mainEvents, otherEvents, firstEvent);
+
+    const waterfall = getWaterfall(network);
+
+    const marks = flattedTimestamps
+      .map(([fullName, timestamp]) => {
+        const markInfo = castMarkName(fullName);
+
+        if (markInfo) {
+          return {
+            fullName,
+            timestamp: timestamp / 1000,
+            ...markInfo
+          }
+        } else {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    flameChartData = {
+      data,
+      waterfall,
+      marks
+    };
+
+    if (config.tracing === 'gzip') {
+      flameChartData = await gzip(flameChartData);
+    }
+  }
 
   return {
     stats: {
@@ -82,6 +144,8 @@ const getAllStats = async ({ tracing, coverage, actions, timeToInteractive, elem
     },
     network,
     coverage,
+    screenshots,
+    tracing: flameChartData,
     actions: actionsStats
   }
 };

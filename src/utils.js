@@ -1,3 +1,5 @@
+const axios = require('axios');
+
 const escape = (number) => number > 9 ? number : `0${number}`;
 
 const toTime = (date) => {
@@ -177,6 +179,26 @@ const flat = (array) => Array.isArray(array) ? (
   array.reduce((acc, item) => acc.concat(flat(item)), [])
 ) : array;
 
+const resolveExternalResource = async (data) => {
+  const dataType = typeof data;
+  const urlRegExp = /^(https?:\/\/)|(ftp:\/\/)/;
+
+  switch(dataType) {
+    case 'function':
+      return await data();
+    case 'string':
+      if (urlRegExp.test(data)) {
+        const response = await axios.get(data);
+
+        return response.data;
+      } else {
+        return data;
+      }
+    case 'object':
+      return data.toString('utf8');
+  }
+};
+
 module.exports = {
   escape,
   toTime,
@@ -193,5 +215,6 @@ module.exports = {
   memoize,
   makeRule,
   flat,
-  urlJoin
+  urlJoin,
+  resolveExternalResource
 };

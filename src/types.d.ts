@@ -20,8 +20,81 @@ declare module "overlooker" {
   export type PageData = {
     actions: ProfileActions,
     stats: ProfileStats,
-    network: ProfileNetwork
+    network: ProfileNetwork,
+    screenshots: ProfileScreenshots,
+    tracing: {
+      type: 'zip',
+      data: ProfileTracingsZip
+    } | {
+      type: 'json',
+      data: ProfileTracingsJson
+    }
   };
+
+  export type AggregationSlices<T> = {
+    max: T,
+    min: T,
+    q1: T,
+    q3: T,
+    percentile98: T,
+    percentile02: T,
+    median: T,
+    mean: T,
+  };
+
+  export type ProfileScreenshots = WeightedAggregation<ProfileScreenshotsSection>
+
+  export type ProfileScreenshotsSection = {
+    weight: number,
+    weightType: string,
+    snapshots: Array<{
+      timestamp: number,
+      snapshot: string
+    }>,
+    events: Array<{
+      name: string,
+      value: number
+    }>
+  }
+
+  export type FlameChartNode = {
+    name: string,
+    start: number,
+    duration: number,
+    type?: string,
+    color?: string,
+    children?: FlameChartList
+  };
+
+  export type FlameChartList = Array<FlameChartNode>;
+
+  export type ProfileTracingsJson = WeightedAggregation<{
+    weight: number,
+    weightType: string,
+    data: {
+      data: FlameChartList,
+      waterfall: Array<{
+        name: string,
+        timing: {
+          requestStart: number,
+          responseStart: number,
+          responseEnd: number,
+        }
+      }>,
+      marks: Array<{
+        name: string,
+        timestamps: number
+      }>
+    }
+  }>;
+
+  export type ProfileTracingsZip = WeightedAggregation<{
+    weight: number,
+    weightType: string,
+    data: Buffer,
+  }>;
+
+  export type WeightedAggregation<T extends { weight: number, weightType: string}> = AggregationSlices<T>;
 
   export type ProfileActions = {
     [actionName: string]: ProfileAction
@@ -326,9 +399,16 @@ declare module "overlooker" {
       network?: 'GPRS' | 'Regular2G' | 'Good2G' | 'Regular3G' | 'Good3G' | 'Regular4G' | 'DSL' | 'WiFi'
     },
     cookies?: Cookies,
-    proxy?: {
-      address: string,
-      restart: () => Promise<void>
+    cache?: {
+      type: 'wpr' | 'mitmdump',
+      logger?: (message: string) => Promise<any>
+    } | {
+      type: 'proxy',
+      host: string,
+      start?: () => Promise<any>,
+      stop?: () => Promise<any>,
+      postDataHandler?: (url: string, postData: string) => string,
+      responseDataHandler?: (url: string, postData: string, response: string) => string
     },
     cache?: boolean,
     firstEvent?: string,

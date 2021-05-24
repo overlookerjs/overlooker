@@ -6,7 +6,8 @@ const getCustomMetrics = (events, customMetrics) => {
   const { timing, durationStart, durationEnd } = customMetrics;
   const timings = fill(
     events
-      .filter((event) => timing.test(event.name))
+      .filter(({ cat }) => cat === 'blink.user_timing')
+      .filter((event) => timing || timing === 'all' ? timing.test(event.name) : true)
       .map((event) => [event.name.match(timing)[1].split('.'), event.ts])
   );
   const durations = fill(

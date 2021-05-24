@@ -1,6 +1,8 @@
 const { asyncMap } = require('./../objects-utils.js');
 const fs = require('fs');
 
+const GLOBAL_OET_NAME = '__oet__';
+
 const findNodePaintEvents = (events, node) => (
   events.filter(({ name, args }) => (
     (
@@ -40,8 +42,6 @@ const getPaintEventsBySelectors = async (client, events, selectors = {}) => (
   asyncMap(selectors, (selector) => getPaintEventsBySelector(client, events, selector))
 );
 
-const globalOETName = '__oet__';
-
 const runElementTimingObserver = (oetPropName) => {
   if (!window[oetPropName]) {
     window[oetPropName] = [];
@@ -52,9 +52,13 @@ const runElementTimingObserver = (oetPropName) => {
   }
 };
 
-const injectElementTimingObserver = async (page) => {
+const injectElementTimingObserver = async (page, isPlaywright) => {
   /* istanbul ignore next */
-  await page.evaluateOnNewDocument(runElementTimingObserver, globalOETName);
+  await (isPlaywright ? (
+    page.addInitScript(runElementTimingObserver, GLOBAL_OET_NAME)
+  ) : (
+    page.evaluateOnNewDocument(runElementTimingObserver, GLOBAL_OET_NAME)
+  ));
 };
 
 const injectElementTimingHandler = async (page) => {
@@ -63,16 +67,16 @@ const injectElementTimingHandler = async (page) => {
     content: `
       ${fs.readFileSync(require.resolve('overlooker-element-timing'))}
       
-      if (!(window['${globalOETName}'] instanceof OverlookerElementTiming)) {
-        new OverlookerElementTiming('${globalOETName}');
+      if (!(window['${GLOBAL_OET_NAME}'] instanceof OverlookerElementTiming)) {
+        new OverlookerElementTiming('${GLOBAL_OET_NAME}');
       }
   `
   });
 };
 
-const getElementsTimings = async (page) => {
+const getElementsTimings = async (page, isPlaywright) => {
   /* istanbul ignore next */
-  await page.waitForFunction((oetPropName) => !!(window[oetPropName] && window[oetPropName].getAll), {}, globalOETName);
+  await page.waitForFunction((oetPropName) => !!(window[oetPropName] && window[oetPropName].getAll), isPlaywright ? GLOBAL_OET_NAME : {}, isPlaywright ? {} : GLOBAL_OET_NAME);
 
   /* istanbul ignore next */
   return await page.evaluate((oetPropName) => {
@@ -81,7 +85,7 @@ const getElementsTimings = async (page) => {
     window[oetPropName].clear();
 
     return timingEntries;
-  }, globalOETName);
+  }, GLOBAL_OET_NAME);
 };
 
 const waitForElementTiming = async (page, timingName) => {
@@ -96,7 +100,7 @@ const waitForElementTiming = async (page, timingName) => {
     }, true))
   }, {
     timingName,
-    oetPropName: globalOETName
+    oetPropName: GLOBAL_OET_NAME
   })
 };
 

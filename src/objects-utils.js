@@ -69,7 +69,7 @@ const deepCompare = (comparator, obj1 = {}, obj2 = {}) => map(
   )
 );
 
-const asyncMap = async (obj, map) => {
+const asyncMap = async (obj = {}, map) => {
   const results = await Promise.all(
     Object.entries(obj).map(async ([key, value]) => [key, await map(value, key)])
   );
@@ -112,7 +112,7 @@ const deepMap = (obj, mapper, initialPath = []) => map(obj, (innerObj, key) =>
   ));
 
 const toArray = (obj, skipSymbols = [], parent = '', acc = []) => (
-  Object.entries(obj)
+  Object.entries(obj || {})
     .reduce((acc, [key, value]) => {
       const complexKey = parent ? parent + '.' + key : key;
 
@@ -149,7 +149,40 @@ const raiseFields = (obj, symbols) => Object.entries(obj)
   }, {});
 
 const getByPath = (obj, path) => (Array.isArray(path) ? path : path.split('.'))
-  .reduce((acc, key) => acc[key], obj);
+  .reduce((acc, key) => acc && acc[key] ? acc[key] : null, obj);
+
+const pathPatternToRegExp = (thresholdPath) => {
+  const splitPath = thresholdPath.split('.');
+  const bunchRegExp = /\{[\s\n]*([\s\S]*?)[\s\n]*\}/;
+
+  return new RegExp('^' +
+    splitPath
+      .map((key) => {
+        if (key === '*') {
+          return '[^.]*?';
+        } else if (key === '**') {
+          return '.*?';
+        } else if (bunchRegExp.test(key)) {
+          return '(' + key
+              .match(bunchRegExp)[1]
+              .split(/[\n\s]*,[\n\s]*/)
+              .join('|')
+            + ')'
+        } else {
+          return key;
+        }
+      })
+      .join('\\.')
+    + '$'
+  )
+};
+
+const getByPathPattern = (obj, pattern) => {
+  const comparisonsArray = Array.isArray(obj) ? obj : toArray(obj);
+  const regExp = pathPatternToRegExp(pattern);
+
+  return comparisonsArray.filter(([path]) => regExp.test(path));
+};
 
 const makePath = (obj, path, value) => {
   (Array.isArray(path) ? path : path.split('.'))
@@ -175,6 +208,7 @@ const expandFlat = (obj) => Object.entries(obj)
 
 module.exports = {
   map,
+  asyncMap,
   reduce,
   divide,
   summ,
@@ -192,6 +226,8 @@ module.exports = {
   raiseFields,
   addPrefix,
   getByPath,
+  pathPatternToRegExp,
+  getByPathPattern,
   toArray,
   expandFlat,
   makePath,

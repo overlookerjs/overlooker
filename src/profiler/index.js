@@ -8,6 +8,7 @@ const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
   const { pages, logger, proxy, cache, count } = preparedConfig;
   const percentCost = 0.99 / (count * pages.length + (proxy || cache ? pages.length : 0));
+  let stopCache;
 
   if (!pages.length) {
     await logger('Nothing to profile');
@@ -24,9 +25,17 @@ const profile = async (config) => {
 
   const buildData = await fetchBuildData(preparedConfig);
 
-  const warmingResult = await warming(preparedConfig, cacheBandwidth, percentCost);
+  if (cache) {
+    stopCache = await warming(preparedConfig, percentCost);
+  }
 
-  return await describePerformance(preparedConfig, cacheBandwidth, percentCost, buildData);
+  const result = await describePerformance(preparedConfig, cacheBandwidth, percentCost, buildData);
+
+  if (cache && stopCache) {
+      await stopCache();
+  }
+
+  return result;
 };
 
 module.exports = {

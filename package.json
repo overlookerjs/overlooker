@@ -1,6 +1,6 @@
 {
   "name": "overlooker",
-  "version": "0.19.0",
+  "version": "0.30.0",
   "description": "tool for profile front-end performance",
   "main": "src/index.js",
   "scripts": {
@@ -30,15 +30,19 @@
   "types": "src/types.d.ts",
   "homepage": "https://github.com/overlookerjs/overlooker#readme",
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.3",
     "jsdom": "^16.2.0",
     "jstat": "^1.9.2",
     "mime-types": "^2.1.24",
     "overlooker-element-timing": "^0.2.2",
     "overlooker-tti-polyfill": "^0.3.0",
-    "puppeteer": "^2.1.1",
+    "playwright": "^1.10.0",
+    "puppeteer": "^5.4.1",
+    "puppeteer-extra": "^3.1.15",
+    "puppeteer-extra-plugin-stealth": "^2.6.1",
     "speedline": "^1.4.2",
+    "tcp-port-used": "^1.0.1",
     "total-blocking-time": "^1.0.0"
   },
   "devDependencies": {
@@ -56,6 +60,7 @@
     "html-webpack-plugin": "^3.2.0",
     "image-webpack-loader": "^6.0.0",
     "jest": "^24.9.0",
+    "mini-css-extract-plugin": "^1.2.1",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "style-loader": "^1.0.0",

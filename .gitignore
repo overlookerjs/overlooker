@@ -3,3 +3,4 @@
 .cache
 /measurable-project/static
 .DS_Store
+browser-cache

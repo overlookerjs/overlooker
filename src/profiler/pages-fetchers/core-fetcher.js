@@ -7,12 +7,13 @@ const fetchPages = async ({
                             cacheBandwidth,
                             percentCost,
                             prepare = (data) => data,
-                            checkStatus = async () => true
+                            checkStatus = async () => true,
+                            onePort
                           }) => {
   const { count, logger, progress, pages } = config;
   let isStopped = false;
 
-  const openedBrowsers = await browsers.open(config);
+  const openedBrowsers = await browsers.open(config, onePort);
   const wrappedBrowsers = browsers.wrap(openedBrowsers);
 
   const functions = pages.reduce((acc, page) => ({
@@ -44,7 +45,7 @@ const fetchPages = async ({
 
         return await prepare(data);
       } catch (error) {
-        await logger(`fetch failed: ${error.stack}`);
+        await logger(`fetch failed: ${page.url} ${error.stack}`);
         await logger(`try to retry: ${page.url}`);
 
         throw error;
@@ -52,9 +53,17 @@ const fetchPages = async ({
     })
   }), {});
 
-  const data = await parallelizeObject(functions, wrappedBrowsers, 5000, async (e) => {
-    await logger(`error while fetching: ${e.stack}`);
-  });
+  let data = null;
+
+  try {
+    const { promise } = parallelizeObject(functions, wrappedBrowsers, async (e) => {
+      await logger(`error while fetching: ${e.stack}`);
+    });
+
+    data = await promise;
+  } catch (e) {
+    await logger(e.stack);
+  }
 
   await browsers.close(openedBrowsers);
 

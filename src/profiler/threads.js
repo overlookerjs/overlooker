@@ -1,4 +1,4 @@
-const parallelizeArray = (functionsArray, threads, restartTime = 0, onError) => {
+const parallelizeArray = (functionsArray, threads, onError, restartTime = 5000, retryAttempts = 15) => {
   const functionsArrayCopy = [...functionsArray];
   const completed = [];
 
@@ -10,6 +10,7 @@ const parallelizeArray = (functionsArray, threads, restartTime = 0, onError) => 
 
   const execute = async (asyncFn, insertIndex, threadIndex) => {
     let complete = false;
+    let retryCount = retryAttempts;
 
     while (!complete && !isStopped) {
       try {
@@ -23,24 +24,37 @@ const parallelizeArray = (functionsArray, threads, restartTime = 0, onError) => 
         completedCount++;
         complete = true;
       } catch (e) {
-        if (onError) {
-          await onError(e);
-        }
+        if (retryCount > 0) {
+          if (onError) {
+            await onError(e);
+          }
 
-        await new Promise((res) => setTimeout(res, restartTime));
+          retryCount--;
+
+          await new Promise((res) => setTimeout(res, restartTime));
+        } else {
+          throw new Error('Retry attempts exceed');
+        }
       }
     }
   };
 
-  const run = async (resolve, threadIndex) => {
+  const run = async (resolve, reject, threadIndex) => {
     while (functionsArrayCopy.length && !isStopped) {
       const asyncFn = functionsArrayCopy.shift();
       const functionIndex = index++;
 
-      await execute(asyncFn, functionIndex, threadIndex);
+      try {
+        await execute(asyncFn, functionIndex, threadIndex);
 
-      if (completedCount === functionsArray.length) {
-        resolve(completed);
+        if (completedCount === functionsArray.length) {
+          resolve(completed);
+        } else if (isStopped) {
+          resolve();
+        }
+      } catch (e) {
+        reject(e);
+        return;
       }
     }
 
@@ -49,18 +63,18 @@ const parallelizeArray = (functionsArray, threads, restartTime = 0, onError) => 
     }
   };
 
-  const promise = new Promise((resolve) => Array(Array.isArray(threads) ? threads.length : threads)
+  const promise = new Promise((resolve, reject) => Array(Array.isArray(threads) ? threads.length : threads)
     .fill(null)
-    .forEach((c, i) => run(resolve, i))
+    .forEach((c, i) => run(resolve, reject, i))
   );
 
   return {
     stop,
-    then: (cb) => promise.then(cb)
+    promise
   }
 };
 
-const parallelizeObject = (functionsObject, threads, restartTime, onError) => {
+const parallelizeObject = (functionsObject, threads, restartTime, retryAttempts, onError) => {
   const keysOrder = Object.keys(functionsObject);
   const objectPlaceholder = keysOrder.reduce((acc, key) => ({ ...acc, [key]: [] }), {});
 
@@ -77,19 +91,21 @@ const parallelizeObject = (functionsObject, threads, restartTime, onError) => {
   }), {});
   const functions = flattedObject.map(({ fn }) => fn);
 
-  const { stop, then } = parallelizeArray(functions, threads, restartTime, onError);
+  const { stop, promise } = parallelizeArray(functions, threads, restartTime, retryAttempts, onError);
 
   return {
     stop,
-    then: (cb) => then((completed) => completed
-      .reduce((acc, result, globalIndex) => {
-        const { key, index } = map[globalIndex];
+    promise: promise
+      .then((completed) => completed ? (
+        completed
+          .reduce((acc, result, globalIndex) => {
+            const { key, index } = map[globalIndex];
 
-        acc[key][index] = result;
+            acc[key][index] = result;
 
-        return acc;
-      }, objectPlaceholder))
-      .then(cb)
+            return acc;
+          }, objectPlaceholder)
+      ) : null)
   }
 };
 

@@ -53,20 +53,11 @@ const getCumulativeLayoutShift = (events) => {
 }
 
 const getTotalBlockingTime = (topLevelEvents, tti, fcp) => {
-    const longTasks = topLevelEvents.reduce((memo, { event: curr }) => {
-        if (curr.dur === undefined) {
-            return memo;
-        }
-        const duration = curr.dur / 1000;
+  const longTasks = topLevelEvents
+    .filter(({ duration }) => duration > LONG_TASK_THRESHOLD)
+    .map(({ start, duration }) => ({ startTime: start * 1000, duration }));
 
-        if (duration >= LONG_TASK_THRESHOLD) {
-            memo.push({ duration, startTime: curr.ts });
-        }
-
-        return memo;
-    }, []);
-
-    return calcTBT(tti, longTasks, fcp) * 1000;
+  return calcTBT(tti, longTasks, fcp) * 1000;
 }
 
 module.exports = {

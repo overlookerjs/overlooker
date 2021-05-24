@@ -20,6 +20,7 @@ const prepareConfig = ({
                          host,
                          pages,
                          customMetrics = {},
+                         headlessBrowser,
                          ...rest
                        }) => ({
   requests: {
@@ -39,7 +40,7 @@ const prepareConfig = ({
   threads: 1,
   platform: 'desktop',
   browserArgs: [],
-  firstEvent: 'responseEnd',
+  firstEvent: 'responseStart',
   buildData: {},
   throttling: {
     network: 'Good3G',
@@ -61,6 +62,7 @@ const prepareConfig = ({
       url: urlJoin(host, page.url)
     })) : pages
   }),
+  isPlaywright: Boolean(headlessBrowser && headlessBrowser === 'playwright'),
   ...rest
 });
 
