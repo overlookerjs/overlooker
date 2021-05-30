@@ -410,7 +410,6 @@ declare module "overlooker" {
       postDataHandler?: (url: string, postData: string) => string,
       responseDataHandler?: (url: string, postData: string, response: string) => string
     },
-    cache?: boolean,
     firstEvent?: string,
     count?: number,
     threads?: number,

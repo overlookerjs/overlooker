@@ -37,7 +37,7 @@ const separateNetworkEvents = (networkEvents) => Object.values(networkEvents)
 
 const prepareSeparatedNetwork = (separatedNetwork, evaluationMap, coverageMap, internalTest) => separatedNetwork
   .map(({
-          request: { args: { data: { url, requestMethod } } },
+          request: { args: { data: { url, requestMethod, priority } } },
           response: { args: { data: { mimeType, statusCode } } },
           finish: { args: { data: { decodedBodyLength, encodedDataLength } } },
           request,
@@ -67,7 +67,8 @@ const prepareSeparatedNetwork = (separatedNetwork, evaluationMap, coverageMap, i
       type: mimeType,
       extension: mime.extension(mimeType) || getExtension(url),
       status: statusCode,
-      method: requestMethod || 'GET'
+      method: requestMethod || 'GET',
+      priority
     })
   );
 

@@ -37,6 +37,7 @@ module.exports = {
     cpu: 1,
     network: 'WiFi'
   },
+  threads: 2,
   logger: (msg) => console.log(msg),
   buildData: {
     url: '/build.json',

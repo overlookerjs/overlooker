@@ -29,7 +29,8 @@ const getAllStats = async ({
                              actions,
                              timeToInteractive,
                              elementsTimings,
-                             layersPaints
+                             layersPaints,
+                             cacheLog
                            }, config) => {
   const { requests: { internalTest }, firstEvent: firstEventName, customMetrics, platform } = config;
 
@@ -102,7 +103,18 @@ const getAllStats = async ({
   if (config.tracing) {
     const data = await getBriefTracing(mainEvents, otherEvents, firstEvent);
 
-    const waterfall = getWaterfall(network);
+    const timeDelta = cacheLog ? (
+      cacheLog[0].requestStart - (
+        tracing.find(({
+                        name,
+                        args
+                      }) => (
+          name === 'ResourceSendRequest' && args && args.data && args.data.url === cacheLog[0].name
+        )).ts - firstEvent.ts
+      ) / 1000
+    ) : 0;
+
+    const waterfall = getWaterfall(network, cacheLog, timeDelta);
 
     const marks = flattedTimestamps
       .map(([fullName, timestamp]) => {

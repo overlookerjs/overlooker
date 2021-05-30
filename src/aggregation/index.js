@@ -1,12 +1,12 @@
 const { concatNetworks, aggregateNetwork } = require('./aggregation-network.js');
 const { expandNetwork } = require('./../chunks-meta');
-const { deepConcat } = require('./../objects-utils.js');
+const { deepConcat, map } = require('./../objects-utils.js');
 const { objDeepAggregation } = require('./aggregation-utils.js');
 const { concatActions, aggregateActions } = require('./aggregation-actions.js');
 const { aggregateWeighted } = require('./aggregation-weighted.js');
 const { concatWithWeight } = require('./aggregation-utils.js');
 
-const aggregateProfiles = (profiles,
+const aggregateProfilesSeries = (profiles,
                            buildData,
                            mergeRequests,
                            aggregation = objDeepAggregation) => {
@@ -43,6 +43,18 @@ const aggregateProfiles = (profiles,
   };
 };
 
+const aggregateProfiles = async (result, config, buildData) => (
+  map(
+    result,
+    (stats) => aggregateProfilesSeries(
+      stats,
+      buildData,
+      config.requests ? config.requests.merge : null
+    )
+  )
+);
+
 module.exports = {
-  aggregateProfiles
+  aggregateProfiles,
+  aggregateProfilesSeries
 };

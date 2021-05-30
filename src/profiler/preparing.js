@@ -1,46 +1,33 @@
 const { makeRule, urlJoin, makeInternalTest } = require('./../utils.js');
-const { map } = require('./../objects-utils.js');
-const { aggregateProfiles } = require('../aggregation');
 const { getProgressLogger } = require('./progress.js');
 
-const prepareResult = async (result, config, buildData) => (
-  map(
-    result,
-    (stats) => aggregateProfiles(
-      stats,
-      buildData,
-      config.requests ? config.requests.merge : null
-    )
-  )
-);
+const serializeRule = (rule) => typeof rule === 'object' && rule !== null && !Array.isArray(rule) ? ({
+  fn: 'return ' + rule.fn.toString(),
+  args: rule.args
+}) : rule
+
+const serializeRequests = (requests) => ({
+  merge: serializeRule(requests.merge),
+  internalTest: serializeRule(requests.internalTest),
+  ignore: serializeRule(requests.ignore)
+});
 
 const prepareConfig = ({
                          requests = {},
                          progress,
+                         checkStatus,
                          host,
                          pages,
                          customMetrics = {},
                          headlessBrowser,
                          ...rest
                        }) => ({
-  requests: {
-    merge: requests.merge && makeRule(requests.merge, true),
-    internalTest: requests.internalTest ? (
-      makeRule(requests.internalTest)
-    ) : (
-      host ? (
-        makeInternalTest(host)
-      ) : (
-        makeRule(pages.map(({ url }) => makeInternalTest(url)))
-      )
-    ),
-    ignore: requests.ignore && makeRule(requests.ignore)
-  },
+  requests: serializeRequests(requests),
   count: 5,
   threads: 1,
   platform: 'desktop',
   browserArgs: [],
-  firstEvent: 'responseStart',
+  firstEvent: 'requestStart',
   buildData: {},
   throttling: {
     network: 'Good3G',
@@ -48,6 +35,7 @@ const prepareConfig = ({
   },
   debug: false,
   logger: async (...args) => console.log(...args),
+  checkStatus: checkStatus || (() => true),
   progress: getProgressLogger(progress),
   gracefulShutdown: true,
   customMetrics: {
@@ -66,7 +54,21 @@ const prepareConfig = ({
   ...rest
 });
 
+const prepareRequestsConfig = (requests = {}, host, pages) => ({
+  merge: requests.merge && makeRule(requests.merge, true),
+  internalTest: requests.internalTest ? (
+    makeRule(requests.internalTest)
+  ) : (
+    host ? (
+      makeInternalTest(host)
+    ) : (
+      makeRule(pages.map(({ url }) => makeInternalTest(url)))
+    )
+  ),
+  ignore: requests.ignore && makeRule(requests.ignore)
+});
+
 module.exports = {
   prepareConfig,
-  prepareResult
+  prepareRequestsConfig
 };

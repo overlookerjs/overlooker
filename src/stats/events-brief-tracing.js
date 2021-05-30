@@ -158,7 +158,7 @@ const getIntervals = (firstColor, secondColor) => [
 ];
 
 const castTypeToIntervalsType = (type) => {
-  switch(type) {
+  switch (type) {
     case 'text/html':
       return 'html';
     case 'text/css':
@@ -175,16 +175,50 @@ const castTypeToIntervalsType = (type) => {
   }
 }
 
-const getWaterfall = (network) => ({
-  items: network.map(({ url, type, stats: { timings } }) => ({
-    name: url,
-    intervals: castTypeToIntervalsType(type),
-    timing: {
-      requestStart: timings.start / 1000,
-      responseStart: timings.response / 1000,
-      responseEnd: timings.finish / 1000
-    }
-  })),
+const getWaterfall = (network, cacheRequests, timeDelta) => ({
+  items: cacheRequests ? (
+    cacheRequests.map(({
+                         name,
+                         type,
+                         size,
+                         priority,
+                         requestStart,
+                         responseStart,
+                         responseEnd
+                       }) => ({
+      name,
+      intervals: castTypeToIntervalsType(type),
+      timing: {
+        requestStart: (requestStart - timeDelta),
+        responseStart: (responseStart - timeDelta),
+        responseEnd: (responseEnd - timeDelta)
+      },
+      meta: [{
+        name: 'priority',
+        value: priority
+      }, {
+        name: 'size',
+        value: `${size / 1024}KB`
+      }]
+    }))
+  ) : (
+    network.map(({ url, type, priority, stats: { timings, transfer } }) => ({
+      name: url,
+      intervals: castTypeToIntervalsType(type),
+      timing: {
+        requestStart: timings.start / 1000,
+        responseStart: timings.response / 1000,
+        responseEnd: timings.finish / 1000
+      },
+      meta: [{
+        name: 'priority',
+        value: priority
+      }, {
+        name: 'size',
+        value: `${transfer / 1024}KB`
+      }]
+    }))
+  ),
   intervals: {
     html: getIntervals('rgb(226, 236, 249)', 'rgb(110, 161, 226)'),
     img: getIntervals('rgb(227, 240, 224)', 'rgb(116, 178, 102)'),

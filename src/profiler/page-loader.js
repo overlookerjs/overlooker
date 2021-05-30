@@ -6,6 +6,7 @@ const {
   getPaintEventsBySelectors,
   waitForElementTiming
 } = require('./hero-elements.js');
+const { filter } = require('./../objects-utils.js');
 const { injectLongTasksObserver, getTti } = require('./tti.js');
 const { watch } = require('./watching.js');
 const { ACTION_START, ACTION_END } = require('./../constants.js');
@@ -13,6 +14,7 @@ const { make } = require('./../objects-utils.js');
 const { devices, viewports } = require('./viewports.js');
 const { RequestsTracker } = require('./requests-tracker.js');
 const cache = require('./cache.js');
+const { hash, CacheBandwidth } = require('./cache-bandwidth.js');
 
 const interceptFinishedRequest = async (postDataHandler, logger, interceptedRequest) => {
   if (interceptedRequest.method() === 'POST') {
@@ -20,27 +22,26 @@ const interceptFinishedRequest = async (postDataHandler, logger, interceptedRequ
     const postData = postDataHandler(url, interceptedRequest.postData());
     const key = url + postData;
 
-      const cachedObject = cacheBandwidth.has(key);
+    const cachedObject = cache.has(key);
 
-      if (!cachedObject) {
-        try {
-          const response = interceptedRequest.response();
+    if (!cachedObject) {
+      try {
+        const response = interceptedRequest.response();
 
-          try {
-            const body = !interceptedRequest.redirectChain().length ? await response.buffer() : '';
-            const headers = response.headers();
-            const status = response.status();
+        const body = await response.text();
+        const headers = response.headers();
+        const status = response.status();
 
-            const data = {
-              body,
-              headers,
-              status,
-              contentType: headers['content-type']
-            };
+        const data = {
+          body,
+          headers,
+          status,
+          contentType: headers['content-type']
+        };
 
         cache.set(key, data);
       } catch (e) {
-        await logger(e.stack);
+        logger(e.stack);
       }
     }
   }
@@ -89,7 +90,7 @@ const interceptRequest = async (config, isProxyCache, responseDataHandler, postD
   }
 }
 
-const setupPageConfig = async (context, page, client, config, pageConfig) => {
+const setupPageConfig = async (context, page, client, config, pageConfig, cacheBandwidth) => {
   const { logger, throttling, isPlaywright } = config;
 
   if (!isPlaywright) {
@@ -121,28 +122,144 @@ const setupPageConfig = async (context, page, client, config, pageConfig) => {
   }
 
   const isProxyCache = config.cache && config.cache.type === 'proxy';
+  const isSyntheticCache = config.cache && config.cache.type === 'synthetic';
+
   const postDataHandler = isProxyCache && config.cache.postDataHandler ? (
-    config.cache.postDataHandler
+    new Function('return ' + config.cache.postDataHandler)()
   ) : (
     (url, postData) => postData
   )
   const responseDataHandler = isProxyCache && config.cache.responseDataHandler ? (
-    config.cache.responseDataHandler
+    new Function('return ' + config.cache.responseDataHandler)()
   ) : (
     (url, postData, response) => response
   )
 
-  if (config.isPlaywright) {
-    page.route(/.*/, (route, request) => interceptRequest(config, isProxyCache, responseDataHandler, postDataHandler, logger, request, route));
-  } else {
-    page.on('request', (request) => interceptRequest(config, isProxyCache, responseDataHandler, postDataHandler, logger, request));
+  if (!isSyntheticCache) {
+    if (config.isPlaywright) {
+      page.route(/.*/, (route, request) => interceptRequest(config, isProxyCache, responseDataHandler, postDataHandler, logger, request, route));
+    } else {
+      page.on('request', (request) => interceptRequest(config, isProxyCache, responseDataHandler, postDataHandler, logger, request));
+    }
+
+    if (isProxyCache) {
+      if (config.isPlaywright) {
+        page.on('requestfinished', (route, request) => interceptFinishedRequest(postDataHandler, logger, request));
+      } else {
+        page.on('requestfinished', (request) => interceptFinishedRequest(postDataHandler, logger, request));
+      }
+    }
   }
 
-  if (isProxyCache) {
-    if (config.isPlaywright) {
-      page.on('requestfinished', (route, request) => interceptFinishedRequest(postDataHandler, logger, request));
-    } else {
-      page.on('requestfinished', (request) => interceptFinishedRequest(postDataHandler, logger, request));
+  if (isSyntheticCache) {
+    const requestsMap = new Map();
+    await client.send('Network.enable');
+
+    if (cacheBandwidth.writeMode) {
+      client.on('Network.requestWillBeSent', (event) => {
+        requestsMap.set(event.requestId, {
+          method: event.request.method,
+          priority: event.request.initialPriority,
+          url: event.request.url
+        });
+      });
+
+      client.on('Network.responseReceived', (event) => {
+        const request = requestsMap.get(event.requestId);
+
+        if (request) {
+          request.headers = event.response.headers;
+          request.status = event.response.status;
+          request.contentType = event.response.headers['content-type'] || event.response.mimeType;
+          request.mimeType = event.response.mimeType;
+        }
+      });
+
+      client.on('Network.loadingFinished', async (event) => {
+        const request = requestsMap.get(event.requestId);
+
+        if (request) {
+          try {
+            const rawPostData = request.method !== 'GET' ? await client.send('Network.getRequestPostData', { requestId: event.requestId }) : '';
+            const postData = postDataHandler(
+              request.url,
+              rawPostData
+            );
+            const {
+              body,
+              base64Encoded
+            } = await client.send('Network.getResponseBody', { requestId: event.requestId });
+
+            request.size = event.encodedDataLength;
+            request.postData = postData;
+            request.body = responseDataHandler(request.url, rawPostData, base64Encoded ? Buffer.from(body, 'base64') : body);
+
+            cacheBandwidth.set(hash(request.url + request.postData), request);
+          } catch (e) {
+
+          }
+        }
+      });
+    } else if (cacheBandwidth.replayMode) {
+      await client.send('Fetch.enable', {
+        patterns: [{
+          urlPattern: '*',
+        }]
+      });
+
+      client.on('Network.requestWillBeSent', async (event) => {
+        try {
+          const url = event.request.url;
+          const postData = postDataHandler(
+            url,
+            event.request.method !== 'GET' ? await client.send('Network.getRequestPostData', { requestId: event.requestId }) : ''
+          );
+
+          requestsMap.set(event.requestId, hash(url + postData));
+        } catch (e) {
+
+        }
+      });
+
+      client.on('Network.resourceChangedPriority', async (event) => {
+        const key = requestsMap.get(event.requestId);
+
+        if (key) {
+          cacheBandwidth.changePriority(key, event.newPriority);
+        }
+      });
+
+      client.on('Fetch.requestPaused', ({ requestId, request }) => {
+        const url = request.url;
+        const postData = request.postData;
+        const key = hash(url + postData);
+
+        const hasCachedRequest = cacheBandwidth.has(key);
+
+        if (hasCachedRequest) {
+          cacheBandwidth.get(key)
+            .then((data) => {
+              const headers = {};
+              const buffer = data.body instanceof Buffer ? data.body : Buffer.from(data.body);
+
+              if (data.contentType)
+                headers['content-type'] = data.contentType;
+              if (data.body && !('content-length' in data.headers))
+                headers['content-length'] = String(Buffer.byteLength(buffer));
+
+              client.send('Fetch.fulfillRequest', {
+                requestId,
+                responseCode: data.status,
+                responseHeaders: Object.entries(headers).map(([name, value]) => ({ name, value })),
+                body: buffer.toString('base64')
+              }).catch(console.log)
+            });
+        } else if (config.requests && config.requests.ignore && config.requests.ignore(url)) {
+          client.send('Fetch.failRequest', { requestId, errorReason: 'Aborted' });
+        } else {
+          client.send('Fetch.continueRequest', { requestId });
+        }
+      });
     }
   }
 };
@@ -187,8 +304,18 @@ const profileActions = async (context, page, client, config, pageConfig) => {
   return res;
 };
 
-const loadPage = async (context, config, pageConfig, cacheBandwidth) => {
+const loadPage = async (context, config, pageConfig, cacheBandwidthConfig) => {
   const { url, layers } = pageConfig;
+  const cacheBandwidth = cacheBandwidthConfig ? new CacheBandwidth(cacheBandwidthConfig.throughput, cacheBandwidthConfig.latency) : null;
+
+  if (cacheBandwidthConfig) {
+    if (cacheBandwidthConfig.writeMode) {
+      cacheBandwidth.write();
+    } else {
+      cacheBandwidth.setCache(cacheBandwidthConfig.resources);
+      cacheBandwidth.replay();
+    }
+  }
 
   const page = await context.newPage();
   let getWatchingResult;
@@ -202,7 +329,7 @@ const loadPage = async (context, config, pageConfig, cacheBandwidth) => {
 
     await setupPageConfig(context, page, client, config, pageConfig, cacheBandwidth);
 
-    getWatchingResult = await watch(context, page, config.isPlaywright);
+    getWatchingResult = await watch(context, page, config.isPlaywright, Boolean(cacheBandwidth));
 
     await injectLongTasksObserver(page, config.isPlaywright);
     await injectElementTimingObserver(page, config.isPlaywright);
@@ -210,13 +337,23 @@ const loadPage = async (context, config, pageConfig, cacheBandwidth) => {
     const tracker = new RequestsTracker();
     tracker.init(page);
 
-    await page.goto(url, { timeout: 60000, waitUntil: 'load' }).catch((e) => {
+    if (cacheBandwidth) {
+      cacheBandwidth.start();
+    }
+
+    const pageResponse = await page.goto(url, { timeout: 60000, waitUntil: 'load' }).catch((e) => {
       const { failed, inflight } = tracker.getRequests();
 
       tracker.dispose(page);
 
       throw new Error(`${e.message}\n\nInflight requests:\n${inflight.join('\n')}\n\nFailed requests:\n${failed.join('\n')}`);
     });
+
+    const pageStatus = pageResponse.status();
+
+    if (pageStatus >= 400) {
+      throw new Error(`Page loading failed with status code: ${pageStatus}`);
+    }
 
     tracker.dispose(page);
 
@@ -233,11 +370,14 @@ const loadPage = async (context, config, pageConfig, cacheBandwidth) => {
 
     const actions = await profileActions(context, page, client, config, pageConfig);
 
+    if (cacheBandwidth) {
+      cacheBandwidth.stop();
+    }
+
     await page.close();
 
-    if (cacheBandwidth) {
-      await cacheBandwidth.reset();
-    }
+    const cacheRequests = cacheBandwidth ? cacheBandwidth.getCache() : null;
+    const cacheLog = cacheBandwidth ? cacheBandwidth.getLogs() : null;
 
     return {
       ...watchingResult,
@@ -245,11 +385,17 @@ const loadPage = async (context, config, pageConfig, cacheBandwidth) => {
       actions,
       timeToInteractive,
       layersPaints,
-      elementsTimings
+      elementsTimings,
+      cacheRequests,
+      cacheLog
     };
   } catch (error) {
     if (getWatchingResult) {
       await getWatchingResult();
+    }
+
+    if (cacheBandwidth) {
+      cacheBandwidth.stop();
     }
 
     await page.close();

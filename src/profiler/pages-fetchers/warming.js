@@ -1,6 +1,7 @@
 const fs = require('fs');
-const { fetchPages } = require('./core-fetcher.js');
+const { fetchPages } = require('./fetch-pages.js');
 const { cacheProxy } = require('../../cache-proxy');
+const { map } = require('./../../objects-utils.js');
 const { resolveExternalResource } = require('./../../utils.js');
 const constants = require('./../constants.js');
 const cache = require('../cache.js');
@@ -124,7 +125,7 @@ const warmingProxy = async (config, percentCost) => {
   }
 };
 
-const warmingSyntheticCache = async (config, cacheBandwidth, percentCost) => {
+const warmingSyntheticCache = async (config, percentCost, cacheBandwidthConfig) => {
   const { checkStatus, logger, cache } = config;
 
   if (cache) {
@@ -137,29 +138,31 @@ const warmingSyntheticCache = async (config, cacheBandwidth, percentCost) => {
     try {
       await logger('start cache warming');
 
-      await fetchPages({
+      const result = await fetchPages({
         config: warmingConfig,
-        cacheBandwidth,
+        cacheBandwidthConfig,
         percentCost,
         checkStatus
       });
 
       await logger(`warming done!`);
+
+      return map(result, ([{ cacheRequests }]) => cacheRequests);
     } catch (e) {
       await logger(`cannot warm pages!\n${e.stack}`);
     }
   }
 };
 
-const warming = async (config, percentCost, cacheBandwidth) => {
+const warming = async (config, percentCost, cacheBandwidthConfig) => {
   switch (config.cache.type) {
     case 'wpr':
     case 'mitmdump':
       return await warmingCacheProxy(config, percentCost);
     case 'proxy':
       return await warmingProxy(config, percentCost);
-    case 'synthetic-cache':
-      return await warmingSyntheticCache(config, cacheBandwidth, percentCost)
+    case 'synthetic':
+      return await warmingSyntheticCache(config, percentCost, cacheBandwidthConfig)
     default:
       return null;
   }

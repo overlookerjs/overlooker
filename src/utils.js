@@ -166,6 +166,8 @@ const makeRule = (rule, returnString) => {
     const regexp = new RegExp(rule);
 
     result = (value) => regexp.test(value) && rule.toString();
+  } else if (rule instanceof Object) {
+    result = new Function(rule.fn)()(...rule.args);
   } else {
     result = undefined;
   }
