@@ -103,7 +103,7 @@ const getAllStats = async ({
   if (config.tracing) {
     const data = await getBriefTracing(mainEvents, otherEvents, firstEvent);
 
-    const timeDelta = cacheLog ? (
+    const timeDelta = cacheLog && cacheLog.length ? (
       cacheLog[0].requestStart - (
         tracing.find(({
                         name,
