@@ -76,6 +76,8 @@ const interceptRequest = async (config, isProxyCache, responseDataHandler, postD
           });
         } catch (e) {
           logger(e.stack);
+
+          await (route || interceptedRequest).continue();
         }
       }, 500);
 

@@ -20,7 +20,7 @@ const getSyntheticCache = (config) => {
 }
 
 const profile = async (config) => {
-  const preparedConfig = prepareConfig(config);
+  let preparedConfig = prepareConfig(config);
   const { pages, logger, count, cache } = preparedConfig;
   const percentCost = 0.99 / (count * pages.length + (cache ? pages.length : 0));
   let stopCache;
@@ -41,6 +41,10 @@ const profile = async (config) => {
 
     if (cacheBandwidthConfig) {
       cacheResources = result;
+      preparedConfig = {
+        ...preparedConfig,
+        pages: preparedConfig.pages.filter(({ name }) => cacheResources[name])
+      };
     } else {
       stopCache = result;
     }
@@ -58,7 +62,7 @@ const profile = async (config) => {
   );
 
   if (cache && stopCache) {
-      await stopCache();
+    await stopCache();
   }
 
   return result;

@@ -3,8 +3,9 @@ const messages = require('./worker-messages.js');
 
 const serializePages = (pages) => (
   pages
-    .map(({ actions, ...rest }) => ({
+    .map(({ actions, ...rest }, index) => ({
       ...rest,
+      index,
       actions: actions && actions
         .map(({ action, ...rest }) => ({
           action: action.toString(),
@@ -29,19 +30,22 @@ const cleanConfig = (config) => ({
 
 const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, dataCb }) => {
   return new Promise((resolve, reject) => {
-    const queue = Array(pages.length * count)
+    let queue = Array(pages.length * count)
       .fill(null)
       .map((a, index) => index % pages.length);
     let expectedResultsCount = queue.length;
-    let attemptsCount = 15;
-    let attemptTimeout = 5000;
 
     workers.forEach((worker) => {
+      let attemptsCount = 1;
+      let attemptTimeout = 5000;
+
       if (queue.length) {
         worker.postMessage({
           type: messages.LOAD_PAGE_START,
           payload: pages[queue.shift()]
         });
+      } else {
+        reject('Noting to profile');
       }
 
       worker.on('message', async ({ type, payload }) => {
@@ -75,7 +79,16 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
               }, attemptTimeout);
             }
           } else {
-            reject(new Error('Attempts limit reached.'));
+            await logger(`Attempts limit reached for page: ${payload.page.name} - ${payload.page.url}`);
+            const newQueue = queue.filter((index) => payload.page.index === index);
+            const delta = queue.length - newQueue.length;
+
+            queue = newQueue;
+            expectedResultsCount -= delta + 1;
+
+            if (!expectedResultsCount || !(await checkStatus())) {
+              resolve();
+            }
           }
         }
       })
