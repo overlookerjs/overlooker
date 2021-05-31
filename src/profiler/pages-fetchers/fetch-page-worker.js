@@ -6,15 +6,6 @@ const {
 } = require('worker_threads');
 const messages = require('./worker-messages.js');
 
-const deserializeArgs = (args) => args.map(({ type, value }) => {
-  switch (type) {
-    case 'function':
-      return new Function('return ' + value)();
-    default:
-      return value;
-  }
-});
-
 const wrapFunctions = (functions) => {
   const callsMap = new Map();
 
@@ -58,88 +49,15 @@ const wrapFunctions = (functions) => {
   }, {});
 }
 
-const wrapPagesActions = (pages) => {
-  const callsMap = new Map();
-
-  parentPort.on('message', async ({ type, payload }) => {
-    if (type === messages.ACTION_PAGE_CALL) {
-      const {
-        actionCallId,
-        pageCallId,
-        functionName,
-        args
-      } = payload;
-
-      const { page } = callsMap.get(actionCallId);
-
-      try {
-        await page[functionName](...deserializeArgs(args));
-
-        parentPort.postMessage({
-          type: messages.ACTION_PAGE_CALL_RESULT,
-          payload: {
-            pageCallId
-          }
-        });
-      } catch (error) {
-        parentPort.postMessage({
-          type: messages.ACTION_PAGE_CALL_RESULT,
-          payload: {
-            pageCallId,
-            error
-          }
-        });
-      }
-    } else if (type === messages.ACTION_END) {
-      const {
-        actionCallId
-      } = payload;
-
-      callsMap.get(actionCallId).resolve();
-      callsMap.delete(actionCallId);
-    }
-  });
-
-  return pages.map(({ actions, ...rest }) => {
-    const wrappedActions = actions && actions.map(({ actionId, ...actionRest }) => {
-      let counter = 0;
-
-      return {
-        ...actionRest,
-        action: async (page, pages) => {
-          const id = counter++;
-
-          if (counter === Number.MAX_SAFE_INTEGER) {
-            counter = 0;
-          }
-
-          const actionCallId = actionId + '-' + id;
-
-          parentPort.postMessage({
-            type: messages.ACTION_CALL,
-            payload: {
-              actionId,
-              actionAdditionArgs: [pages],
-              actionCallId
-            }
-          });
-
-          return await new Promise((resolve) => {
-            callsMap.set(actionCallId, {
-              page,
-              resolve
-            });
-          });
-        }
-      }
-    });
-
-    return {
-      ...rest,
-      actions: wrappedActions
-    }
-  });
-}
+const deserializePages = (pages) => (
+  pages.map(({ actions, ...rest }) => ({
+    ...rest,
+    actions: actions && actions.map(({ action, ...actionRest }) => ({
+      ...actionRest,
+      action: new Function('return ' + action)()
+    }))
+  }))
+)
 
 const fetchPage = async (browser,
                          {
@@ -187,7 +105,7 @@ const runWorker = async () => {
     ...config,
     requests: prepareRequestsConfig(config.requests, config.host, config.pages),
     logger: wrappedFunctions.logger,
-    pages: wrapPagesActions(config.pages)
+    pages: deserializePages(config.pages)
   };
 
   const browser = await openBrowser({

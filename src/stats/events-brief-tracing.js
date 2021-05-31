@@ -198,7 +198,7 @@ const getWaterfall = (network, cacheRequests, timeDelta) => ({
         value: priority
       }, {
         name: 'size',
-        value: `${size / 1024}KB`
+        value: `${(size / 1024).toFixed(2)}KB`
       }]
     }))
   ) : (

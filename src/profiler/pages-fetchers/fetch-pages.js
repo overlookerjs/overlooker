@@ -1,82 +1,31 @@
 const { makeFetchPageWorkersPool } = require('./fetch-page-workers-pool.js');
 const messages = require('./worker-messages.js');
 
-const serializeArgs = (args) => args.map((arg) => {
-  const argType = typeof arg;
-  let serializedArg;
-
-  switch(argType) {
-    case 'function':
-      serializedArg = arg.toString();
-      break;
-    default:
-      serializedArg = arg;
-      break;
-  }
-
-  return {
-    type: argType,
-    value: serializedArg
-  }
-})
-
-const preparePages = (pages) => {
-  const actionsMap = new Map();
-
-  const preparedPages = pages.map(({
-                                     actions,
-                                     name,
-                                     ...rest
-                                   }) => {
-    const wrappedActions = actions && actions.map(({
-                                                     action,
-                                                     name: actionName,
-                                                     ...rest
-                                                   }, index) => {
-      const actionId = `${name}-${actionName}-${index}`;
-
-      actionsMap.set(actionId, action);
-
-      return ({
-        actionId: actionId,
-        name: actionName,
-        ...rest
-      });
-    });
-
-    return {
+const serializePages = (pages) => (
+  pages
+    .map(({ actions, ...rest }) => ({
       ...rest,
-      name,
-      actions: wrappedActions
-    }
-  }, {});
+      actions: actions && actions
+        .map(({ action, ...rest }) => ({
+          action: action.toString(),
+          ...rest
+        }))
+    }))
+)
 
-  return {
-    actionsMap,
-    preparedPages
-  }
-}
-
-const cleanConfig = (config) => {
-  const { preparedPages, actionsMap } = preparePages(config.pages);
-
-  return {
-    actionsMap,
-    cleanedConfig: ({
-      ...config,
-      pages: preparedPages,
-      cache: config.cache ? ({
-        ...config.cache,
-        postDataHandler: config.cache.postDataHandler && config.cache.postDataHandler.toString(),
-        responseDataHandler: config.cache.responseDataHandler && config.cache.responseDataHandler.toString()
-      }) : config.cache,
-      logger: null,
-      progress: null,
-      checkStatus: null,
-      buildData: null
-    })
-  }
-}
+const cleanConfig = (config) => ({
+  ...config,
+  pages: serializePages(config.pages),
+  cache: config.cache ? ({
+    ...config.cache,
+    postDataHandler: config.cache.postDataHandler && config.cache.postDataHandler.toString(),
+    responseDataHandler: config.cache.responseDataHandler && config.cache.responseDataHandler.toString()
+  }) : config.cache,
+  logger: null,
+  progress: null,
+  checkStatus: null,
+  buildData: null
+})
 
 const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, dataCb }) => {
   return new Promise((resolve, reject) => {
@@ -134,73 +83,6 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
   });
 }
 
-const bindActionsToWorkers = (workers, actionsMap) => {
-  const pageCallsMap = new Map();
-
-  workers.forEach((worker) => {
-    let counter = 0;
-
-    worker.on('message', async ({
-                                  type,
-                                  payload
-                                }) => {
-      if (type === messages.ACTION_CALL) {
-        const { actionId, actionAdditionArgs, actionCallId } = payload;
-        const action = actionsMap.get(actionId);
-
-        await action(new Proxy({}, {
-          get: (target, property) => {
-            return async (...args) => {
-              const id = counter++;
-
-              if (counter === Number.MAX_SAFE_INTEGER) {
-                counter = 0;
-              }
-
-              const pageCallId = actionCallId + property + id;
-
-              worker.postMessage({
-                type: messages.ACTION_PAGE_CALL,
-                payload: {
-                  actionCallId,
-                  pageCallId,
-                  functionName: property,
-                  args: serializeArgs(args)
-                }
-              });
-
-              return await new Promise((resolve, reject) => pageCallsMap.set(pageCallId, { resolve, reject }));
-            }
-          }
-        }), ...actionAdditionArgs);
-
-        worker.postMessage({
-          type: messages.ACTION_END,
-          payload: {
-            actionCallId
-          }
-        });
-      } else if (type === messages.ACTION_PAGE_CALL_RESULT) {
-        const {
-          pageCallId,
-          result,
-          error
-        } = payload;
-
-        const pageCall = pageCallsMap.get(pageCallId);
-
-        if (error) {
-          pageCall.reject(error);
-        } else {
-          pageCall.resolve(result);
-        }
-
-        pageCallsMap.delete(pageCallId);
-      }
-    });
-  });
-}
-
 const fetchPages = async ({
                             config,
                             cacheBandwidthConfig,
@@ -209,7 +91,7 @@ const fetchPages = async ({
                             onePort
                           }) => {
   const { count, logger, progress, checkStatus } = config;
-  const { actionsMap, cleanedConfig } = cleanConfig(config);
+  const cleanedConfig = cleanConfig(config);
 
   const { workers, close } = await makeFetchPageWorkersPool({
     config: cleanedConfig,
@@ -220,8 +102,6 @@ const fetchPages = async ({
       logger
     }
   });
-
-  bindActionsToWorkers(workers, actionsMap);
 
   const pagesResults = {};
 
