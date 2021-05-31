@@ -15,7 +15,7 @@ const thresholds = {
   }
 };
 
-jest.setTimeout(150000);
+jest.setTimeout(300000);
 
 const hasProfile = (profile) => {
   expect(profile).toBeTruthy();

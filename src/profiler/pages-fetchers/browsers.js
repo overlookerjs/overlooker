@@ -2,8 +2,7 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { chromium: playwright } = require('playwright');
 const path = require('path');
-const { viewports, userAgents } = require('./viewports.js');
-const constants = require('./constants.js');
+const { viewports, userAgents } = require('../viewports.js');
 
 puppeteer.use(StealthPlugin());
 
@@ -87,50 +86,35 @@ const getContextPlaywright = async (config, index, proxyArgs) => {
   };
 };
 
-const open = async (config, onePort) => {
-  const { threads, logger } = config;
-
-  let httpPort = constants.HTTP_PORT;
-  let httpsPort = constants.HTTPS_PORT;
+const openBrowser = async ({
+                             config,
+                             index,
+                             httpPort,
+                             httpsPort
+                           }) => {
+  const { logger } = config;
 
   try {
-    await logger(`opening browsers`);
+    await logger(`opening browser`);
 
-    const browsers = await Promise.all(Array(threads).fill(null).map(async (n, index) => {
-      if (!onePort) {
-        httpPort = httpPort + 1;
-        httpsPort = httpsPort + 1;
-      }
+    const proxyArgs = getProxyArgs(config, httpPort, httpsPort);
 
-      const proxyArgs = getProxyArgs(config, httpPort, httpsPort);
+    const browser = config.isPlaywright ? (
+      await getContextPlaywright(config, index, proxyArgs)
+    ) : (
+      await getContextPuppeteer(config, index, proxyArgs)
+    );
 
-      return config.isPlaywright ? (
-        await getContextPlaywright(config, index, proxyArgs)
-      ) : (
-        await getContextPuppeteer(config, index, proxyArgs)
-      );
-    }));
+    await logger('browser are open');
 
-    await logger('browsers are open');
-
-    return browsers;
+    return browser;
   } catch (e) {
-    await logger(`error while opening browsers\n${e.stack}`);
+    await logger(`error while opening browser\n${e.stack}`);
 
     return null;
   }
 };
 
-const wrap = (browsers) => browsers && browsers.map((browser) => (fn) => fn(browser));
-
-const close = async (browsers) => {
-  if (browsers) {
-    await Promise.all(browsers.map(({ close }) => close()));
-  }
-};
-
 module.exports = {
-  open,
-  wrap,
-  close
+  openBrowser
 };

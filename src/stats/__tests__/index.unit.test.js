@@ -1,12 +1,15 @@
 const config = require('../../__tests__/config.data.js');
-const { prepareConfig } = require('../../profiler/preparing.js');
+const { prepareConfig, prepareRequestsConfig } = require('../../profiler/preparing.js');
 const { getAllStats } = require('../index.js');
 
 describe('Stats unit tests', () => {
   const input  = require('./stats-input.data.js');
   const output  = require('./stats-output.data.js');
 
-  const preparedConfig = prepareConfig(config);
+  const preparedConfig = prepareConfig({
+    ...config,
+    requests: prepareRequestsConfig(config.requests, config.host, config.pages)
+  });
 
   test('Check getAllStats', async () => {
     const result = await getAllStats(input, preparedConfig);

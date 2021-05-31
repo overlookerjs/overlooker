@@ -1,12 +1,30 @@
 const { prepareConfig } = require('./preparing.js');
 const { fetchBuildData } = require('./build-data.js');
 const { describePerformance, warming } = require('./pages-fetchers');
+const networkPresets = require('../network-presets.js');
+const { CacheBandwidth } = require('./cache-bandwidth.js');
+
+const getSyntheticCache = (config) => {
+  const isSyntheticCache = config.cache && config.cache.type === 'synthetic';
+  const {
+    downloadThroughput,
+    latency
+  } = networkPresets[config.throttling.network];
+
+  return isSyntheticCache ? {
+    latency,
+    throughput: downloadThroughput,
+    writeMode: true,
+    resources: {}
+  } : null;
+}
 
 const profile = async (config) => {
   const preparedConfig = prepareConfig(config);
   const { pages, logger, count, cache } = preparedConfig;
   const percentCost = 0.99 / (count * pages.length + (cache ? pages.length : 0));
   let stopCache;
+  let cacheResources;
 
   if (!pages.length) {
     await logger('Nothing to profile');
@@ -14,13 +32,30 @@ const profile = async (config) => {
     return {};
   }
 
+  const cacheBandwidthConfig = getSyntheticCache(preparedConfig);
+
   const buildData = await fetchBuildData(preparedConfig);
 
   if (cache) {
-    stopCache = await warming(preparedConfig, percentCost);
+    const result = await warming(preparedConfig, percentCost, cacheBandwidthConfig);
+
+    if (cacheBandwidthConfig) {
+      cacheResources = result;
+    } else {
+      stopCache = result;
+    }
   }
 
-  const result = await describePerformance(preparedConfig, percentCost, buildData);
+  const result = await describePerformance(
+    preparedConfig,
+    cacheBandwidthConfig ? {
+      ...cacheBandwidthConfig,
+      resources: cacheResources,
+      writeMode: false
+    } : null,
+    percentCost,
+    buildData
+  );
 
   if (cache && stopCache) {
       await stopCache();

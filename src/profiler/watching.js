@@ -145,15 +145,15 @@ const writeCoverage = async (page, isPlaywright) => {
   };
 };
 
-const watch = async (context, page, isPlaywright) => {
-  if (!isPlaywright) {
+const watch = async (context, page, isPlaywright, disableInterceptor) => {
+  if (!isPlaywright && !disableInterceptor) {
     await page.setRequestInterception(false);
   }
 
   const getCoverage = await writeCoverage(page, isPlaywright);
   const getTracing = await writeTracing(context, page, isPlaywright);
 
-  if (!isPlaywright) {
+  if (!isPlaywright && !disableInterceptor) {
     await page.setRequestInterception(true);
   }
 

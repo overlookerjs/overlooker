@@ -104,7 +104,7 @@ const castEventToPayload = (name, events) => {
       return events
         .filter(({ children }) => children)
         .map((event) => extractPayloadFromEvent(
-          'TimerFire', // ToDo: should be more understandable
+          'TimerFire',
           event,
           event.children.find(({ event: { name } }) => name === 'FunctionCall')
         ));

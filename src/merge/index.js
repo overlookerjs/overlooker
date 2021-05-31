@@ -1,4 +1,4 @@
-const { aggregateProfiles } = require('./../aggregation');
+const { aggregateProfilesSeries } = require('./../aggregation');
 const { deepMapUntilArray } = require('./../objects-utils');
 const jStat = require('jstat');
 
@@ -10,7 +10,7 @@ const strategies = {
 const getAggregateMerger = (mergeStrategy) => (stats) => deepMapUntilArray(stats, mergeStrategy);
 
 const merge = (data, pages, mergeStrategyName = 'mean') => (
-  aggregateProfiles(
+  aggregateProfilesSeries(
     Object.entries(data)
       .filter(([pageName]) => !pages || pages.includes(pageName))
       .map(([, pageData]) => ({ ...pageData, screenshots: null })),
