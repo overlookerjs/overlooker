@@ -8,8 +8,8 @@ const { getImpactedPages, affectConfigByImpact } = require('./config-filtration.
 const impactAnalysis = async (previousDescriptions, config, elementsFilter) => {
   const preparedConfig = prepareConfig(config);
   const preparedConfigWithRequests = {
-    ...config,
-    requests: prepareRequestsConfig(config.requests, config.host, config.pages)
+    ...preparedConfig,
+    requests: prepareRequestsConfig(preparedConfig.requests, preparedConfig.host, preparedConfig.pages)
   }
   const { pages, logger } = preparedConfig;
 
