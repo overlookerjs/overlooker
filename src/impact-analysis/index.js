@@ -1,4 +1,4 @@
-const { prepareConfig } = require('../profiler/preparing.js');
+const { prepareConfig, prepareRequestsConfig } = require('../profiler/preparing.js');
 const { fetchBuildData } = require('../profiler/build-data.js');
 const { content } = require('../profiler/pages-fetchers');
 const { compareDescriptions } = require('./description-comparison.js');
@@ -7,6 +7,10 @@ const { getImpactedPages, affectConfigByImpact } = require('./config-filtration.
 
 const impactAnalysis = async (previousDescriptions, config, elementsFilter) => {
   const preparedConfig = prepareConfig(config);
+  const preparedConfigWithRequests = {
+    ...config,
+    requests: prepareRequestsConfig(config.requests, config.host, config.pages)
+  }
   const { pages, logger } = preparedConfig;
 
   if (!pages.length) {
@@ -22,7 +26,7 @@ const impactAnalysis = async (previousDescriptions, config, elementsFilter) => {
 
     const profiles = await content(preparedConfig, buildData);
 
-    const descriptions = describePages(profiles, preparedConfig, elementsFilter);
+    const descriptions = describePages(profiles, preparedConfigWithRequests, elementsFilter);
 
     const difference = previousDescriptions && compareDescriptions(previousDescriptions, descriptions);
 
