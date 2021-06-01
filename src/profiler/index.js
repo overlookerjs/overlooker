@@ -43,7 +43,7 @@ const profile = async (config) => {
       cacheResources = result;
       preparedConfig = {
         ...preparedConfig,
-        pages: preparedConfig.pages.filter(({ name }) => cacheResources[name])
+        pages: preparedConfig.pages.filter(({ name }) => !!cacheResources && cacheResources[name])
       };
     } else {
       stopCache = result;

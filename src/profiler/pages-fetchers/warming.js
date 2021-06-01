@@ -147,7 +147,11 @@ const warmingSyntheticCache = async (config, percentCost, cacheBandwidthConfig) 
 
       await logger(`warming done!`);
 
-      return map(result, ([{ cacheRequests }]) => cacheRequests);
+      return result && map(result, (series) => {
+        if (series.length) {
+          return series[0].cacheRequests;
+        }
+      });
     } catch (e) {
       await logger(`cannot warm pages!\n${e.stack}`);
     }

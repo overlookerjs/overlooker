@@ -1,4 +1,5 @@
 const { makeFetchPageWorkersPool } = require('./fetch-page-workers-pool.js');
+const { make } = require('./../../objects-utils.js');
 const messages = require('./worker-messages.js');
 
 const serializePages = (pages) => (
@@ -34,9 +35,14 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
       .fill(null)
       .map((a, index) => index % pages.length);
     let expectedResultsCount = queue.length;
+    const pagesWithError = new Set();
+    const pagesAttempts = make(pages.map(({ name }) => [name, 15]));
+
+    if (!queue.length) {
+      reject(new Error('Noting to profile'));
+    }
 
     workers.forEach((worker) => {
-      let attemptsCount = 1;
       let attemptTimeout = 5000;
 
       if (queue.length) {
@@ -44,8 +50,6 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
           type: messages.LOAD_PAGE_START,
           payload: pages[queue.shift()]
         });
-      } else {
-        reject('Noting to profile');
       }
 
       worker.on('message', async ({ type, payload }) => {
@@ -65,9 +69,9 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
             resolve();
           }
         } else if (type === messages.LOAD_PAGE_ERROR) {
-          if (attemptsCount) {
+          if (pagesAttempts[payload.page.name] > 0) {
             if (await checkStatus()) {
-              attemptsCount--;
+              pagesAttempts[payload.page.name] -= 1;
 
               await logger(`try to retry: ${payload.page.url}`);
 
@@ -77,21 +81,32 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
                   payload: payload.page
                 });
               }, attemptTimeout);
+            } else {
+              resolve();
             }
           } else {
-            await logger(`Attempts limit reached for page: ${payload.page.name} - ${payload.page.url}`);
-            const newQueue = queue.filter((index) => payload.page.index === index);
+            const newQueue = queue.filter((index) => payload.page.index !== index);
             const delta = queue.length - newQueue.length;
+
+            pagesWithError.add(payload.page.name);
 
             queue = newQueue;
             expectedResultsCount -= delta + 1;
 
             if (!expectedResultsCount || !(await checkStatus())) {
-              resolve();
+              await logger(`Attempts limit reached for page: ${payload.page.name} - ${payload.page.url}`);
+
+              const pagesWithErrorArray = [...pagesWithError];
+
+              if (pagesWithErrorArray.length === pages.length) {
+                reject(new Error(`All pages in profile reached attempts limit: ${pagesWithErrorArray.join(', ')}`));
+              } else {
+                resolve();
+              }
             }
           }
         }
-      })
+      });
     });
   });
 }
@@ -138,10 +153,8 @@ const fetchPages = async ({
     close();
     return pagesResults;
   } catch (e) {
-    await logger(e.stack);
-
     close();
-    return null;
+    throw e;
   }
 };
 
