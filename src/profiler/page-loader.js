@@ -256,7 +256,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
                 responseCode: data.status,
                 responseHeaders: Object.entries(headers).map(([name, value]) => ({ name, value })),
                 body: buffer.toString('base64')
-              }).catch(console.log)
+              })
             });
         } else {
           client.send('Fetch.continueRequest', { requestId });

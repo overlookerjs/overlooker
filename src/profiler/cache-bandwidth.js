@@ -107,6 +107,7 @@ class CacheBandwidth {
           name: data.url,
           type: data.mimeType,
           priority: data.priority,
+          size: size,
           requestStart: performance.now()
         };
 
