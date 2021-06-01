@@ -20,6 +20,7 @@ const cleanConfig = (config) => ({
   pages: serializePages(config.pages),
   cache: config.cache ? ({
     type: config.cache.type,
+    host: config.cache.host,
     postDataHandler: config.cache.postDataHandler && config.cache.postDataHandler.toString(),
     responseDataHandler: config.cache.responseDataHandler && config.cache.responseDataHandler.toString()
   }) : config.cache,
