@@ -238,7 +238,9 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
 
         const hasCachedRequest = cacheBandwidth.has(key);
 
-        if (hasCachedRequest) {
+        if (config.requests && config.requests.ignore && config.requests.ignore(url)) {
+          client.send('Fetch.failRequest', { requestId, errorReason: 'Aborted' });
+        } else if (hasCachedRequest) {
           cacheBandwidth.get(key)
             .then((data) => {
               const headers = {};
@@ -256,8 +258,6 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
                 body: buffer.toString('base64')
               }).catch(console.log)
             });
-        } else if (config.requests && config.requests.ignore && config.requests.ignore(url)) {
-          client.send('Fetch.failRequest', { requestId, errorReason: 'Aborted' });
         } else {
           client.send('Fetch.continueRequest', { requestId });
         }
