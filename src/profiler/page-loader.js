@@ -234,7 +234,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
       client.on('Fetch.requestPaused', ({ requestId, request }) => {
         const url = request.url;
         const postData = request.postData;
-        const key = hash(url + postData);
+        const key = hash(url + (postData || ''));
 
         const hasCachedRequest = cacheBandwidth.has(key);
 
