@@ -1,6 +1,6 @@
 {
   "name": "overlooker",
-  "version": "0.31.8",
+  "version": "0.31.9",
   "description": "tool for profile front-end performance",
   "main": "src/index.js",
   "scripts": {
