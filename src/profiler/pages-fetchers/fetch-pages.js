@@ -35,7 +35,7 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
     let queue = Array(pages.length * count)
       .fill(null)
       .map((a, index) => index % pages.length);
-    let expectedResultsCount = queue.length;
+    let expectedResultsCounter = queue.length;
     const pagesWithError = new Set();
     const pagesAttempts = make(pages.map(({ name }) => [name, 15]));
 
@@ -56,25 +56,37 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
       worker.on('message', async ({ type, payload }) => {
         if (type === messages.LOAD_PAGE_COMPLETE) {
           if (queue.length && await checkStatus()) {
-            worker.postMessage({
-              type: messages.LOAD_PAGE_START,
-              payload: pages[queue.shift()]
-            });
+            const queueItem = queue.shift();
+
+            if (typeof queueItem === 'number') {
+              worker.postMessage({
+                type: messages.LOAD_PAGE_START,
+                payload: pages[queueItem]
+              });
+            } else {
+              await logger('Shift empty queue item');
+            }
           }
 
-          expectedResultsCount--;
+          expectedResultsCounter--;
 
           await dataCb(payload);
 
-          if (!expectedResultsCount || !(await checkStatus())) {
+          if (!expectedResultsCounter || !(await checkStatus())) {
             resolve();
           }
         } else if (type === messages.LOAD_PAGE_ERROR) {
-          if (pagesAttempts[payload.page.name] > 0) {
+          if (!payload.page) {
+            await logger(`Something wrong with worker: ${JSON.stringify(payload, null, '  ')}`);
+
+            if (!expectedResultsCounter || !(await checkStatus())) {
+              resolve();
+            }
+          } else if (pagesAttempts[payload.page.name] > 0) {
             if (await checkStatus()) {
               pagesAttempts[payload.page.name] -= 1;
 
-              await logger(`try to retry: ${payload.page.url}`);
+              await logger(`try to retry: ${payload.page.url} (attempts: ${pagesAttempts[payload.page.name]})`);
 
               setTimeout(() => {
                 worker.postMessage({
@@ -92,9 +104,9 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
             pagesWithError.add(payload.page.name);
 
             queue = newQueue;
-            expectedResultsCount -= delta + 1;
+            expectedResultsCounter -= delta + 1;
 
-            if (!expectedResultsCount || !(await checkStatus())) {
+            if (!expectedResultsCounter || !(await checkStatus())) {
               await logger(`Attempts limit reached for page: ${payload.page.name} - ${payload.page.url}`);
 
               const pagesWithErrorArray = [...pagesWithError];

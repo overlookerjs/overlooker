@@ -103,15 +103,19 @@ const getAllStats = async ({
   if (config.tracing) {
     const data = await getBriefTracing(mainEvents, otherEvents, firstEvent);
 
-    const timeDelta = cacheLog && cacheLog.length ? (
+    const hasCache = cacheLog && cacheLog.length;
+    const firstResourceEvent = tracing.find(({
+                                              name,
+                                              args
+                                            }) => (
+      name === 'ResourceSendRequest' && hasCache && args && args.data && args.data.url === cacheLog[0].name
+    ));
+    const timeDelta = hasCache ? (
       cacheLog[0].requestStart - (
-        tracing.find(({
-                        name,
-                        args
-                      }) => (
-          name === 'ResourceSendRequest' && args && args.data && args.data.url === cacheLog[0].name
-        )).ts - firstEvent.ts
-      ) / 1000
+        firstResourceEvent ? (
+          (firstResourceEvent.ts - firstEvent.ts) / 1000
+        ) : 0
+      )
     ) : 0;
 
     const waterfall = getWaterfall(network, cacheLog, timeDelta);
