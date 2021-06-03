@@ -343,7 +343,7 @@ const loadPage = async (context, config, pageConfig, cacheBandwidthConfig) => {
       cacheBandwidth.start();
     }
 
-    const pageResponse = await page.goto(url, { timeout: 60000, waitUntil: 'load' }).catch((e) => {
+    const pageResponse = await page.goto(url, { timeout: 45000, waitUntil: ['load', 'networkidle0'] }).catch((e) => {
       const { failed, inflight } = tracker.getRequests();
 
       tracker.dispose(page);

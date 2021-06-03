@@ -2,6 +2,8 @@ const { makeFetchPageWorkersPool } = require('./fetch-page-workers-pool.js');
 const { make } = require('./../../objects-utils.js');
 const messages = require('./worker-messages.js');
 
+const ATTEMPTS_COUNT = 15;
+
 const serializePages = (pages) => (
   pages
     .map(({ actions, ...rest }, index) => ({
@@ -37,7 +39,7 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
       .map((a, index) => index % pages.length);
     let expectedResultsCounter = queue.length;
     const pagesWithError = new Set();
-    const pagesAttempts = make(pages.map(({ name }) => [name, 15]));
+    const pagesAttempts = make(pages.map(({ name }) => [name, ATTEMPTS_COUNT]));
 
     if (!queue.length) {
       reject(new Error('Noting to profile'));
@@ -54,7 +56,7 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
       }
 
       worker.on('message', async ({ type, payload }) => {
-        if (type === messages.LOAD_PAGE_COMPLETE) {
+        const sendPageToWorker = async () => {
           if (queue.length && await checkStatus()) {
             const queueItem = queue.shift();
 
@@ -67,6 +69,10 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
               await logger('Shift empty queue item');
             }
           }
+        }
+
+        if (type === messages.LOAD_PAGE_COMPLETE) {
+          await sendPageToWorker();
 
           expectedResultsCounter--;
 
@@ -116,6 +122,8 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
               } else {
                 resolve();
               }
+            } else {
+              await sendPageToWorker();
             }
           }
         }

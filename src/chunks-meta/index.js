@@ -75,8 +75,8 @@ const expandRequest = (request, build, modulesMaps, filesMap) => {
 };
 
 const expandNetwork = (network, build) => {
-  const filesMap = build && makeMap(build.input.files, 'path');
-  const modulesMaps = build && makeModulesMaps(build.input.modules);
+  const filesMap = build && build.input && makeMap(build.input.files, 'path');
+  const modulesMaps = build && build.input && makeModulesMaps(build.input.modules);
 
   return build ? network
     .map((request) => expandRequest(request, build, modulesMaps, filesMap)) : network;
