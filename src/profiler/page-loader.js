@@ -159,11 +159,18 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
 
     if (cacheBandwidth.writeMode) {
       client.on('Network.requestWillBeSent', (event) => {
-        requestsMap.set(event.requestId, {
-          method: event.request.method,
-          priority: event.request.initialPriority,
-          url: event.request.url
-        });
+        if (config.requests && config.requests.ignore && config.requests.ignore(event.request.url)) {
+          client.send('Network.continueInterceptedRequest', {
+            interceptionId: event.requestId,
+            errorReason: 'Aborted'
+          });
+        } else {
+          requestsMap.set(event.requestId, {
+            method: event.request.method,
+            priority: event.request.initialPriority,
+            url: event.request.url
+          });
+        }
       });
 
       client.on('Network.responseReceived', (event) => {
@@ -196,7 +203,11 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
             request.postData = postData;
             request.body = responseDataHandler(request.url, rawPostData, base64Encoded ? Buffer.from(body, 'base64') : body);
 
-            cacheBandwidth.set(hash(request.url + request.postData), request);
+            const key = hash(request.url + request.postData);
+
+            if (!cacheBandwidth.has(key)) {
+              cacheBandwidth.set(key, request);
+            }
           } catch (e) {
 
           }
@@ -217,7 +228,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
             event.request.method !== 'GET' ? await client.send('Network.getRequestPostData', { requestId: event.requestId }) : ''
           );
 
-          requestsMap.set(event.requestId, hash(url + postData));
+          requestsMap.set(event.requestId, hash(url + (postData || '')));
         } catch (e) {
 
         }
@@ -259,7 +270,10 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
               })
             });
         } else {
-          client.send('Fetch.continueRequest', { requestId });
+          try {
+            client.send('Fetch.continueRequest', { requestId });
+          } catch (e) {
+          }
         }
       });
     }

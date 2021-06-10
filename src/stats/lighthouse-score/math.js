@@ -5,59 +5,59 @@
  * @param {number} x
  * @return {number}
  */
-function internalErf_(x) {
+function erf(x) {
   // erf(-x) = -erf(x);
-  var sign = x < 0 ? -1 : 1;
+  const sign = Math.sign(x);
   x = Math.abs(x);
-  
-  var a1 = 0.254829592;
-  var a2 = -0.284496736;
-  var a3 = 1.421413741;
-  var a4 = -1.453152027;
-  var a5 = 1.061405429;
-  var p = 0.3275911;
-  var t = 1 / (1 + p * x);
-  var y = t * (a1 + t * (a2 + t * (a3 + t * (a4 + t * a5))));
+
+  const a1 = 0.254829592;
+  const a2 = -0.284496736;
+  const a3 = 1.421413741;
+  const a4 = -1.453152027;
+  const a5 = 1.061405429;
+  const p = 0.3275911;
+  const t = 1 / (1 + p * x);
+  const y = t * (a1 + t * (a2 + t * (a3 + t * (a4 + t * a5))));
   return sign * (1 - y * Math.exp(-x * x));
 }
-  
+
 /**
- * Creates a log-normal distribution and finds the complementary
- * quantile (1-percentile) of that distribution at value. All
- * arguments should be in the same units (e.g. milliseconds).
- *
- * @param {{median: number, podr?: number, p10?: number}} curve
+ * Returns the score (1 - percentile) of `value` in a log-normal distribution
+ * specified by the `median` value, at which the score will be 0.5, and a 10th
+ * percentile value, at which the score will be 0.9. The score represents the
+ * amount of the distribution greater than `value`. All values should be in the
+ * same units (e.g. milliseconds). See
+ *   https://www.desmos.com/calculator/o98tbeyt1t
+ * for an interactive view of the relationship between these parameters and the
+ * typical parameterization (location and shape) of the log-normal distribution.
+ * @param {{median: number, p10: number}} parameters
  * @param {number} value
- * @return The complement of the quantile at value.
- * @customfunction
+ * @return {number}
  */
- function quantileAtValue({median, podr, p10}, value) {
-  if (!podr) {
-    podr = derivePodrFromP10(median, p10);
-  }
+function getLogNormalScore({ median, p10 }, value) {
+  // Required for the log-normal distribution.
+  if (median <= 0) throw new Error('median must be greater than zero');
+  if (p10 <= 0) throw new Error('p10 must be greater than zero');
+  // Not required, but if p10 > median, it flips around and becomes the p90 point.
+  if (p10 >= median) throw new Error('p10 must be less than the median');
 
-  var location = Math.log(median);
+  // Non-positive values aren't in the distribution, so always 1.
+  if (value <= 0) return 1;
 
-  // The "podr" value specified the location of the smaller of the positive
-  // roots of the third derivative of the log-normal CDF. Calculate the shape
-  // parameter in terms of that value and the median.
-  // See https://www.desmos.com/calculator/2t1ugwykrl
-  var logRatio = Math.log(podr / median);
-  var shape = Math.sqrt(1 - 3 * logRatio - Math.sqrt((logRatio - 3) * (logRatio - 3) - 8)) / 2;
+  // Closest double to `erfc-1(2 * 1/10)`.
+  const INVERSE_ERFC_ONE_FIFTH = 0.9061938024368232;
 
-  var standardizedX = (Math.log(value) - location) / (Math.SQRT2 * shape);
-  return (1 - internalErf_(standardizedX)) / 2;
-}
-    
-// https://www.desmos.com/calculator/oqlvmezbze
-function derivePodrFromP10(median, p10) {
-  const u = Math.log(median);
-  const shape = Math.abs(Math.log(p10) - u) / (Math.SQRT2 * 0.9061938024368232);
-  const inner1 = -3 * shape - Math.sqrt(4 + shape * shape);
-  const podr = Math.exp(u + shape/2 * inner1)
-  return podr;
+  // Shape (σ) is `log(p10/median) / (sqrt(2)*erfc^-1(2 * 1/10))` and
+  // standardizedX is `1/2 erfc(log(value/median) / (sqrt(2)*σ))`, so simplify a bit.
+  const xLogRatio = Math.log(value / median);
+  const p10LogRatio = -Math.log(p10 / median); // negate to keep σ positive.
+  const standardizedX = xLogRatio * INVERSE_ERFC_ONE_FIFTH / p10LogRatio;
+  const complementaryPercentile = (1 - erf(standardizedX)) / 2;
+
+  // Clamp to [0, 1] to avoid any floating-point out-of-bounds issues.
+  return Math.min(1, Math.max(0, complementaryPercentile));
 }
 
 module.exports = {
-  quantileAtValue,
-}
+  getLogNormalScore
+};

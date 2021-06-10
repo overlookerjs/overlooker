@@ -1,17 +1,15 @@
 const { scoringGuides } = require( './metrics.js' );
 const { arithmeticMean } = require( './util.js' );
-const { quantileAtValue } = require( './math.js' );
+const { getLogNormalScore } = require( './math.js' );
 
 const getLighthouseScore = (values, platform) => {
-  const scoring = scoringGuides.v6[platform];
-  const metricsData = Object.keys(scoring).map(id => {
-    const metricScoring = scoring[id];
-
+  const scoring = scoringGuides.v8[platform];
+  const metricsData = Object.entries(scoring).map(([id, metricScoring]) => {
     return {
       id,
       metricScoring,
       value: values[id],
-      score: Math.round(quantileAtValue(metricScoring, values[id]) * 100),
+      score: Math.round(getLogNormalScore(metricScoring, values[id]) * 100),
     };
   });
 
