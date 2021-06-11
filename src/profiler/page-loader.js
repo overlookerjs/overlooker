@@ -158,10 +158,10 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
     await client.send('Network.enable');
 
     if (cacheBandwidth.writeMode) {
-      client.on('Network.requestWillBeSent', (event) => {
+      client.on('Network.requestWillBeSent', async (event) => {
         if (config.requests && config.requests.ignore && config.requests.ignore(event.request.url)) {
           try {
-            client.send('Network.continueInterceptedRequest', {
+            await client.send('Network.continueInterceptedRequest', {
               interceptionId: event.requestId,
               errorReason: 'Aborted'
             });
@@ -246,7 +246,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
         }
       });
 
-      client.on('Fetch.requestPaused', ({ requestId, request }) => {
+      client.on('Fetch.requestPaused', async ({ requestId, request }) => {
         const url = request.url;
         const postData = request.postData;
         const key = hash(url + (postData || ''));
@@ -257,7 +257,7 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
           client.send('Fetch.failRequest', { requestId, errorReason: 'Aborted' });
         } else if (hasCachedRequest) {
           cacheBandwidth.get(key)
-            .then((data) => {
+            .then(async (data) => {
               const headers = {};
               const buffer = data.body instanceof Buffer ? data.body : Buffer.from(data.body);
 
@@ -266,16 +266,20 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
               if (data.body && !('content-length' in data.headers))
                 headers['content-length'] = String(Buffer.byteLength(buffer));
 
-              client.send('Fetch.fulfillRequest', {
-                requestId,
-                responseCode: data.status,
-                responseHeaders: Object.entries(headers).map(([name, value]) => ({ name, value })),
-                body: buffer.toString('base64')
-              })
+              try {
+                await client.send('Fetch.fulfillRequest', {
+                  requestId,
+                  responseCode: data.status,
+                  responseHeaders: Object.entries(headers).map(([name, value]) => ({ name, value })),
+                  body: buffer.toString('base64')
+                });
+              } catch (e) {
+
+              }
             });
         } else {
           try {
-            client.send('Fetch.continueRequest', { requestId });
+            await client.send('Fetch.continueRequest', { requestId });
           } catch (e) {
           }
         }
