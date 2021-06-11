@@ -160,10 +160,14 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
     if (cacheBandwidth.writeMode) {
       client.on('Network.requestWillBeSent', (event) => {
         if (config.requests && config.requests.ignore && config.requests.ignore(event.request.url)) {
-          client.send('Network.continueInterceptedRequest', {
-            interceptionId: event.requestId,
-            errorReason: 'Aborted'
-          });
+          try {
+            client.send('Network.continueInterceptedRequest', {
+              interceptionId: event.requestId,
+              errorReason: 'Aborted'
+            });
+          } catch (e) {
+
+          }
         } else {
           requestsMap.set(event.requestId, {
             method: event.request.method,
