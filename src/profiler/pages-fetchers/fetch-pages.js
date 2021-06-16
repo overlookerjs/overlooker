@@ -45,6 +45,8 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
       reject(new Error('Noting to profile'));
     }
 
+    const isFetchingEnded = async () => !(await checkStatus()) || expectedResultsCounter <= 0;
+
     workers.forEach((worker) => {
       let attemptTimeout = 5000;
 
@@ -57,7 +59,7 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
 
       worker.on('message', async ({ type, payload }) => {
         const sendPageToWorker = async () => {
-          if (queue.length && await checkStatus()) {
+          if (!(await isFetchingEnded()) && queue.length) {
             const queueItem = queue.shift();
 
             if (typeof queueItem === 'number') {
@@ -72,20 +74,20 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
         }
 
         if (type === messages.LOAD_PAGE_COMPLETE) {
-          await sendPageToWorker();
-
           expectedResultsCounter--;
+
+          await sendPageToWorker();
 
           await dataCb(payload);
 
-          if (!expectedResultsCounter || !(await checkStatus())) {
+          if (await isFetchingEnded()) {
             resolve();
           }
         } else if (type === messages.LOAD_PAGE_ERROR) {
           if (!payload.page) {
             await logger(`Something wrong with worker: ${JSON.stringify(payload, null, '  ')}`);
 
-            if (!expectedResultsCounter || !(await checkStatus())) {
+            if (await isFetchingEnded()) {
               resolve();
             }
           } else if (pagesAttempts[payload.page.name] > 0) {
@@ -112,7 +114,7 @@ const runFetchPagesQueue = async ({ workers, pages, count, checkStatus, logger, 
             queue = newQueue;
             expectedResultsCounter -= delta + 1;
 
-            if (!expectedResultsCounter || !(await checkStatus())) {
+            if (await isFetchingEnded()) {
               await logger(`Attempts limit reached for page: ${payload.page.name} - ${payload.page.url}`);
 
               const pagesWithErrorArray = [...pagesWithError];
