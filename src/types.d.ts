@@ -411,25 +411,7 @@ declare module "overlooker" {
       responseDataHandler?: (url: string, postData: string, response: string) => string
     } | {
       type: 'synthetic',
-      resources?: {
-        [page: string]: {
-          [url: string]: {
-            method: string,
-            priority: string,
-            url: string,
-            headers: Array<{
-              name: string,
-              value: string
-            }>,
-            status: string,
-            contentType: string,
-            mimeType: string,
-            size: number,
-            postData: string,
-            body: string,
-          }
-        }
-      },
+      resources?: CachedResources,
       postDataHandler?: (url: string, postData: string) => string,
       responseDataHandler?: (url: string, postData: string, response: string) => string
     },
@@ -455,7 +437,28 @@ declare module "overlooker" {
       durationStart?: RegExp,
       durationEnd?: RegExp
     },
+    skipAggregation: boolean,
     debug: boolean
+  };
+
+  export type CachedResources = {
+    [page: string]: {
+      [url: string]: {
+        method: string,
+        priority: string,
+        url: string,
+        headers: Array<{
+          name: string,
+          value: string
+        }>,
+        status: string,
+        contentType: string,
+        mimeType: string,
+        size: number,
+        postData: string,
+        body: string,
+      }
+    }
   };
 
   export type Thresholds = { [path: string]: number };
@@ -518,6 +521,12 @@ declare module "overlooker" {
   };
 
   export function profile(config: ProfileConfig): Promise<ProfileData>;
+
+  export function profileRaw(config: ProfileConfig): Promise<ProfileData>; // without aggregation
+
+  export function profileWarming(config: ProfileConfig): Promise<CachedResources>;
+
+  export function profileAggregate(config: ProfileConfig): Promise<ProfileData>;
 
   export function comparePages(firstData: ProfileData, secondData: ProfileData, onlyStats: boolean): ComparedData;
 

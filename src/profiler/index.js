@@ -1,5 +1,6 @@
-const { prepareConfig } = require('./preparing.js');
+const { prepareConfig, prepareRequestsConfig } = require('./preparing.js');
 const { fetchBuildData } = require('./build-data.js');
+const { aggregateProfiles } = require('../aggregation');
 const { describePerformance, warming } = require('./pages-fetchers');
 const networkPresets = require('../network-presets.js');
 const { map } = require('./../objects-utils.js');
@@ -19,7 +20,7 @@ const getSyntheticCache = (config) => {
   } : null;
 }
 
-const profile = async (config) => {
+const profile = async (config, skipAggregation) => {
   let preparedConfig = prepareConfig(config);
   const { pages, logger, count, cache } = preparedConfig;
   const percentCost = 0.99 / (count * pages.length + (cache ? pages.length : 0));
@@ -34,7 +35,7 @@ const profile = async (config) => {
 
   const cacheBandwidthConfig = getSyntheticCache(preparedConfig);
 
-  const buildData = await fetchBuildData(preparedConfig);
+  const buildData = !skipAggregation ? await fetchBuildData(preparedConfig) : null;
 
   if (cache) {
     let result;
@@ -66,7 +67,8 @@ const profile = async (config) => {
       writeMode: false
     } : null,
     percentCost,
-    buildData
+    buildData,
+    skipAggregation
   );
 
   if (cache && stopCache) {
@@ -85,7 +87,27 @@ const profileWarming = async (config) => {
   return await warming(config, percentCost, cacheBandwidthConfig);
 }
 
+const profileAggregate = async (config, profiles) => {
+  const preparedConfig = prepareConfig(config);
+  const buildData = await fetchBuildData(preparedConfig);
+
+  const configWithRequests = {
+    ...config,
+    requests: prepareRequestsConfig(config.requests, config.host, config.pages)
+  };
+
+  return await aggregateProfiles(
+    profiles,
+    configWithRequests,
+    buildData
+  );
+}
+
+const profileRaw = async (config) => await profile(config, true);
+
 module.exports = {
   profile,
+  profileRaw,
+  profileAggregate,
   profileWarming
 };

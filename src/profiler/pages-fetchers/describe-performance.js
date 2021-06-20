@@ -3,7 +3,7 @@ const { fetchPages } = require('./fetch-pages.js');
 const { getAllStats } = require('../../stats');
 const { prepareRequestsConfig } = require('./../preparing.js');
 
-const describePerformance = async (config, cacheBandwidthConfig, percentCost, buildData) => {
+const describePerformance = async (config, cacheBandwidthConfig, percentCost, buildData, skipAggregation) => {
   const { logger } = config;
   const configWithRequests = {
     ...config,
@@ -20,11 +20,11 @@ const describePerformance = async (config, cacheBandwidthConfig, percentCost, bu
 
     await logger(`fetching done!`);
 
-    return await aggregateProfiles(
+    return !skipAggregation ? await aggregateProfiles(
       result,
       configWithRequests,
       buildData
-    );
+    ) : result;
   } catch (e) {
     await logger(`cannot fetch pages!\n${e.stack}`);
   }

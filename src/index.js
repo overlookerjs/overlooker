@@ -1,4 +1,4 @@
-const { profile, profileWarming } = require('./profiler');
+const { profile, profileWarming, profileAggregate, profileRaw } = require('./profiler');
 const { compare, comparePages } = require('./comparison');
 const { check, checkPages } = require('./checker');
 const { merge } = require('./merge');
@@ -7,7 +7,9 @@ const view = require('./view');
 
 module.exports = {
   profile,
+  profileRaw,
   profileWarming,
+  profileAggregate,
   compare,
   comparePages,
   check,
