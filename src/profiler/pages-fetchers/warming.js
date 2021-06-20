@@ -5,6 +5,7 @@ const { map } = require('./../../objects-utils.js');
 const { resolveExternalResource } = require('./../../utils.js');
 const constants = require('./../constants.js');
 const cache = require('../cache.js');
+const { prepareConfig } = require('./../preparing.js');
 
 const warmingCacheProxy = async (config, percentCost) => {
   const { checkStatus, logger, threads, cache: { type, data, logger: cacheLogger } } = config;
@@ -159,14 +160,16 @@ const warmingSyntheticCache = async (config, percentCost, cacheBandwidthConfig) 
 };
 
 const warming = async (config, percentCost, cacheBandwidthConfig) => {
-  switch (config.cache.type) {
+  const preparedConfig = prepareConfig(config);
+
+  switch (preparedConfig.cache.type) {
     case 'wpr':
     case 'mitmdump':
-      return await warmingCacheProxy(config, percentCost);
+      return await warmingCacheProxy(preparedConfig, percentCost);
     case 'proxy':
-      return await warmingProxy(config, percentCost);
+      return await warmingProxy(preparedConfig, percentCost);
     case 'synthetic':
-      return await warmingSyntheticCache(config, percentCost, cacheBandwidthConfig)
+      return await warmingSyntheticCache(preparedConfig, percentCost, cacheBandwidthConfig)
     default:
       return null;
   }

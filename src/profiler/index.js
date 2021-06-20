@@ -2,7 +2,7 @@ const { prepareConfig } = require('./preparing.js');
 const { fetchBuildData } = require('./build-data.js');
 const { describePerformance, warming } = require('./pages-fetchers');
 const networkPresets = require('../network-presets.js');
-const { CacheBandwidth } = require('./cache-bandwidth.js');
+const { map } = require('./../objects-utils.js');
 
 const getSyntheticCache = (config) => {
   const isSyntheticCache = config.cache && config.cache.type === 'synthetic';
@@ -37,7 +37,15 @@ const profile = async (config) => {
   const buildData = await fetchBuildData(preparedConfig);
 
   if (cache) {
-    const result = await warming(preparedConfig, percentCost, cacheBandwidthConfig);
+    let result;
+
+    if (!cache.resources) {
+      result = await warming(config, percentCost, cacheBandwidthConfig);
+    } else {
+      await logger('Use cached resources from config');
+
+      result = map(cache.resources, (resourcesByPage) => new Map(Object.entries(resourcesByPage)));
+    }
 
     if (cacheBandwidthConfig) {
       cacheResources = result;
@@ -68,6 +76,16 @@ const profile = async (config) => {
   return result;
 };
 
+const profileWarming = async (config) => {
+  const preparedConfig = prepareConfig(config);
+  const cacheBandwidthConfig = getSyntheticCache(preparedConfig);
+  const { pages, count, cache } = preparedConfig;
+  const percentCost = 0.99 / (count * pages.length + (cache ? pages.length : 0));
+
+  return await warming(config, percentCost, cacheBandwidthConfig);
+}
+
 module.exports = {
-  profile
+  profile,
+  profileWarming
 };

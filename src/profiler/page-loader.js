@@ -203,9 +203,11 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
               base64Encoded
             } = await client.send('Network.getResponseBody', { requestId: event.requestId });
 
+            const handledBody = responseDataHandler(request.url, rawPostData, body);
+
             request.size = event.encodedDataLength;
             request.postData = postData;
-            request.body = responseDataHandler(request.url, rawPostData, base64Encoded ? Buffer.from(body, 'base64') : body);
+            request.body = base64Encoded ? handledBody : Buffer.from(handledBody).toString('base64');
 
             const key = hash(request.url + request.postData);
 
@@ -259,22 +261,20 @@ const setupPageConfig = async (context, page, client, config, pageConfig, cacheB
           cacheBandwidth.get(key)
             .then(async (data) => {
               const headers = {};
-              const buffer = data.body instanceof Buffer ? data.body : Buffer.from(data.body);
 
               if (data.contentType)
                 headers['content-type'] = data.contentType;
               if (data.body && !('content-length' in data.headers))
-                headers['content-length'] = String(Buffer.byteLength(buffer));
+                headers['content-length'] = String(Buffer.byteLength(Buffer.from(data.body, 'base64')));
 
               try {
                 await client.send('Fetch.fulfillRequest', {
                   requestId,
                   responseCode: data.status,
                   responseHeaders: Object.entries(headers).map(([name, value]) => ({ name, value })),
-                  body: buffer.toString('base64')
+                  body: data.body
                 });
               } catch (e) {
-
               }
             });
         } else {

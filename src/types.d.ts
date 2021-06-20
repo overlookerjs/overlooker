@@ -409,6 +409,29 @@ declare module "overlooker" {
       stop?: () => Promise<any>,
       postDataHandler?: (url: string, postData: string) => string,
       responseDataHandler?: (url: string, postData: string, response: string) => string
+    } | {
+      type: 'synthetic',
+      resources?: {
+        [page: string]: {
+          [url: string]: {
+            method: string,
+            priority: string,
+            url: string,
+            headers: Array<{
+              name: string,
+              value: string
+            }>,
+            status: string,
+            contentType: string,
+            mimeType: string,
+            size: number,
+            postData: string,
+            body: string,
+          }
+        }
+      },
+      postDataHandler?: (url: string, postData: string) => string,
+      responseDataHandler?: (url: string, postData: string, response: string) => string
     },
     firstEvent?: string,
     count?: number,
