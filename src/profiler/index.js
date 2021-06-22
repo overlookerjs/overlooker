@@ -3,7 +3,7 @@ const { fetchBuildData } = require('./build-data.js');
 const { aggregateProfiles } = require('../aggregation');
 const { describePerformance, warming } = require('./pages-fetchers');
 const networkPresets = require('../network-presets.js');
-const { map } = require('./../objects-utils.js');
+const { map, make } = require('./../objects-utils.js');
 
 const getSyntheticCache = (config) => {
   const isSyntheticCache = config.cache && config.cache.type === 'synthetic';
@@ -84,7 +84,10 @@ const profileWarming = async (config) => {
   const { pages, count, cache } = preparedConfig;
   const percentCost = 0.99 / (count * pages.length + (cache ? pages.length : 0));
 
-  return await warming(config, percentCost, cacheBandwidthConfig);
+  return map(
+    await warming(config, percentCost, cacheBandwidthConfig),
+    (resources) => make([...resources.entries()])
+  );
 }
 
 const profileAggregate = async (config, profiles) => {

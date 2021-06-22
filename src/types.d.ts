@@ -436,8 +436,7 @@ declare module "overlooker" {
       timing?: RegExp,
       durationStart?: RegExp,
       durationEnd?: RegExp
-    },
-    skipAggregation: boolean,
+    }
     debug: boolean
   };
 
