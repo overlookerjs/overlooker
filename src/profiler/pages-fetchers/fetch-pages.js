@@ -2,7 +2,7 @@ const { makeFetchPageWorkersPool } = require('./fetch-page-workers-pool.js');
 const { make } = require('./../../objects-utils.js');
 const messages = require('./worker-messages.js');
 
-const ATTEMPTS_COUNT = 15;
+const ATTEMPTS_COUNT = 5;
 
 const serializePages = (pages) => (
   pages

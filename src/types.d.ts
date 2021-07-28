@@ -525,7 +525,7 @@ declare module "overlooker" {
 
   export function profileWarming(config: ProfileConfig): Promise<CachedResources>;
 
-  export function profileAggregate(config: ProfileConfig): Promise<ProfileData>;
+  export function profileAggregate(config: ProfileConfig, profiles: ProfileData): Promise<ProfileData>; // ToDo: rewrite profile type to raw profiles
 
   export function comparePages(firstData: ProfileData, secondData: ProfileData, onlyStats: boolean): ComparedData;
 

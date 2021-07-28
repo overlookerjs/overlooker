@@ -95,8 +95,8 @@ const profileAggregate = async (config, profiles) => {
   const buildData = await fetchBuildData(preparedConfig);
 
   const configWithRequests = {
-    ...config,
-    requests: prepareRequestsConfig(config.requests, config.host, config.pages)
+    ...preparedConfig,
+    requests: prepareRequestsConfig(preparedConfig.requests, preparedConfig.host, preparedConfig.pages)
   };
 
   return await aggregateProfiles(
