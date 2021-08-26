@@ -210,7 +210,7 @@ const { check } = require('overlooker');
 
 const result = check(profileDataFeature, budget);
 ```
-
+ 
 ## Tool for getting build data
 [Bundle Internals Plugin](https://github.com/smelukov/bundle-internals)
 
